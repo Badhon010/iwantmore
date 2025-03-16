@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Our Services - I Want More{% endblock %}
+{% block se %}in{% endblock %}{% block se-m %}in{% endblock se-m %}
+{% block dis %}Explore the range of services offered by I Want More to enhance your shopping experience.{% endblock dis %}
+{% block key %}services, customer support, shipping, returns, I Want More{% endblock key %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/services.css' %}">{% endblock head %}
+
+{% block content %}
+<div class="page-header-image">
+    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&auto=format&fit=crop&q=80" alt="Our Services">
+    <div class="header-shape header-shape-1"></div>
+    <div class="header-shape header-shape-2"></div>
+    <div class="page-header-content">
+        <h1>Our Services</h1>
+        <p>Discover how we can help you elevate your shopping experience with our comprehensive range of services.</p>
+    </div>
+</div>
+
+<div class="services-container">
+    <div class="services-intro">
+        <h2>How We Serve You</h2>
+        <p>At I Want More, we're committed to providing exceptional services that go beyond just selling products. We believe in creating a seamless and enjoyable shopping experience from start to finish. Explore our range of services designed to make your life easier and more stylish.</p>
+        
+        <div class="intro-video">
+            <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&auto=format&fit=crop&q=80" alt="Service Video Thumbnail">
+            <div class="play-button">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="video-overlay">Watch Our Services in Action</div>
+        </div>
+    </div>
+
+    <div class="services-grid">
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-shipping-fast"></i>
+            </div>
+            <h3>Fast & Reliable Shipping</h3>
+            <p>Enjoy our premium shipping service with real-time tracking and guaranteed delivery times. We partner with top carriers to ensure your packages arrive safely and on time.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> Same-day shipping for orders before 2 PM</li>
+                <li><i class="fas fa-check"></i> Real-time package tracking</li>
+                <li><i class="fas fa-check"></i> Insured shipping on all orders</li>
+                <li><i class="fas fa-check"></i> International shipping available</li>
+            </ul>
+            <a href="{% url 'shop' %}" class="service-btn">Shop Now</a>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h3>Easy Returns & Exchanges</h3>
+            <p>Not completely satisfied? Our hassle-free return policy allows you to return or exchange items within 30 days. We make the process simple so you can shop with confidence.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> 30-day return policy</li>
+                <li><i class="fas fa-check"></i> Prepaid return labels</li>
+                <li><i class="fas fa-check"></i> Quick refund processing</li>
+                <li><i class="fas fa-check"></i> Easy exchange options</li>
+            </ul>
+            <a href="#" class="service-btn">Return Policy</a>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <h3>24/7 Customer Support</h3>
+            <p>Our dedicated support team is available around the clock to assist you with any questions or concerns. We're committed to providing exceptional service at every step.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> Live chat support</li>
+                <li><i class="fas fa-check"></i> Email support</li>
+                <li><i class="fas fa-check"></i> Phone support during business hours</li>
+                <li><i class="fas fa-check"></i> Comprehensive FAQ section</li>
+            </ul>
+            <a href="{% url 'contact' %}" class="service-btn">Contact Us</a>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <h3>Gift Services</h3>
+            <p>Make your gifts special with our premium gift wrapping and personalized message services. We'll help you create the perfect surprise for your loved ones.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> Elegant gift wrapping options</li>
+                <li><i class="fas fa-check"></i> Personalized gift messages</li>
+                <li><i class="fas fa-check"></i> Corporate gifting solutions</li>
+                <li><i class="fas fa-check"></i> Gift cards available</li>
+            </ul>
+            <a href="{% url 'shop' %}" class="service-btn">Send a Gift</a>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3>Personal Shopping</h3>
+            <p>Experience the luxury of personal shopping with our dedicated stylists. Get expert advice and recommendations tailored to your style preferences and needs.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> One-on-one styling sessions</li>
+                <li><i class="fas fa-check"></i> Personalized product recommendations</li>
+                <li><i class="fas fa-check"></i> Wardrobe planning assistance</li>
+                <li><i class="fas fa-check"></i> Special occasion styling</li>
+            </ul>
+            <a href="{% url 'contact' %}" class="service-btn">Book a Stylist</a>
+        </div>
+
+        <div class="service-card">
+            <div class="service-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Secure Shopping</h3>
+            <p>Shop with confidence knowing that your personal information is protected. Our secure payment system ensures safe transactions every time you shop with us.</p>
+            <ul class="service-features">
+                <li><i class="fas fa-check"></i> SSL encrypted checkout</li>
+                <li><i class="fas fa-check"></i> Multiple payment options</li>
+                <li><i class="fas fa-check"></i> Fraud protection</li>
+                <li><i class="fas fa-check"></i> Secure data storage</li>
+            </ul>
+            <a href="{% url 'shop' %}" class="service-btn">Shop Securely</a>
+        </div>
+    </div>
+
+    <!-- New Stats Section -->
+    <div class="stats-section">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">98<span>%</span></div>
+                <div class="stat-label">Customer Satisfaction</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Customer Support</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Countries Served</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-cta">
+        <div class="cta-content">
+            <h2>Need Customized Services?</h2>
+            <p>We understand that every customer has unique needs. Contact our customer support team to discuss how we can tailor our services to better serve you.</p>
+            <a href="{% url 'contact' %}" class="cta-btn">Get in Touch</a>
+        </div>
+        <div class="cta-image">
+            <img src="https://images.unsplash.com/photo-1556745753-b2904692b3cd?w=600&auto=format&fit=crop&q=80" alt="Customer Service">
+        </div>
+    </div>
+
+    <!-- New Service Highlights -->
+    <div class="service-highlights">
+        <h2>Service Excellence</h2>
+        <div class="highlights-grid">
+            <div class="highlight-card">
+                <div class="highlight-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h3>Premium Quality</h3>
+                <p>We ensure that all our products meet the highest quality standards before they reach you.</p>
+            </div>
+            
+            <div class="highlight-card">
+                <div class="highlight-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3>Award-Winning</h3>
+                <p>Our customer service team has been recognized for excellence in the retail industry.</p>
+            </div>
+            
+            <div class="highlight-card">
+                <div class="highlight-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3>Customer-Centric</h3>
+                <p>Every decision we make puts our customers' needs and satisfaction first.</p>
+            </div>
+            
+            <div class="highlight-card">
+                <div class="highlight-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3>Eco-Friendly</h3>
+                <p>Our packaging and shipping practices are designed to minimize environmental impact.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="service-testimonials">
+    <h2>What Our Customers Say</h2>
+    <div class="testimonial-slider">
+        <div class="testimonial-item">
+            <div class="testimonial-content">
+                <p>"The personal shopping service was incredible! The stylist understood my style perfectly and helped me find pieces I absolutely love. I'll definitely be using this service again."</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Customer">
+                <div class="author-info">
+                    <h4>Sophia Martinez</h4>
+                    <span>Loyal Customer</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-item">
+            <div class="testimonial-content">
+                <p>"I had an issue with my order and contacted customer support. They were incredibly helpful and resolved my problem immediately. That's the kind of service that keeps me coming back!"</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer">
+                <div class="author-info">
+                    <h4>Michael Johnson</h4>
+                    <span>Regular Shopper</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-item">
+            <div class="testimonial-content">
+                <p>"The shipping is lightning fast! I ordered on Monday and had my package by Wednesday. The items were beautifully packaged and exactly as described. Very impressed!"</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Customer">
+                <div class="author-info">
+                    <h4>Emily Wilson</h4>
+                    <span>New Customer</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="newsletter">
+    <h2>Stay Updated</h2>
+    <p>Subscribe to our newsletter for exclusive offers, new service announcements, and fashion tips delivered straight to your inbox.</p>
+    <form class="newsletter-form" action="{% url 'subscribe_newsletter' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="source" value="services_page">
+        <div class="newsletter-input-group">
+            <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
+            <i class="far fa-envelope newsletter-input-icon"></i>
+        </div>
+        <button type="submit" class="newsletter-btn">Subscribe <i class="fas fa-paper-plane"></i></button>
+    </form>
+    <div class="newsletter-privacy">
+        By subscribing, you agree to our <a href="#">Privacy Policy</a>. We respect your privacy and will never share your information.
+    </div>
+</div>
+
+<!-- Service Timeline Animation -->
+<div class="service-timeline">
+    <h2>Our Service Evolution</h2>
+    <div class="timeline-container">
+        <div class="timeline-item">
+            <div class="timeline-year">2018</div>
+            <div class="timeline-content">
+                <h3>Company Founded</h3>
+                <p>I Want More was established with a mission to provide quality fashion products with exceptional service.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-year">2019</div>
+            <div class="timeline-content">
+                <h3>International Shipping</h3>
+                <p>Expanded our shipping services to over 50 countries worldwide.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-year">2020</div>
+            <div class="timeline-content">
+                <h3>24/7 Support</h3>
+                <p>Launched our round-the-clock customer support to better serve our growing customer base.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-year">2021</div>
+            <div class="timeline-content">
+                <h3>Personal Shopping</h3>
+                <p>Introduced our personal shopping service with professional stylists.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-year">2022</div>
+            <div class="timeline-content">
+                <h3>Premium Gift Services</h3>
+                <p>Enhanced our gift services with luxury packaging and personalization options.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-year">2023</div>
+            <div class="timeline-content">
+                <h3>Innovation Award</h3>
+                <p>Received industry recognition for our innovative approach to customer service.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

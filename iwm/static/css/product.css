@@ -1,0 +1,300 @@
+/* Product Detail Page Styles */
+/* Base layout styles */
+.product-detail {
+    padding: 40px;
+    background-color: var(--dropdown-bg);
+}
+
+.product-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    max-width: 1200px;
+    margin: auto;
+    background: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Product image styling */
+.product-image {
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;
+}
+
+.product-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.product-image img:hover {
+    transform: scale(1.02);
+}
+
+/* Product information styling */
+.product-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.product-info h1 {
+    color: var(--text-color);
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.product-info p {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.product-info .description {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.product-info .price {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--btn-bg);
+}
+
+.product-info .stock {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #e8f5e9;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Tags styling */
+.tags {
+    margin: 15px 0;
+}
+
+.tags a {
+    display: inline-block;
+    color: var(--btn-bg);
+    background-color: rgba(var(--btn-bg-rgb), 0.1);
+    padding: 5px 10px;
+    margin: 5px 5px 5px 0;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.tags a:hover {
+    background-color: rgba(var(--btn-bg-rgb), 0.2);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+/* Order button styling */
+.order-button {
+    display: block;
+    background: var(--btn-bg);
+    color: var(--white);
+    padding: 12px 25px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 25px 0;
+    transition: all 0.3s ease;
+    text-align: center;
+    max-width: 200px;
+}
+
+.order-button:hover {
+    background: var(--btn-bg-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-button.clicked {
+    animation: buttonClick 0.3s ease;
+}
+
+@keyframes buttonClick {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Add animation for cart icon in base.html */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#cart i.pulse {
+    animation: pulse 0.5s ease;
+    color: var(--btn-bg);
+}
+
+/* Review section styling */
+.review-section, .existing-reviews {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.review-section h3, .existing-reviews h3 {
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+/* Rating system styling */
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.rating label {
+    font-weight: 500;
+}
+
+.stars {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.star-btn {
+    background: transparent;
+    color: #ddd;
+    border: none;
+    padding: 0 3px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: color 0.2s ease;
+}
+
+.star-btn:hover,
+.star-btn:hover ~ .star-btn {
+    color: gold;
+}
+
+.star-btn.selected {
+    color: gold;
+}
+
+/* Review form styling */
+.review-form {
+    margin-top: 15px;
+}
+
+.review-textarea {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.review-textarea:focus {
+    border-color: var(--btn-bg);
+    outline: none;
+}
+
+.submit-review-btn {
+    display: block;
+    background: var(--btn-bg);
+    color: var(--white);
+    padding: 10px 20px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.submit-review-btn:hover {
+    background: var(--btn-bg-hover);
+}
+
+/* Existing reviews styling */
+.review {
+    background: #f9f9f9;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.review-user {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.review-rating {
+    color: gold;
+    font-size: 1rem;
+}
+
+.review-comment {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: #888;
+    text-align: right;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-container {
+        padding: 20px;
+    }
+    
+    .product-info h1 {
+        font-size: 1.8rem;
+    }
+    
+    .order-button {
+        width: 100%;
+        max-width: none;
+    }
+}

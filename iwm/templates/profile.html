@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Account - I Want More{% endblock %}
+{% block head %}
+<style>
+  :root {
+    --header-height: 68px;
+    --header-bg: #ffffff;
+    --text-color: #2d2d2d;
+    --btn-bg: #ff6f91;
+    --btn-bg-hover: #ff4e6a;
+    --white: #ffffff;
+    --dropdown-bg: #f9f9f9;
+    --dropdown-border: #dddddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 50px auto;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 6px 15px var(--shadow-color);
+    overflow: hidden;
+  }
+
+  /* Profile Header */
+  .profile-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .profile-header img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid var(--btn-bg);
+    margin-bottom: 20px;
+  }
+
+  .profile-header h1 {
+    font-size: 2.2em;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+
+  .profile-header p {
+    color: #777;
+    font-size: 1.2em;
+  }
+
+  /* Profile Info Section */
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--dropdown-border);
+    font-size: 1.1em;
+    color: var(--text-color);
+  }
+
+  .info-item:last-child {
+    border-bottom: none;
+  }
+
+  .info-item div {
+    font-weight: 500;
+  }
+
+  .info-item span {
+    font-weight: bold;
+    color: var(--btn-bg);
+  }
+
+  /* Bio Section */
+  .bio {
+    margin-top: 35px;
+    padding: 25px;
+    background: var(--dropdown-bg);
+    border-left: 6px solid var(--btn-bg);
+    border-radius: 8px;
+  }
+
+  .bio h2 {
+    margin-bottom: 15px;
+    font-size: 1.6em;
+    color: var(--btn-bg);
+  }
+
+  .bio p {
+    font-size: 1.1em;
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+
+  /* Edit Profile Button */
+  .edit-btn {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 12px 25px;
+    background: var(--btn-bg);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    text-align: center;
+    transition: background 0.3s ease;
+  }
+
+  .edit-btn:hover {
+    background: var(--btn-bg-hover);
+  }
+
+  /* File input for Profile Picture */
+  .file-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid var(--btn-bg);
+    margin: auto;
+  }
+
+  .file-input div {
+    font-size: 55px;
+    color: var(--btn-bg);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 800px) {
+    .container {
+      padding: 30px;
+      margin: 25px auto;
+    }
+
+    .profile-header img {
+      width: 110px;
+      height: 110px;
+    }
+
+    .bio h2 {
+      font-size: 1.4em;
+    }
+
+    .info-item {
+      font-size: 1em;
+    }
+  }
+</style>
+{% endblock head %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="profile-header">
+      {% if profile.profile_picture %}
+        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+      {% else %}
+        <div class="file-input">
+          <div id="default-icon">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+      {% endif %}
+      <h1>{{ user.get_full_name|default:user.username }}</h1>
+      <p>@{{ user.username }}</p>
+    </div>
+    
+    <div class="profile-info">
+      <div class="info-item">
+        <div>Email:</div>
+        <span>{{ user.email }}</span>
+      </div>
+      <div class="info-item">
+        <div>Phone:</div>
+        <span>{{ profile.phone_number|default:"N/A" }}</span>
+      </div>
+      <div class="info-item">
+        <div>Location:</div>
+        <span>{{ profile.location|default:"Not specified" }}</span>
+      </div>
+      <div class="info-item">
+        <div>Member Since:</div>
+        <span>{{ user.date_joined|date:"F Y" }}</span>
+      </div>
+    </div>
+    
+    <div class="bio">
+      <h2>About Me</h2>
+      <p>
+        {{ profile.bio|default:"No bio available. Update your profile to add some details about yourself." }}
+      </p>
+    </div>
+    
+    <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+  </div>
+</section>
+{% endblock %}

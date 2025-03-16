@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create your account at I Want More for personalized recommendations and exclusive offers." />
+  <meta name="robots" content="index, follow" />
+  <meta name="keywords" content="Sign Up, Create Account, I Want More, Online Store, Fashion, Shopping" />
+  <meta name="author" content="I Want More Team" />
+  <title>Sign Up | I Want More</title>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+  <link rel="icon" href="{% static 'imgs/logo.jpg' %}" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <main>
+    <div id="smain" class="forms">
+      <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More<a href="{% url 'home' %}" class="closel">&times;</a></h1>
+{% if error %}
+<div class="error-message">
+  {{ error }}
+</div>
+{% endif %}
+      <form method="POST" id="signupForm" action="{% url 'signup' %}">
+        {% csrf_token %}
+        <!-- Username Field -->
+        <div class="inputs">
+          <div class="full-input">
+            <label for="signup-username"><i class="fa-solid fa-user"></i></label>
+            <div class="ph">Username</div>
+            <input type="text" id="signup-username" name="username" required />
+            <div id="user-error" class="error"></div>
+          </div>
+
+          <!-- Email Field -->
+
+          <div class="full-input">
+            <label for="signup-email"><i class="fa-solid fa-envelope"></i></label>
+            <div class="ph">Email</div>
+            <input type="email" id="signup-email" name="email" required />
+            <div id="signup-emailError" class="error"></div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="full-input pass">
+            <label for="signup-password"><i class="fa-solid fa-lock"></i></label>
+            <div class="ph">Password</div>
+            <input type="password" id="signup-password" name="password" autocomplete="new-password" required />
+            <button type="button" id="signup-eye-button">
+              <i class="fa-solid fa-eye open" id="signup-open"></i>
+              <i class="fa-solid fa-eye-slash close" id="signup-close" style="display: none;"></i>
+            </button>
+            <div id="signup-passwordError" class="error"></div>
+          </div>
+
+
+          <!-- Confirm Password Field -->
+          <div class="full-input pass">
+            <label for="signup-confirm-password"><i class="fa-solid fa-key"></i></label>
+            <div class="ph">Confirm Password</div>
+            <input type="password" id="signup-confirm-password" name="confirm_password" required />
+            <button type="button" id="signup-eye-buttonc" class="eb">
+              <i class="fa-solid fa-eye open" id="signupc-open"></i>
+              <i class="fa-solid fa-eye-slash close" id="signupc-close" style="display: none;"></i>
+            </button>
+            <div id="signup-confirm-password-error" class="error">Passwords do not match.</div>
+          </div>
+        </div>
+
+        <button type="submit">Sign Up</button>
+        <div class="links">
+          <p>Already have an account?</p>
+          <a href="{% url "login" %}">Login</a>
+        </div>
+        <div class="line"><hr>or<hr></div>
+        <div class="more-option">
+          <button type="button" id="signup-google">
+            Sign up with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign up with Google" />
+          </button>
+          <button type="button" id="signup-facebook">
+            Sign up with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign up with Facebook" />
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+  <script src="{% static 'js/auth.js' %}"></script>
+{% if alert_message %}<script>showAlertAndRedirect('{{ alert_message }}', '/');</script>{% endif %}
+</body>
+</html>

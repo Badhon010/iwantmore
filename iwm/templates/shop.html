@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop - I Want More{% endblock %}
+{% block so %}in{% endblock so %}{% block so-m %}in{% endblock so-m %}
+{% block dis %}Explore a wide range of products at I Want More. Shop for fashion, accessories, and more. Order online today!{% endblock dis %}
+{% block key %}online shop, fashion, accessories, buy products, I Want More{% endblock key %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<script src="{% static 'js/shop.js' %}" defer></script>
+{% endblock head %}
+{% block content %}
+<div class="shop-container">
+  <h2 class="shop-heading">Our Products</h2>
+
+  <!-- Filters Section -->
+  <div class="filters-container">
+    <div class="filters">
+      <div class="filter-group">
+        <select class="filter-category" id="categoryFilter">
+          <option value="all">All Categories</option>
+          {% for category in categories %}
+            <option value="{{ category.slug }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        
+        <select class="filter-sort" id="sortFilter">
+          <option value="newest">Newest First</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="rating">Highest Rated</option>
+        </select>
+      </div>
+
+      <div class="search-bar-container">
+        <input type="text" class="search-bar" id="searchInput" placeholder="Search for products...">
+        <span class="search-icon"><i class="fas fa-search"></i></span>
+      </div>
+    </div>
+    
+    <div class="active-filters" id="activeFilters">
+      <!-- Active filters will be inserted here by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Product Grid -->
+  <div class="product-grid" id="productGrid">
+    {% for product in products %}
+      <div class="product-item" data-category="{{ product.category.slug }}">
+        <div class="product-image-container">
+          {% if product.is_sale %}
+            <span class="product-badge sale">Sale</span>
+          {% endif %}
+          {% if product.is_new %}
+            <span class="product-badge new">New</span>
+          {% endif %}
+          {% if product.is_featured %}
+            <span class="product-badge featured">Featured</span>
+          {% endif %}
+          
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+          
+          <div class="quick-actions">
+            <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
+            <span class="quick-action-btn" title="Quick view"><i class="fas fa-eye"></i></span>
+          </div>
+        </div>
+        
+        <div class="product-info">
+          {% if product.category %}
+            <span class="product-category">{{ product.category.name }}</span>
+          {% endif %}
+          
+          <h3 class="product-name">{{ product.name }}</h3>
+          
+          <div class="product-rating">
+            <!-- Display rating stars -->
+            {% for i in product.full_stars %}
+              <span class="star"><i class="fas fa-star"></i></span>
+            {% endfor %}
+            
+            {% if product.half %}
+              <span class="star half"><i class="fas fa-star-half-alt"></i></span>
+            {% endif %}
+            
+            {% for i in product.empty_stars %}
+              <span class="star"><i class="far fa-star"></i></span>
+            {% endfor %}
+            
+            <span class="review-count">({{ product.reviews.count }} reviews)</span>
+          </div>
+          
+          <div class="product-price">
+            {% if product.original_price and product.original_price > product.price %}
+              <span class="original-price">৳{{ product.original_price }}</span>
+            {% endif %}
+            <span>৳{{ product.price }}</span>
+          </div>
+          
+          <div class="product-actions">
+            <button class="add-to-cart" data-product-id="{{ product.id }}">
+              <i class="fas fa-shopping-cart"></i> Add to Cart
+            </button>
+            {% if product.slug %}
+              <a href="{% url 'product_detail' slug=product.slug %}" class="view-details">Details</a>
+            {% else %}
+              <!-- Fallback to using a temporary slug based on the ID if slug is missing -->
+              <a href="/product/product-{{ product.id }}/" class="view-details">Details</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="no-products">
+        <i class="fas fa-shopping-bag"></i>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search criteria</p>
+        <a href="{% url 'shop' %}" class="reset-filters">Clear all filters</a>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Pagination -->
+  {% if products.has_other_pages %}
+  <div class="pagination">
+    {% if products.has_previous %}
+      <a href="?page={{ products.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+    {% endif %}
+    
+    {% for i in products.paginator.page_range %}
+      {% if products.number == i %}
+        <span class="current">{{ i }}</span>
+      {% else %}
+        <a href="?page={{ i }}">{{ i }}</a>
+      {% endif %}
+    {% endfor %}
+    
+    {% if products.has_next %}
+      <a href="?page={{ products.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

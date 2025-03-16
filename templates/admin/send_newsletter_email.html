@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+<style type="text/css">
+    .email-form {
+        max-width: 800px;
+        margin-top: 20px;
+    }
+    .email-form textarea {
+        min-height: 200px;
+    }
+    .email-form .help {
+        color: #666;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    .subscriber-list {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+    .subscriber-count {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .email-preview {
+        margin-top: 15px;
+        border: 1px dashed #ccc;
+        padding: 15px;
+        background-color: #f5f5f5;
+    }
+    .form-row {
+        padding: 8px 12px;
+        margin: 0;
+        border-bottom: 1px solid #eee;
+    }
+    .form-row:last-child {
+        border-bottom: none;
+    }
+    .form-row label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-row input[type="text"], 
+    .form-row textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+    .checkbox-row {
+        margin-top: 10px;
+    }
+    .submit-row {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="module email-form">
+    <div class="subscriber-list">
+        <div class="subscriber-count">{{ subscribers|length }} subscribers selected{% if title == 'Send Email to All Subscribers' %} (active only){% endif %}</div>
+        <ul>
+            {% for subscriber in subscribers|slice:":20" %}
+                <li>{{ subscriber.email }}</li>
+            {% endfor %}
+            {% if subscribers|length > 20 %}
+                <li>... and {{ subscribers|length|add:"-20" }} more</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <label for="id_subject">Subject:</label>
+                {{ form.subject }}
+                {% if form.subject.errors %}
+                    <div class="errors">{{ form.subject.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row">
+                <label for="id_message">Message:</label>
+                {{ form.message }}
+                {% if form.message.errors %}
+                    <div class="errors">{{ form.message.errors }}</div>
+                {% endif %}
+                <div class="help">Write your message here. If HTML is enabled, you can use basic formatting.</div>
+            </div>
+            
+            <div class="form-row checkbox-row">
+                <label>Options:</label>
+                <div>
+                    {{ form.send_html }} 
+                    <label for="id_send_html" style="display: inline; font-weight: normal;">
+                        Send as HTML email
+                    </label>
+                    <div class="help">HTML emails look better but may be filtered by some email providers.</div>
+                </div>
+                
+                <div style="margin-top: 10px;">
+                    {{ form.send_to_inactive }} 
+                    <label for="id_send_to_inactive" style="display: inline; font-weight: normal;">
+                        Include inactive subscribers
+                    </label>
+                    <div class="help">Send to users who have unsubscribed or been marked as inactive.</div>
+                </div>
+            </div>
+        </fieldset>
+        
+        <div class="submit-row">
+            <input type="submit" value="Send Emails" class="default" name="_send">
+            <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" class="closelink">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %} 

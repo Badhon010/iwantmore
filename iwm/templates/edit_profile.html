@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Profile - I Want More{% endblock %}
+{% block head %}
+<style>
+  :root {
+    --header-height: 68px;
+    --header-bg: #ffffff;
+    --text-color: #2d2d2d;
+    --btn-bg: #ff6f91;
+    --btn-bg-hover: #ff4e6a;
+    --white: #ffffff;
+    --dropdown-bg: #f9f9f9;
+    --dropdown-border: #dddddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 50px auto;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 6px 15px var(--shadow-color);
+  }
+
+  /* Edit Form Styles */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 1.1em;
+    color: var(--text-color);
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--dropdown-border);
+    border-radius: 6px;
+    font-size: 1em;
+    color: var(--text-color);
+    box-sizing: border-box;
+  }
+
+  .form-group input[type="file"] {
+    padding: 6px 0;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  /* File Input Styles */
+  .file-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--btn-bg);
+    cursor: pointer;
+    margin: auto;
+    margin-bottom: 10px;
+  }
+  .file-input input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  .file-input img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+  }
+  .file-input div {
+    font-size: 50px;
+    color: var(--btn-bg);
+  }
+  .file-input label {
+    font-size: 20px;
+    color: rgb(112, 112, 112);
+    position: absolute;
+    bottom: 0;
+    background-color: #c7c7c768;
+    width: 100%;
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .file-input:hover {
+    border-color: var(--btn-bg-hover);
+  }
+  .file-input:hover div {
+    color: var(--btn-bg-hover);
+  }
+
+  /* Submit Button */
+  .submit-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background: var(--btn-bg);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    text-align: center;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+  }
+  .submit-btn:hover {
+    background: var(--btn-bg-hover);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 800px) {
+    .container {
+      padding: 30px;
+      margin: 25px auto;
+    }
+  }
+</style>
+{% endblock head %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>Edit Profile</h1>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <!-- Updated File Input for Profile Picture -->
+      <div class="form-group">
+        <label for="profile_picture">Profile Picture</label>
+        <div class="file-input">
+          {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture-preview">
+          {% else %}
+            <div id="default-icon">
+              <i class="fa-solid fa-user"></i>
+            </div>
+          {% endif %}
+          <label for="profile_picture"><i class="fa-solid fa-camera"></i></label>
+          <input type="file" name="profile_picture" id="profile_picture" accept="image/*">
+        </div>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label for="phone_number">Phone Number</label>
+        <input type="text" name="phone_number" id="phone_number" value="{{ profile.phone_number }}" placeholder="Enter your phone number">
+      </div>
+
+      <!-- Location -->
+      <div class="form-group">
+        <label for="location">Location</label>
+        <input type="text" name="location" id="location" value="{{ profile.location }}" placeholder="Enter your location">
+      </div>
+
+      <!-- Bio -->
+      <div class="form-group">
+        <label for="bio">Bio</label>
+        <textarea name="bio" id="bio" placeholder="Tell us something about yourself">{{ profile.bio }}</textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">Save Changes</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

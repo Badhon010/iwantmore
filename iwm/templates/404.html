@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 - Page Not Found</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="{% static 'imgs/logo.jpg' %}" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #ffdde1 0%, #ff6f91 100%);
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+    }
+    h1 {
+      font-size: 140px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0px 5px 20px rgba(255, 111, 145, 0.7);
+      animation: float 3s ease-in-out infinite, glow 2s alternate infinite;
+    }
+    p {
+      font-size: 20px;
+      font-weight: 300;
+      color: #fff;
+      margin-bottom: 30px;
+    }
+    .btn-home {
+      display: inline-block;
+      background-color: #fff;
+      color: #ff4e6a;
+      border: 2px solid #ff4e6a;
+      padding: 12px 30px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: all 0.3s ease-in-out;
+      text-decoration: none;
+    }
+    .btn-home:hover {
+      background-color: #ff4e6a;
+      color: #fff;
+      transform: translateY(-3px);
+      box-shadow: 0px 8px 15px rgba(255, 111, 145, 0.3);
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes glow {
+      0% { text-shadow: 0px 5px 20px rgba(255, 111, 145, 0.7); }
+      100% { text-shadow: 0px 5px 30px rgba(255, 111, 145, 1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <p>Oops! The page you are looking for does not exist.</p>
+    <a href="{% url 'home' %}" class="btn-home">Back to Home</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Secure login page for I Want More - Access your account to enjoy exclusive deals." />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Login | I Want More</title>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="icon" href="{% static 'imgs/logo.jpg' %}" type="image/x-icon">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.6.0/validator.min.js"></script> <!-- Email validation -->
+</head>
+<body>
+  <main>
+    <div id="lmain" class="forms">
+      <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More <a href="{% url 'home' %}" class="closel">&times;</a></h1>
+      {% if error %}
+      <div class="error-message">
+        {{ error }}
+      </div>
+      {% endif %}
+      <form method="POST" id="loginForm" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="inputs">
+          <!-- Email Field -->
+          <div class="full-input">
+            <label for="login-email"><i class="fa-solid fa-envelope"></i></label>
+            <div class="ph">Email</div>
+            <input type="email" id="login-email" name="email" required />
+            <div id="login-emailError" class="error"></div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="full-input pass">
+            <label for="login-password"><i class="fa-solid fa-lock"></i></label>
+            <div class="ph">Password</div>
+            <input type="password" id="login-password" name="password" autocomplete="new-password" required />
+            <button type="button" id="login-eye-button">
+              <i class="fa-solid fa-eye open" id="login-open"></i>
+              <i class="fa-solid fa-eye-slash close" id="login-close" style="display: none;"></i>
+            </button>
+            <div id="login-passwordError" class="error"></div>
+          </div>
+        </div>
+        <div class="ufp"><a href="{% url 'password_reset' %}" class="fp">Forgot password?</a></div>
+        <button type="submit">Login</button>
+
+        <div class="links">
+          <p>Don't have an account?</p>
+          <a href="{% url "signup" %}">Sign up</a>
+        </div>
+        <div class="line"><hr>or<hr></div>
+        <div class="more-option">
+          <button type="button" id="login-google">
+            Sign up with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign up with Google" />
+          </button>
+          <button type="button" id="login-facebook">
+            Sign up with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign up with Facebook" />
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="{% static 'js/auth.js' %}"></script>
+</body>
+</html>

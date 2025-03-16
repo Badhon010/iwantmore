@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact Us - I Want More{% endblock %}
+{% block co %}in{% endblock %}{% block co-m %}in{% endblock co-m %}
+{% block dis %}Get in touch with I Want More for inquiries, support, and business opportunities.{% endblock dis %}
+{% block key %}contact us, I Want More, customer support, inquiries, online shop{% endblock key %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/contact.css' %}">{% endblock head %}
+
+{% block content %}
+<!-- Animated Background Elements -->
+<div class="animated-bg-element bg-element-1"></div>
+<div class="animated-bg-element bg-element-2"></div>
+<div class="animated-bg-element bg-element-3"></div>
+
+<div class="page-header-image">
+    <img src="https://images.unsplash.com/photo-1560264280-88b68371db39?w=1200&auto=format&fit=crop&q=80" alt="Contact Us">
+    <div class="header-shape header-shape-1"></div>
+    <div class="header-shape header-shape-2"></div>
+    <div class="page-header-content">
+        <h1>Contact Us</h1>
+        <p>We'd love to hear from you! Reach out to us for any questions, support, or business inquiries.</p>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="contact-grid">
+    <!-- Contact Form Section -->
+    <div class="contact-form-section">
+        <h2>Send Us a Message</h2>
+        <form method="POST" id="contactForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" id="name" name="name" class="form-control" placeholder=" " required>
+                <label for="name">Your Name</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="email" id="email" name="email" class="form-control" placeholder=" " required>
+                <label for="email">Your Email</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="subject" name="subject" class="form-control" placeholder=" " required>
+                <label for="subject">Subject</label>
+            </div>
+            
+            <div class="form-group">
+                <textarea id="message" name="message" class="form-control" placeholder=" " required></textarea>
+                <label for="message">Your Message</label>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                Send Message
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+    
+    <!-- Info Card Section -->
+    <div class="info-card-section">
+        <h2>Get In Touch</h2>
+        
+        <div class="contact-info">
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="info-content">
+                    <h3>Email Us</h3>
+                    <p><a href="mailto:iwantmore.bd999@gmail.com">iwantmore.bd999@gmail.com</a></p>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="info-content">
+                    <h3>Call Us</h3>
+                    <p><a href="tel:+8801952886888">01952886888</a></p>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="info-content">
+                    <h3>Visit Us</h3>
+                    <p>Shimanto Shambhar, 3rd floor, Shop no 2051, Dhanmondi 2, Dhaka 1205</p>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-content">
+                    <h3>Business Hours</h3>
+                    <p>Monday - Saturday: 10:00 AM - 8:00 PM<br>Friday: 3:00 PM - 8:00 PM</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="social-media">
+            <h3>Connect With Us</h3>
+            <div class="social-links">
+                <a href="https://web.facebook.com/iwantmoreonlineshop999?_rdc=1&_rdr#" target="_blank" class="social-link facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.tiktok.com/@iwantmore.bd?_t=8pnL1P1Bfvz&_r=1" target="_blank" class="social-link twitter" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://api.whatsapp.com/send?phone=+880-1952886888" target="_blank" class="social-link instagram" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="tel:+8801952886888" class="social-link linkedin" aria-label="Phone"><i class="fas fa-phone"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Section -->
+    <div class="map-section">
+        <iframe class="map-iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3652.2140651891957!2d90.36940511449815!3d23.739076084598396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755bf532e382e61%3A0x14cbba145a7c6fd1!2sShimanto%20Shambhar!5e0!3m2!1sen!2sbd!4v1646318935520!5m2!1sen!2sbd" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation and animation
+    const form = document.getElementById('contactForm');
+    const inputs = form.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Check if input has value on page load
+        if (input.value) {
+            input.parentElement.classList.add('focused');
+        }
+    });
+    
+    // Form submission animation
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('.submit-btn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        submitBtn.disabled = true;
+    });
+    
+    // Auto-hide messages after 5 seconds
+    const messages = document.querySelectorAll('.alert');
+    messages.forEach(message => {
+        setTimeout(() => {
+            message.style.opacity = '0';
+            setTimeout(() => message.remove(), 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}
+
