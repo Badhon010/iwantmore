@@ -72,9 +72,9 @@
           {% endif %}
           
           <h3 class="product-name">{{ product.name }}</h3>
-          
-          <div class="product-rating">
+          <div class="rating-price">
             <!-- Display rating stars -->
+            <div class="product-rating">
             {% for i in product.full_stars %}
               <span class="star"><i class="fas fa-star"></i></span>
             {% endfor %}
@@ -88,25 +88,18 @@
             {% endfor %}
             
             <span class="review-count">({{ product.reviews.count }} reviews)</span>
-          </div>
-          
-          <div class="product-price">
-            {% if product.original_price and product.original_price > product.price %}
+            </div>
+            
+            <div class="product-price">
+              {% if product.original_price and product.original_price > product.price %}
               <span class="original-price">৳{{ product.original_price }}</span>
-            {% endif %}
-            <span>৳{{ product.price }}</span>
+              {% endif %}
+              <span>৳{{ product.price }}</span>
+            </div>
           </div>
           
           <div class="product-actions">
-            <button class="add-to-cart" data-product-id="{{ product.id }}">
-              <i class="fas fa-shopping-cart"></i> Add to Cart
-            </button>
-            {% if product.slug %}
-              <a href="{% url 'product_detail' slug=product.slug %}" class="view-details">Details</a>
-            {% else %}
-              <!-- Fallback to using a temporary slug based on the ID if slug is missing -->
-              <a href="/product/product-{{ product.id }}/" class="view-details">Details</a>
-            {% endif %}
+              <a href="{% url 'product_detail' slug=product.slug %}" class="add-to-cart"><i class="fas fa-shopping-cart"></i> Order Now</a>
           </div>
         </div>
       </div>

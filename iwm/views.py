@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber
+from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category
 from .forms import ReviewForm
 from django.db.models import Q,Avg
 from django.contrib.auth.decorators import login_required
@@ -24,7 +24,7 @@ def _404_view(request, exception):
     return render(request, '404.html', status=404)
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'home.html', {'categories': Category.objects.all()})
 
 def shop(request):
     products = Product.objects.all()

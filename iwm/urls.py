@@ -22,8 +22,6 @@ urlpatterns = [
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
     path('complete_profile/', views.complete_profile, name='complete_profile'),
     path('subscribe-newsletter/', views.subscribe_newsletter, name='subscribe_newsletter'),
-    
-    # Password Reset URLs
     path('password-reset/', 
         auth_views.PasswordResetView.as_view(
             template_name='password_reset_form.html',

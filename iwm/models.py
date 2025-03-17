@@ -6,22 +6,96 @@ class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     def __str__(self):
         return self.name
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True)
+    image = models.ImageField(upload_to='category_images/', blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name_plural = "Categories"
+
+class SubCategory(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.category.name}-{self.name}"
+    
+    class Meta:
+        verbose_name_plural = "Subcategories"
+
+class FeatureReason(models.Model):
+    Reason = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.Reason
+
+from django.db import models
+from django.utils.text import slugify
+
 class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
-    price = models.PositiveIntegerField() 
+    price = models.PositiveIntegerField()
+    discount_price = models.PositiveIntegerField(null=True, blank=True)
     image = models.ImageField(upload_to='product_images/')
-    stock = models.PositiveIntegerField(default=0)  # Track stock levels
+    stock = models.PositiveIntegerField(default=0)  
     created_at = models.DateTimeField(auto_now_add=True)
-    tags = models.ManyToManyField(Tag, related_name="products")  # Link to Tag model
+    tags = models.ManyToManyField('Tag', related_name="products")  
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, editable=False, related_name='products')
+    subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, related_name='products')
+    is_featured = models.BooleanField(default=False)
+    feature_reason = models.ForeignKey('FeatureReason', on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_products')
+    # SEO fields
+    meta_title = models.CharField(max_length=255, blank=True, null=True, help_text="SEO Meta Title")
+    meta_description = models.TextField(blank=True, null=True, help_text="SEO Meta Description")
+
     def save(self, *args, **kwargs):
+        if self.subcategory and self.subcategory.category:
+            self.category = self.subcategory.category  # SubCategory থেকে Category স্বয়ংক্রিয়ভাবে সেট করো
         if not self.slug:
-            self.slug = slugify(self.name)  # Auto-generate slug from name
+            self.slug = slugify(self.name)  
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.name  
+
+    def get_final_price(self):
+        return self.discount_price if self.discount_price else self.price
+
+    @property
+    def is_out_of_stock(self):
+        return self.stock == 0
+
+    @property
+    def discount_percentage(self):
+        if self.discount_price:
+            return round(100 - (self.discount_price / self.price) * 100, 2)
+        return 0
+
+    @property
+    def is_popular(self):
+        return self.stock < 10  # আপনি শর্ত কাস্টমাইজ করতে পারেন
+
+    def get_absolute_url(self):
+        """ পণ্যের বিস্তারিত পেজের URL তৈরি করে """
+        return f"/product/{self.slug}/"
+
 class MoreImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="more_images")  # ForeignKey ব্যবহার করা হয়েছে
     image = models.ImageField(upload_to='product_images/')

@@ -237,24 +237,6 @@ function initFilters() {
  * Initialize product interactions (add to cart, wishlist, etc.)
  */
 function initProductInteractions() {
-    // Add to cart button event
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-    addToCartButtons.forEach(button => {
-      button.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            addToCart(productId);
-            
-            // Visual feedback
-            this.classList.add('added');
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-check"></i> Added';
-            
-            setTimeout(() => {
-                this.classList.remove('added');
-                this.innerHTML = originalText;
-            }, 1500);
-      });
-    });
     
     // Quick action buttons
     const quickActionButtons = document.querySelectorAll('.quick-action-btn');

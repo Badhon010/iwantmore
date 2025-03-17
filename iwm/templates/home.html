@@ -81,25 +81,18 @@
     <div class="categories">
         <h2>Shop By Categories</h2>
         <div class="cont">
+            {% for category in categories %}
             <div class="category-item">
-                <img src="https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=600&auto=format&fit=crop&q=80" alt="Men's Fashion">
-                <h3>Men's Fashion</h3>
+                <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                <h3>{{ category.name }}</h3>
                 <a href="{% url 'shop' %}" class="btn-explore">Explore</a>
             </div>
-            <div class="category-item">
-                <img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=600&auto=format&fit=crop&q=80" alt="Women's Fashion">
-                <h3>Women's Fashion</h3>
-                <a href="{% url 'shop' %}" class="btn-explore">Explore</a>
-            </div>
-            <div class="category-item">
-                <img src="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=600&auto=format&fit=crop&q=80" alt="Accessories">
-                <h3>Accessories</h3>
-                <a href="{% url 'shop' %}" class="btn-explore">Explore</a>
-            </div>
+            {% endfor %}
         </div>
         <div class="promo-banner">
             <div class="promo-content">
                 <div class="promo-text">
+                    <h3>SUMMER SALE</h3>
                     <h3>SUMMER SALE</h3>
                     <h2>Up to 50% Off</h2>
                     <p>Limited time offer on selected items. Don't miss out!</p>

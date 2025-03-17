@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber
+from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber, Category, SubCategory, FeatureReason
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -12,30 +12,71 @@ admin.site.site_header = "I Want More Admin"
 admin.site.site_title = "I Want More Admin Panel"
 admin.site.index_title = "Welcome to I Want More Admin"
 
-# Register your models here.
-admin.site.register(Review)
-admin.site.register(Product)
+# Register Category and SubCategory models
+class SubCategoryInline(admin.TabularInline):
+    model = SubCategory
+    extra = 1
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    inlines = [SubCategoryInline]
+
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'slug')
+    list_filter = ('category',)
+    prepopulated_fields = {'slug': ('name',)}
+
+@admin.register(FeatureReason)
+class FeatureReasonAdmin(admin.ModelAdmin):
+    list_display = ('Reason',)
+
+# Register Review model
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('product', 'user', 'rating', 'created_at')
+    search_fields = ('product__name', 'user__username')
 
 class MoreImagesInline(admin.TabularInline):
     model = MoreImages
     extra = 1  # নতুন ইমেজ আপলোড করার জন্য ফাঁকা ফিল্ড দেখাবে
 
-
+# Register Product model with custom admin - FIXED ORDER
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("admin/custom.css",)}
         js = ("admin/custom.js",)
 
-    list_display = ('name', 'price', 'created_at')
+    list_display = ('name', 'price', 'discount_price', 'subcategory', 'is_featured', 'created_at')
     search_fields = ('name', 'description')
-    list_filter = ('price', 'tags')
-    filter_horizontal = ('tags',)  # Allows multiple tag selection in admin panel
-    inlines = [MoreImagesInline]  # MoreImages ইনলাইন হিসেবে দেখাবে
+    list_filter = ('price', 'discount_price', 'tags', 'subcategory', 'is_featured')
+    filter_horizontal = ('tags',)
+    inlines = [MoreImagesInline]
+    
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'slug', 'description', 'price', 'discount_price', 'image', 'stock')
+        }),
+        ('Categorization', {
+            'fields': ('subcategory', 'tags')  # এখানে 'category' বাদ দেওয়া হয়েছে
+        }),
+        ('Featured', {
+            'fields': ('is_featured', 'feature_reason')
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if obj.subcategory:
+            obj.category = obj.subcategory.category  # Admin panel-এও Category অটো সেট হবে
+        super().save_model(request, obj, form, change)
 
-
-admin.site.unregister(Product)
-admin.site.register(Product, ProductAdmin)
-
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "subcategory":
+            kwargs["queryset"] = SubCategory.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
