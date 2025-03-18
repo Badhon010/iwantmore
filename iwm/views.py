@@ -45,7 +45,7 @@ def shop(request):
             product.avg_rating = int_part + 1
             product.half = False
 
-    return render(request, 'shop.html', {'products': products})
+    return render(request, 'shop.html', {'products': products,'categories': Category.objects.all()})
 
 
 def about(request):
@@ -108,7 +108,29 @@ def edit_profile(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    return render(request, 'product.html', {'product': product})
+    
+    # Get related products from the same category, excluding the current product
+    related_by_category = Product.objects.filter(category=product.category).exclude(id=product.id)
+    
+    # Get related products with similar tags
+    product_tags = product.tags.all()
+    related_by_tags = Product.objects.filter(tags__in=product_tags).exclude(id=product.id).distinct()
+    
+    # Combine both querysets and remove duplicates
+    related_products = list(related_by_category)
+    for item in related_by_tags:
+        if item not in related_products:
+            related_products.append(item)
+    
+    # Limit to 4 related products
+    related_products = related_products[:4]
+    
+    context = {
+        'product': product,
+        'related_products': related_products
+    }
+    
+    return render(request, 'product.html', context)
 
 def search_view(request):
     query = request.GET.get("q", "").strip()
@@ -193,8 +215,8 @@ def autocomplete_suggestions(request):
     return JsonResponse(suggestions, safe=False)
 
 @login_required
-def submit_review(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+def submit_review(request, product_slug):
+    product = get_object_or_404(Product, slug=product_slug)
 
     if request.method == 'POST':
         review_text = request.POST.get('review')
@@ -208,9 +230,9 @@ def submit_review(request, product_id):
                 rating=rating
             )
             review.save()
-            return redirect('product_detail', id=product.id)
+            return redirect('product_detail', slug=product.slug)
 
-    return render(request, 'product_details.html', {'product': product})
+    return render(request, 'product.html', {'product': product})
 
 def logout_view(request):
     logout(request)

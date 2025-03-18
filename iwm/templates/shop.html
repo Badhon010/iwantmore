@@ -3,7 +3,8 @@
 
 {% block title %}Shop - I Want More{% endblock %}
 {% block so %}in{% endblock so %}{% block so-m %}in{% endblock so-m %}
-{% block dis %}Explore a wide range of products at I Want More. Shop for fashion, accessories, and more. Order online today!{% endblock dis %}
+{% block dis %}Explore a wide range of products at I Want More. Shop for fashion, accessories, and more. Order online
+today!{% endblock dis %}
 {% block key %}online shop, fashion, accessories, buy products, I Want More{% endblock key %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}">
@@ -11,127 +12,286 @@
 {% endblock head %}
 {% block content %}
 <div class="shop-container">
-  <h2 class="shop-heading">Our Products</h2>
-
-  <!-- Filters Section -->
-  <div class="filters-container">
-    <div class="filters">
-      <div class="filter-group">
-        <select class="filter-category" id="categoryFilter">
-          <option value="all">All Categories</option>
-          {% for category in categories %}
-            <option value="{{ category.slug }}">{{ category.name }}</option>
-          {% endfor %}
-        </select>
-        
-        <select class="filter-sort" id="sortFilter">
-          <option value="newest">Newest First</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Highest Rated</option>
-        </select>
+  <!-- Shop Header with Banner -->
+  <div class="shop-header">
+    <div class="shop-banner">
+      <div class="banner-content">
+        <h1>Our Collection</h1>
+        <p>Discover quality products crafted with excellence</p>
       </div>
-
-      <div class="search-bar-container">
-        <input type="text" class="search-bar" id="searchInput" placeholder="Search for products...">
-        <span class="search-icon"><i class="fas fa-search"></i></span>
-      </div>
-    </div>
-    
-    <div class="active-filters" id="activeFilters">
-      <!-- Active filters will be inserted here by JavaScript -->
     </div>
   </div>
 
-  <!-- Product Grid -->
-  <div class="product-grid" id="productGrid">
-    {% for product in products %}
-      <div class="product-item" data-category="{{ product.category.slug }}">
-        <div class="product-image-container">
-          {% if product.is_sale %}
+  <div class="shop-content-wrapper">
+    <!-- Sidebar Filters Panel -->
+    <div class="filters-container">
+      <div class="filter-header">
+        <h3><i class="fas fa-sliders-h"></i> Filter Products</h3>
+        <button class="btn-reset-filters" id="resetAllFilters"><i class="fas fa-redo-alt"></i> Reset</button>
+      </div>
+
+      <div class="filters">
+        <!-- Search -->
+        <div class="search-bar-container">
+          <input type="text" class="search-bar" id="searchInput" placeholder="Search for products...">
+          <span class="search-icon"><i class="fas fa-search"></i></span>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-section">
+          <h4 class="filter-title">Categories</h4>
+          <div class="filter-group checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" value="all" id="allCategories" checked>
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-label">All Categories</span>
+            </label>
+            {% for category in categories %}
+            <div class="category-item">
+              <div class="category">
+              <span class="checkbox-label">{{ category.name }}</span>
+              <span class="toggle-subcategory"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="subcategory-wrapper">
+                <label class="checkbox-container subcategory-item">
+                  <input type="checkbox" value="{{ category.slug }}" class="category-checkbox" data-category="{{ category.slug }}">
+                  <span class="checkbox-checkmark"></span>
+                  <span class="checkbox-label">All {{ category.name }}</span>
+                </label>
+                {% for subcategory in category.subcategories.all %}
+                <label class="checkbox-container subcategory-item">
+                  <input type="checkbox" value="{{ subcategory.slug }}" class="category-checkbox subcategory-checkbox" data-category="{{ subcategory.slug }}" data-parent="{{ category.slug }}">
+                  <span class="checkbox-checkmark"></span>
+                  <span class="checkbox-label">{{ subcategory.name }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Price Range -->
+        <div class="filter-section">
+          <h4 class="filter-title">Price Range</h4>
+          <div class="filter-group price-range">
+            <div class="dual-range-container">
+              <div class="price-slider-values">
+                <span class="price-min-value">৳0</span>
+                <span class="price-max-value">৳10000</span>
+              </div>
+              
+              <div class="price-sliders-wrapper">
+                <div class="price-slider-min">
+                  <input type="range" min="0" max="10000" value="0" class="price-slider min-slider" id="priceSliderMin">
+                  <div class="price-input-container">
+                    <label class="price-label">Min Price</label>
+                    <span class="price-currency">৳</span>
+                    <input type="number" id="priceMin" name="min_price" placeholder="0" min="0" max="10000">
+                  </div>
+                </div>
+                
+                <div class="price-slider-max">
+                  <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider" id="priceSliderMax">
+                  <div class="price-input-container">
+                    <label class="price-label">Max Price</label>
+                    <span class="price-currency">৳</span>
+                    <input type="number" id="priceMax" name="max_price" placeholder="10000" min="0" max="10000">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button class="btn-apply-price" id="applyPriceFilter"><i class="fas fa-filter"></i> Apply Filter</button>
+          </div>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="filter-section">
+          <h4 class="filter-title">Sort By</h4>
+          <div class="filter-group">
+            <select class="filter-sort" id="sortFilter">
+              <option value="newest">Newest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="rating">Highest Rated</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Availability Filter -->
+        <div class="filter-section">
+          <h4 class="filter-title">Availability</h4>
+          <div class="filter-group radio-group">
+            <label class="radio-container">
+              <input type="radio" name="stock" value="all" checked>
+              <span class="radio-checkmark"></span>
+              <span class="radio-label">All Products</span>
+            </label>
+            <label class="radio-container">
+              <input type="radio" name="stock" value="in-stock">
+              <span class="radio-checkmark"></span>
+              <span class="radio-label">In Stock</span>
+            </label>
+            <label class="radio-container">
+              <input type="radio" name="stock" value="out-of-stock">
+              <span class="radio-checkmark"></span>
+              <span class="radio-label">Out of Stock</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Special Offers -->
+        <div class="filter-section">
+          <h4 class="filter-title">Special Offers</h4>
+          <div class="filter-group checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" value="discounted" id="discountFilter">
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-label">On Sale</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" value="featured" id="featuredFilter">
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-label">Featured Products</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="shop-main-content">
+      <!-- Active Filters Display -->
+      <div class="active-filters-wrapper">
+        <div class="active-filters-header">
+          <h3 class="results-count">Showing <span id="productCount">{{ products.count }}</span> products</h3>
+        </div>
+        <div class="active-filters" id="activeFilters">
+          <!-- Active filters will be inserted here by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="product-grid" id="productGrid">
+        {% for product in products %}
+        <div class="product-item" data-category="{{ product.category.slug }}" data-subcategory="{{ product.subcategory.slug }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}" data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}">
+          <div class="product-image-container">
+            {% if product.discount_price %}
             <span class="product-badge sale">Sale</span>
-          {% endif %}
-          {% if product.is_new %}
-            <span class="product-badge new">New</span>
-          {% endif %}
-          {% if product.is_featured %}
-            <span class="product-badge featured">Featured</span>
-          {% endif %}
-          
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-          
-          <div class="quick-actions">
-            <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
-            <span class="quick-action-btn" title="Quick view"><i class="fas fa-eye"></i></span>
-          </div>
-        </div>
-        
-        <div class="product-info">
-          {% if product.category %}
-            <span class="product-category">{{ product.category.name }}</span>
-          {% endif %}
-          
-          <h3 class="product-name">{{ product.name }}</h3>
-          <div class="rating-price">
-            <!-- Display rating stars -->
-            <div class="product-rating">
-            {% for i in product.full_stars %}
-              <span class="star"><i class="fas fa-star"></i></span>
-            {% endfor %}
-            
-            {% if product.half %}
-              <span class="star half"><i class="fas fa-star-half-alt"></i></span>
             {% endif %}
-            
-            {% for i in product.empty_stars %}
-              <span class="star"><i class="far fa-star"></i></span>
-            {% endfor %}
-            
-            <span class="review-count">({{ product.reviews.count }} reviews)</span>
+            {% if product.is_popular %}
+            <span class="product-badge hot">Hot</span>
+            {% endif %}
+            {% if product.is_featured and product.featured_reason %}
+            <div class="product-badge">{{ product.featured_reason|upper }}</div>
+            {% elif product.is_featured %}
+            <div class="product-badge">FEATURED</div>
+            {% endif %}
+
+            <div class="product-image-wrapper">
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+            </div>
+
+            <div class="quick-actions">
+              <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
+              <span class="quick-action-btn" title="Quick view"><i class="fas fa-eye"></i></span>
             </div>
             
-            <div class="product-price">
-              {% if product.original_price and product.original_price > product.price %}
-              <span class="original-price">৳{{ product.original_price }}</span>
-              {% endif %}
-              <span>৳{{ product.price }}</span>
+            <div class="quick-preview">
+              <span>Quick Preview</span>
             </div>
           </div>
-          
-          <div class="product-actions">
-              <a href="{% url 'product_detail' slug=product.slug %}" class="add-to-cart"><i class="fas fa-shopping-cart"></i> Order Now</a>
+
+          <div class="product-info">
+            {% if product.category %}
+            <span class="product-category">{{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span>
+            {% endif %}
+
+            <h3 class="product-name">{{ product.name }}</h3>
+            <div class="rating-price">
+              <!-- Display rating stars -->
+              <div class="product-rating">
+                {% for i in product.full_stars %}
+                <span class="star"><i class="fas fa-star"></i></span>
+                {% endfor %}
+
+                {% if product.half %}
+                <span class="star half"><i class="fas fa-star-half-alt"></i></span>
+                {% endif %}
+
+                {% for i in product.empty_stars %}
+                <span class="star"><i class="far fa-star"></i></span>
+                {% endfor %}
+
+                <span class="review-count">({{ product.reviews.count }} reviews)</span>
+              </div>
+
+              <div class="product-price">
+                {% if product.discount_price %}
+                <span class="original-price">৳{{ product.price }}</span>
+                <span class="current-price">৳{{ product.discount_price }}</span>
+                <span class="discount-tag">-{{ product.discount_percentage|floatformat:0 }}%</span>
+                {% else %}
+                <span class="current-price">৳{{ product.price }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if product.stock > 0 %}
+            <div class="product-actions">
+              <a href="{% url 'product_detail' slug=product.slug %}" class="add-to-cart"><i class="fas fa-shopping-cart"></i> Buy Now</a>
+            </div>
+            {% else %}
+            <div class="product-actions">
+              <span class="out-of-stock-label">Out of Stock</span>
+              <a href="{% url 'product_detail' slug=product.slug %}" class="view-details">View Details</a>
+            </div>
+            {% endif %}
           </div>
         </div>
+        {% empty %}
+        <div class="no-products">
+          <i class="fas fa-shopping-bag"></i>
+          <h3>No products found</h3>
+          <p>Try adjusting your filters or search criteria</p>
+          <a href="{% url 'shop' %}" class="reset-filters">Clear all filters</a>
+        </div>
+        {% endfor %}
       </div>
-    {% empty %}
-      <div class="no-products">
-        <i class="fas fa-shopping-bag"></i>
-        <h3>No products found</h3>
-        <p>Try adjusting your filters or search criteria</p>
-        <a href="{% url 'shop' %}" class="reset-filters">Clear all filters</a>
-      </div>
-    {% endfor %}
-  </div>
-  
-  <!-- Pagination -->
-  {% if products.has_other_pages %}
-  <div class="pagination">
-    {% if products.has_previous %}
-      <a href="?page={{ products.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
-    {% endif %}
-    
-    {% for i in products.paginator.page_range %}
-      {% if products.number == i %}
+
+      <!-- Pagination -->
+      {% if products.has_other_pages %}
+      <div class="pagination">
+        {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}" class="page-nav"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+
+        {% for i in products.paginator.page_range %}
+        {% if products.number == i %}
         <span class="current">{{ i }}</span>
-      {% else %}
+        {% else %}
         <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}" class="page-nav"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+      </div>
       {% endif %}
-    {% endfor %}
-    
-    {% if products.has_next %}
-      <a href="?page={{ products.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
-    {% endif %}
+    </div>
   </div>
-  {% endif %}
+
+  <!-- Newsletter Section -->
+  <div class="newsletter-section">
+    <div class="newsletter-content">
+      <h3>Subscribe to Our Newsletter</h3>
+      <p>Get the latest updates on new products and special promotions</p>
+      <form class="newsletter-form" id="newsletterForm">
+        <input type="email" placeholder="Your email address" required>
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock content %}

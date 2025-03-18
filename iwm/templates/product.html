@@ -9,28 +9,48 @@
 <section class="product-detail">
     <div class="product-container">
         <div class="product-image">
+            {% if product.on_sale %}
+                <div class="product-badge sale">SALE</div>
+            {% endif %}
+            {% if product.is_hot %}
+                <div class="product-badge hot">HOT</div>
+            {% endif %}
+            {% if product.featured and product.featured_reason %}
+                <div class="product-badge">{{ product.featured_reason|upper }}</div>
+            {% elif product.featured %}
+                <div class="product-badge">FEATURED</div>
+            {% endif %}
             <img src="{{ product.image.url }}" alt="{{ product.name }}">
         </div>
         <div class="product-info">
             <h1>{{ product.name }}</h1>
+            <div class="price-stock-container">
+                <p class="price">৳{{ product.price }}</p>
+                <p class="stock">In Stock: {{ product.stock }} items</p>
+            </div>
+            
             <p class="description"><strong>Description:</strong> {{ product.description }}</p>
-            <p class="price">৳{{ product.price }}</p>
-            <p class="stock">In Stock: {{ product.stock }} items</p>
-            <p><strong>Reviews:</strong> {{ product.reviews.count }} customer reviews</p>
+            
+            <div class="product-meta">
+                <p><strong>Category:</strong> {{ product.category.name }}</p>
+                <p><strong>Reviews:</strong> {{ product.reviews.count }} customer reviews</p>
+            </div>
             
             <div class="tags">
                 <strong>Tags:</strong>
                 {% for tag in product.tags.all %}
                     <a href="/search/?min_price=&max_price=&q={{ tag.name }}">{{ tag.name }}</a>
+                {% empty %}
+                    <span class="no-tags">No tags available</span>
                 {% endfor %}
             </div>
             
-            <button class="order-button">Order Now</button>
+            <button class="order-button">Add to Cart</button>
             
             <div class="review-section">
                 <h3>Leave a Review</h3>
                 {% if user.is_authenticated %}
-                <form class="review-form" method="post" action="{% url 'submit_review' product_id=product.id %}">
+                <form class="review-form" method="post" action="{% url 'submit_review' product_slug=product.slug %}">
                     {% csrf_token %}
                     <div class="rating">
                         <label>Rating:</label>
@@ -72,6 +92,28 @@
                     <p>No reviews yet. Be the first to leave a review!</p>
                 {% endfor %}
             </div>
+        </div>
+    </div>
+    
+    <div class="related-products">
+        <h2>You May Also Like</h2>
+        <div class="product-cards">
+            {% for related_product in related_products %}
+                <div class="product-card">
+                    <div class="product-card-image">
+                        <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
+                    </div>
+                    <div class="product-card-content">
+                        <h3 class="product-card-title">{{ related_product.name }}</h3>
+                        <p class="product-card-price">৳{{ related_product.price }}</p>
+                        <a href="{% url 'product_detail' slug=related_product.slug %}" class="product-card-button">View Details</a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="no-related-products">
+                    <p>No related products found.</p>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </section>
