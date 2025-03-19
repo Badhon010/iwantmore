@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category
+from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory
 from .forms import ReviewForm
-from django.db.models import Q,Avg
+from django.db.models import Q,Avg, Case, When, DecimalField
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.db import models
 
 def rd(request):
     return redirect('home')
@@ -136,12 +137,17 @@ def search_view(request):
     query = request.GET.get("q", "").strip()
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
+    category = request.GET.get("category", "").strip()
+    stock = request.GET.get("stock", "all")
+    sort = request.GET.get("sort", "newest")
+    discount = request.GET.get("discount", "false") == "true"
+    featured = request.GET.get("featured", "false") == "true"
+    
     products = Product.objects.all()
 
+    # Apply search filter
     if query:
-        # Split the query into individual words
         query_words = query.split()
-        # Build a Q object to search each word across all relevant fields
         query_filter = Q()
         for word in query_words:
             query_filter |= Q(name__icontains=word)
@@ -151,26 +157,118 @@ def search_view(request):
             query_filter |= Q(subcategory__name__icontains=word)
         products = products.filter(query_filter).distinct()
 
+    # Apply category filter
+    if category:
+        # First try to find a category with this slug
+        category_obj = Category.objects.filter(slug=category).first()
+        if category_obj:
+            products = products.filter(category=category_obj)
+        else:
+            # If not found as category, try to find as subcategory
+            subcategory_obj = SubCategory.objects.filter(slug=category).first()
+            if subcategory_obj:
+                products = products.filter(subcategory=subcategory_obj)
+
+    # Apply price range filter
     if min_price:
         try:
             min_price_val = float(min_price)
-            products = products.filter(price__gte=min_price_val)
+            # Filter by effective price - consider discount_price when available
+            min_price_filter = Q(
+                discount_price__isnull=False, 
+                discount_price__gte=min_price_val
+            ) | Q(
+                discount_price__isnull=True,
+                price__gte=min_price_val
+            )
+            products = products.filter(min_price_filter)
         except ValueError:
             pass
 
     if max_price:
         try:
             max_price_val = float(max_price)
-            products = products.filter(price__lte=max_price_val)
+            # Filter by effective price - consider discount_price when available
+            max_price_filter = Q(
+                discount_price__isnull=False, 
+                discount_price__lte=max_price_val
+            ) | Q(
+                discount_price__isnull=True,
+                price__lte=max_price_val
+            )
+            products = products.filter(max_price_filter)
         except ValueError:
             pass
+
+    # Apply stock filter
+    if stock == "in-stock":
+        products = products.filter(stock__gt=0)
+    elif stock == "out-of-stock":
+        products = products.filter(stock=0)
+
+    # Apply discount filter
+    if discount:
+        products = products.filter(discount_price__isnull=False)
+
+    # Apply featured filter
+    if featured:
+        products = products.filter(is_featured=True)
+
+    # Apply sorting
+    if sort == "price-low":
+        products = products.annotate(
+            effective_price=models.Case(
+                models.When(discount_price__isnull=False, then='discount_price'),
+                default='price',
+                output_field=models.DecimalField()
+            )
+        ).order_by('effective_price')
+    elif sort == "price-high":
+        products = products.annotate(
+            effective_price=models.Case(
+                models.When(discount_price__isnull=False, then='discount_price'),
+                default='price',
+                output_field=models.DecimalField()
+            )
+        ).order_by('-effective_price')
+    elif sort == "rating":
+        products = products.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
+    else:  # newest
+        products = products.order_by('-created_at')
+
+    # Calculate average ratings for display
+    for product in products:
+        avg_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        int_part = int(avg_rating)
+        frac = avg_rating - int_part
+
+        if frac < 0.3:
+            product.avg_rating = int_part
+            product.half = False
+        elif frac < 0.7:
+            product.avg_rating = int_part
+            product.half = True
+        else:
+            product.avg_rating = int_part + 1
+            product.half = False
 
     context = {
         "products": products,
         "query": query,
         "min_price": min_price,
         "max_price": max_price,
+        "category": category,
+        "stock": stock,
+        "sort": sort,
+        "discount": discount,
+        "featured": featured,
+        "categories": Category.objects.all(),
     }
+    
+    # If it's an AJAX request, return only the product grid
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, "shop.html", context)
+    
     return render(request, "shop.html", context)
 
 def autocomplete_suggestions(request):
@@ -227,7 +325,7 @@ def autocomplete_suggestions(request):
             for category in category_matches[:2]:  # Limit to 2 categories
                 suggestions.append({
                     "name": f"Category: {category.name}",
-                    "url": f"{reverse('shop')}?category={category.id}",
+                    "url": f"{reverse('search')}?category={category.slug}",
                     "type": "category",
                     "match_type": "category"
                 })
@@ -245,7 +343,7 @@ def autocomplete_suggestions(request):
                     continue
                 suggestions.append({
                     "name": f"Tag: {tag_name}",
-                    "url": f"{reverse('shop')}?q={tag_name}",
+                    "url": f"{reverse('search')}?q={tag_name}",
                     "type": "tag",
                     "match_type": "tag"
                 })
