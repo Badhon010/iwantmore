@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <a href="${item.url}">${highlightMatch(item.name, query)}</a>
                   ${detailsHtml}
                 </div>
-                                </div>`;
+              </div>`;
           });
           
           suggestionsContainer.innerHTML = suggestionsHtml;
@@ -211,12 +211,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   });
-
-// Function to redirect to shop page with search query
-function redirectToShop(event) {
-  event.preventDefault();
-  const query = document.getElementById('sea').value.trim();
-  if (query) {
-    window.location.href = '/shop/';
-  }
-}

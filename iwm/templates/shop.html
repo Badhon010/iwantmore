@@ -33,9 +33,9 @@ today!{% endblock dis %}
       <div class="filters">
         <!-- Search -->
         <div class="search-bar-container">
-          <form class="search-bar" id="shopSearchForm" onsubmit="return false;">
+          <form method="GET" action="{% url 'search' %}" class="search-bar">
             <input type="search" name="q" id="searchInput" placeholder="Search products, categories, tags..." value="{{ query }}" autocomplete="off">
-            <button type="button" class="search-icon" id="shopSearchButton"><i class="fas fa-search"></i></button>
+            <button type="submit" class="search-icon"><i class="fas fa-search"></i></button>
           </form>
         </div>
 

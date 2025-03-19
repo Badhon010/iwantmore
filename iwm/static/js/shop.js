@@ -223,7 +223,6 @@ function initFilters() {
     const subcategoryCheckboxes = document.querySelectorAll('.subcategory-checkbox');
     const sortFilter = document.getElementById('sortFilter');
     const searchInput = document.getElementById('searchInput');
-    const shopSearchButton = document.getElementById('shopSearchButton');
     const priceMinInput = document.getElementById('priceMin');
     const priceMaxInput = document.getElementById('priceMax');
     const applyPriceButton = document.getElementById('applyPriceFilter');
@@ -249,56 +248,6 @@ function initFilters() {
         discount: false,
         featured: false
     };
-
-    // Check URL for initial search query
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('q')) {
-        const initialQuery = urlParams.get('q');
-        if (initialQuery && searchInput) {
-            searchInput.value = initialQuery;
-            activeFilterState.search = initialQuery;
-            // Add the search filter tag
-            addFilterTag(`Search: ${initialQuery}`, () => {
-                searchInput.value = '';
-                activeFilterState.search = '';
-                applyFilters();
-            });
-        }
-    }
-    
-    // Search input handling
-    if (searchInput) {
-        // Apply search on input
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            activeFilterState.search = query;
-            
-            // Only apply after a delay to avoid too many refreshes while typing
-            clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(() => {
-                applyFilters();
-            }, 300);
-        });
-        
-        // Apply search on button click
-        if (shopSearchButton) {
-            shopSearchButton.addEventListener('click', function() {
-                const query = searchInput.value.trim();
-                activeFilterState.search = query;
-                applyFilters();
-            });
-        }
-        
-        // Apply search on enter key
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const query = this.value.trim();
-                activeFilterState.search = query;
-                applyFilters();
-            }
-        });
-    }
     
     // Category checkbox events
     if (allCategoriesCheckbox) {
@@ -393,6 +342,19 @@ function initFilters() {
         }
     } else {
         console.warn('Sort filter element not found in the DOM');
+    }
+    
+    // Search input event with debounce
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                activeFilterState.search = this.value.trim().toLowerCase();
+                updateActiveFilters();
+                applyFilters();
+            }, 300);
+        });
     }
     
     // Price range filter
@@ -581,128 +543,69 @@ function initFilters() {
      * Apply all active filters and sorting to the product grid
      */
     function applyFilters() {
-        // Get all product items
-        const products = document.querySelectorAll('.product-item');
+        if (!productGrid) return;
+        
+        const products = productGrid.querySelectorAll('.product-item');
         let visibleCount = 0;
         
-        // Clear previous active filters
-        activeFilters.innerHTML = '';
-        
-        // Re-add current active filters as tags
-        if (activeFilterState.search) {
-            addFilterTag(`Search: ${activeFilterState.search}`, () => {
-                searchInput.value = '';
-                activeFilterState.search = '';
-                applyFilters();
-            });
-        }
-        
-        // Add category filters
-        if (activeFilterState.categories.size > 0 && !activeFilterState.categories.has('all')) {
-            activeFilterState.categories.forEach(category => {
-                addFilterTag(`Category: ${category}`, () => {
-                    // Find the checkbox and uncheck it
-                    document.querySelector(`.category-checkbox[value="${category}"]`).checked = false;
-                    activeFilterState.categories.delete(category);
-                    // If no categories left, re-check 'all'
-                    if (activeFilterState.categories.size === 0) {
-                        allCategoriesCheckbox.checked = true;
-                        activeFilterState.categories.add('all');
-                    }
-                    applyFilters();
-                });
-            });
-        }
-        
-        // Add other filter tags...
-        
-        // Filter and count products
         products.forEach(product => {
-            let show = true;
+            // Get product data from dataset
+            const productCategory = product.dataset.category || '';
+            const productSubcategory = product.dataset.subcategory || '';
+            const productPrice = parseFloat(product.dataset.price) || 0;
+            const productStock = parseInt(product.dataset.stock) || 0;
+            const productFeatured = product.dataset.featured === 'true';
+            const productDiscounted = product.dataset.discounted === 'true';
             
-            // Search text filtering
-            if (activeFilterState.search && show) {
-                const searchTerms = activeFilterState.search.toLowerCase().split(' ');
+            // Apply category filter
+            const categoryMatch = activeFilterState.categories.has('all') || 
+                                activeFilterState.categories.has(productCategory);
+            
+            // Apply subcategory filter
+            const subcategoryMatch = activeFilterState.subcategories.has('all') || 
+                                   activeFilterState.subcategories.has(productSubcategory);
+            
+            // Apply price range filter
+            let priceMatch = true;
+            if (activeFilterState.priceMin) {
+                priceMatch = priceMatch && productPrice >= parseFloat(activeFilterState.priceMin);
+            }
+            if (activeFilterState.priceMax) {
+                priceMatch = priceMatch && productPrice <= parseFloat(activeFilterState.priceMax);
+            }
+            
+            // Apply stock filter
+            let stockMatch = true;
+            if (activeFilterState.stock === 'in-stock') {
+                stockMatch = productStock > 0;
+            } else if (activeFilterState.stock === 'out-of-stock') {
+                stockMatch = productStock === 0;
+            }
+            
+            // Apply discount filter
+            let discountMatch = true;
+            if (activeFilterState.discount) {
+                discountMatch = productDiscounted;
+            }
+            
+            // Apply featured filter
+            let featuredMatch = true;
+            if (activeFilterState.featured) {
+                featuredMatch = productFeatured;
+            }
+            
+            // Apply search filter
+            let searchMatch = true;
+            if (activeFilterState.search) {
                 const productName = product.querySelector('.product-name').textContent.toLowerCase();
-                const productCategory = product.querySelector('.product-category')?.textContent.toLowerCase() || '';
-                
-                const matchesSearch = searchTerms.every(term => 
-                    productName.includes(term) || productCategory.includes(term)
-                );
-                
-                show = matchesSearch;
+                const productCategoryText = product.querySelector('.product-category')?.textContent.toLowerCase() || '';
+                searchMatch = productName.includes(activeFilterState.search) || 
+                             productCategoryText.includes(activeFilterState.search);
             }
             
-            // Category filtering
-            if (show && !activeFilterState.categories.has('all')) {
-                const productCategory = product.dataset.category;
-                const productSubcategory = product.dataset.subcategory;
-                
-                // Check if product's category is in active categories
-                const categoryMatch = Array.from(activeFilterState.categories).some(category => 
-                    category === productCategory || category === productSubcategory
-                );
-                
-                show = categoryMatch;
-            }
-            
-            // Subcategory filtering
-            if (show && !activeFilterState.subcategories.has('all')) {
-                const productSubcategory = product.dataset.subcategory;
-                
-                // Check if product's subcategory is in active subcategories
-                const subcategoryMatch = Array.from(activeFilterState.subcategories).some(subcategory => 
-                    subcategory === productSubcategory
-                );
-                
-                show = subcategoryMatch;
-            }
-            
-            // Price range filtering
-            if (show && (activeFilterState.priceMin || activeFilterState.priceMax)) {
-                const productPrice = parseFloat(product.dataset.price);
-                
-                if (activeFilterState.priceMin && productPrice < parseFloat(activeFilterState.priceMin)) {
-                    show = false;
-                }
-                
-                if (activeFilterState.priceMax && productPrice > parseFloat(activeFilterState.priceMax)) {
-                    show = false;
-                }
-            }
-            
-            // Stock filtering
-            if (show && activeFilterState.stock !== 'all') {
-                const productStock = product.dataset.stock;
-                const inStock = productStock > 0;
-                
-                if (activeFilterState.stock === 'in-stock' && !inStock) {
-                    show = false;
-                } else if (activeFilterState.stock === 'out-of-stock' && inStock) {
-                    show = false;
-                }
-            }
-            
-            // Discount filtering
-            if (show && activeFilterState.discount) {
-                const isDiscounted = product.dataset.discounted === 'true';
-                
-                if (!isDiscounted) {
-                    show = false;
-                }
-            }
-            
-            // Featured filtering
-            if (show && activeFilterState.featured) {
-                const isFeatured = product.dataset.featured === 'true';
-                
-                if (!isFeatured) {
-                    show = false;
-                }
-            }
-            
-            // Update visibility
-            if (show) {
+            // Show or hide product based on all filters
+            if (categoryMatch && subcategoryMatch && priceMatch && stockMatch && 
+                discountMatch && featuredMatch && searchMatch) {
                 product.style.display = '';
                 visibleCount++;
             } else {
@@ -710,7 +613,7 @@ function initFilters() {
             }
         });
         
-        // Update product count
+        // Update product count display
         if (productCountElement) {
             productCountElement.textContent = visibleCount;
         }
@@ -718,13 +621,26 @@ function initFilters() {
         // Apply sorting
         sortProducts(activeFilterState.sort);
         
-        // Show "no products" message if needed
-        const noProductsMessage = document.querySelector('.no-products');
-        if (noProductsMessage) {
+        // Show no results message if needed
+        const noResultsMessage = document.querySelector('.no-results-message');
+        
             if (visibleCount === 0) {
-                noProductsMessage.style.display = 'flex';
+            if (!noResultsMessage) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'no-products no-results-message';
+                    noResults.innerHTML = `
+                        <i class="fas fa-search"></i>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your filters or search criteria</p>
+                        <button class="reset-filters">Clear all filters</button>
+                    `;
+                    productGrid.appendChild(noResults);
+                    
+                    noResults.querySelector('.reset-filters').addEventListener('click', resetAllFilters);
+                }
             } else {
-                noProductsMessage.style.display = 'none';
+            if (noResultsMessage) {
+                noResultsMessage.remove();
             }
         }
     }

@@ -1451,7 +1451,7 @@ select.filter-sort:focus {
   }
   
   .newsletter-form {
-    flex-direction: column;
+  flex-direction: column;
   }
   
   .newsletter-form button {
@@ -1489,7 +1489,7 @@ select.filter-sort:focus {
   .pagination span {
     width: 40px;
     height: 40px;
-    font-size: 1rem;
+  font-size: 1rem;
   }
 }
 
@@ -1669,7 +1669,7 @@ select.filter-sort:focus {
     text-align: center;
   }
 }
-
+  
 .subcategory-wrapper {
   display: none;
   flex-direction: column;
