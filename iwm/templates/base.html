@@ -71,8 +71,8 @@
       </nav>
     </div>
     <div id="search">
-      <form method="GET" action="{% url 'search' %}" class="search-bar">
-        <input type="search" name="q" id="sea" placeholder="Search products..." value="{{ query }}">
+      <form method="GET" class="search-bar" id="searchForm" onsubmit="redirectToShop(event)">
+        <input type="search" name="q" id="sea" placeholder="Search products, categories, tags..." value="{{ query }}" autocomplete="off">
         <span id="clear-btn">&times;</span>
         <button type="submit" id="sea-btn" class="search-btn"><i class="fas fa-search"></i></button>
       </form>

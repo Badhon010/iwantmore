@@ -141,12 +141,14 @@ def search_view(request):
     if query:
         # Split the query into individual words
         query_words = query.split()
-        # Build a Q object to search each word in name, description, or tags
+        # Build a Q object to search each word across all relevant fields
         query_filter = Q()
         for word in query_words:
             query_filter |= Q(name__icontains=word)
             query_filter |= Q(description__icontains=word)
             query_filter |= Q(tags__name__icontains=word)
+            query_filter |= Q(category__name__icontains=word)
+            query_filter |= Q(subcategory__name__icontains=word)
         products = products.filter(query_filter).distinct()
 
     if min_price:
@@ -170,6 +172,7 @@ def search_view(request):
         "max_price": max_price,
     }
     return render(request, "shop.html", context)
+
 def autocomplete_suggestions(request):
     query = request.GET.get("q", "").strip()
     suggestions = []
@@ -188,6 +191,9 @@ def autocomplete_suggestions(request):
             q_desc &= Q(description__icontains=word)
         desc_matches = list(Product.objects.filter(q_desc).distinct())
         
+        # 4. Search in categories
+        category_matches = list(Category.objects.filter(name__icontains=query).distinct())
+        
         # Combine the results in the desired order without duplicates
         combined_products = []
         seen_ids = set()
@@ -197,20 +203,52 @@ def autocomplete_suggestions(request):
                 if product.id not in seen_ids:
                     combined_products.append(product)
                     seen_ids.add(product.id)
-                # Stop if we already have 6 suggestions
-                if len(combined_products) == 6:
+                # Stop if we already have 5 suggestions
+                if len(combined_products) == 5:
                     break
-            if len(combined_products) == 6:
+            if len(combined_products) == 5:
                 break
 
-        # Create suggestions with URLs using the id from your URL config.
+        # Create product suggestions with detailed information
         suggestions = [
             {
                 "name": product.name,
-                "url": reverse("product_detail", kwargs={"id": product.id}),
+                "url": reverse("product_detail", kwargs={"slug": product.slug}),
+                "category": product.category.name if product.category else "Product",
+                "price": float(product.price),
+                "type": "product",
+                "match_type": "product" if product in name_matches else "tag" if product in tag_matches else "description"
             }
             for product in combined_products
         ]
+        
+        # Add category suggestions
+        if len(suggestions) < 6:
+            for category in category_matches[:2]:  # Limit to 2 categories
+                suggestions.append({
+                    "name": f"Category: {category.name}",
+                    "url": f"{reverse('shop')}?category={category.id}",
+                    "type": "category",
+                    "match_type": "category"
+                })
+                
+        # Add tag suggestions if space
+        if len(suggestions) < 6:
+            tag_query = Q(name__icontains=query)
+            tags = Product.tags.through.objects.filter(
+                tag__name__icontains=query
+            ).values('tag__name').distinct()[:2]
+            
+            for tag_entry in tags:
+                tag_name = tag_entry['tag__name']
+                if any(s.get('name') == f"Tag: {tag_name}" for s in suggestions):
+                    continue
+                suggestions.append({
+                    "name": f"Tag: {tag_name}",
+                    "url": f"{reverse('shop')}?q={tag_name}",
+                    "type": "tag",
+                    "match_type": "tag"
+                })
     
     return JsonResponse(suggestions, safe=False)
 

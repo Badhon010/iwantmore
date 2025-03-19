@@ -434,27 +434,91 @@ header .nav1 a:hover {
 .suggestions-dropdown {
     position: absolute;
     background: white;
-    border: 1px solid #ccc;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
     z-index: 50;
     top: 43px;
     right: 0;
-    border-radius: 5px;
-  }
-  
-  .suggestion-item {
-    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    padding: 5px 0;
+}
+
+.suggestions-dropdown.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.suggestion-item {
+    padding: 12px 15px;
     cursor: pointer;
-    border: 1px solid var(--text-color);
-  }
-  
-  .suggestion-item:hover {
-    background: #f0f0f0;
-  }
-  
-  
+    border-bottom: 1px solid #f5f5f5;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--btn-bg);
+    font-size: 16px;
+}
+
+.suggestion-item i.fa-tag {
+    color: var(--btn-bg);
+}
+
+.suggestion-item i.fa-folder {
+    color: #4caf50;
+}
+
+.suggestion-item i.fa-hashtag {
+    color: #2196F3;
+}
+
+.suggestion-item a {
+    color: var(--text-color);
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.suggestion-item strong {
+    color: var(--btn-bg);
+    font-weight: 600;
+}
+
+.suggestion-item:hover, .suggestion-item.selected {
+    background-color: #f9f9f9;
+}
+
+.suggestion-item.selected {
+    border-left: 3px solid var(--btn-bg);
+}
+
+.empty-suggestions {
+    padding: 15px;
+    color: #888;
+    text-align: center;
+    font-style: italic;
+    font-size: 14px;
+}
+
 @media screen and (max-width: 810px) {
     .sticky-footer {
         flex-direction: column;

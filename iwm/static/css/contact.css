@@ -139,16 +139,12 @@ body {
 
 .page-header-content h1 {
     font-size: 3.5rem;
-    margin-bottom: 20px;
     animation: fadeInUp 1s ease;
 }
 
 .page-header-content p {
     font-size: 1.2rem;
     max-width: 600px;
-    margin: 0 auto;
-    animation: fadeInUp 1s ease 0.2s;
-    opacity: 0;
     animation-fill-mode: forwards;
 }
 
@@ -463,15 +459,15 @@ textarea.form-control {
 }
 
 .social-link.twitter:hover {
-    background: #1da1f2;
+    background: #353535;
     color: white;
-    box-shadow: 0 10px 20px rgba(29, 161, 242, 0.3);
+    box-shadow: 0 10px 20px rgba(158, 158, 158, 0.3);
 }
 
 .social-link.instagram:hover {
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    background: rgb(10, 207, 10);
     color: white;
-    box-shadow: 0 10px 20px rgba(220, 39, 67, 0.3);
+    box-shadow: 0 10px 20px rgba(22, 209, 25, 0.3);
 }
 
 .social-link.linkedin:hover {

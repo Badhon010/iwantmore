@@ -33,8 +33,10 @@ today!{% endblock dis %}
       <div class="filters">
         <!-- Search -->
         <div class="search-bar-container">
-          <input type="text" class="search-bar" id="searchInput" placeholder="Search for products...">
-          <span class="search-icon"><i class="fas fa-search"></i></span>
+          <form class="search-bar" id="shopSearchForm" onsubmit="return false;">
+            <input type="search" name="q" id="searchInput" placeholder="Search products, categories, tags..." value="{{ query }}" autocomplete="off">
+            <button type="button" class="search-icon" id="shopSearchButton"><i class="fas fa-search"></i></button>
+          </form>
         </div>
 
         <!-- Category Filter -->
@@ -46,6 +48,7 @@ today!{% endblock dis %}
               <span class="checkbox-checkmark"></span>
               <span class="checkbox-label">All Categories</span>
             </label>
+            <div>
             {% for category in categories %}
             <div class="category-item">
               <div class="category">
@@ -69,10 +72,12 @@ today!{% endblock dis %}
             </div>
             {% endfor %}
           </div>
+          </div>
         </div>
         <!-- Price Range -->
         <div class="filter-section">
           <h4 class="filter-title">Price Range</h4>
+          
           <div class="filter-group price-range">
             <div class="dual-range-container">
               <div class="price-slider-values">
@@ -80,27 +85,26 @@ today!{% endblock dis %}
                 <span class="price-max-value">৳10000</span>
               </div>
               
-              <div class="price-sliders-wrapper">
-                <div class="price-slider-min">
-                  <input type="range" min="0" max="10000" value="0" class="price-slider min-slider" id="priceSliderMin">
-                  <div class="price-input-container">
-                    <label class="price-label">Min Price</label>
-                    <span class="price-currency">৳</span>
-                    <input type="number" id="priceMin" name="min_price" placeholder="0" min="0" max="10000">
-                  </div>
+              <div class="price-slider-track">
+                <div class="slider-track"></div>
+                <div class="slider-range"></div>
+                <input type="range" min="0" max="10000" value="0" class="price-slider min-slider" id="priceSliderMin">
+                <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider" id="priceSliderMax">
+              </div>
+              <div class="price-inputs-wrapper">
+                <div class="price-input-container">
+                  <label class="price-label">Min Price</label>
+                  <span class="price-currency">৳</span>
+                  <input type="number" id="priceMin" name="min_price" placeholder="0" min="0" max="10000">
                 </div>
                 
-                <div class="price-slider-max">
-                  <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider" id="priceSliderMax">
-                  <div class="price-input-container">
-                    <label class="price-label">Max Price</label>
-                    <span class="price-currency">৳</span>
-                    <input type="number" id="priceMax" name="max_price" placeholder="10000" min="0" max="10000">
-                  </div>
+                <div class="price-input-container">
+                  <label class="price-label">Max Price</label>
+                  <span class="price-currency">৳</span>
+                  <input type="number" id="priceMax" name="max_price" placeholder="10000" min="0" max="10000">
                 </div>
               </div>
             </div>
-            
             <button class="btn-apply-price" id="applyPriceFilter"><i class="fas fa-filter"></i> Apply Filter</button>
           </div>
         </div>
@@ -174,7 +178,14 @@ today!{% endblock dis %}
       <!-- Product Grid -->
       <div class="product-grid" id="productGrid">
         {% for product in products %}
-        <div class="product-item" data-category="{{ product.category.slug }}" data-subcategory="{{ product.subcategory.slug }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}" data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}">
+        <div class="product-item" 
+          data-category="{{ product.category.slug }}" 
+          data-subcategory="{{ product.subcategory.slug }}" 
+          data-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}" 
+          data-stock="{{ product.stock }}" 
+          data-featured="{% if product.is_featured %}true{% else %}false{% endif %}" 
+          data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}"
+          data-date="{{ product.created_at|date:'U' }}">
           <div class="product-image-container">
             {% if product.discount_price %}
             <span class="product-badge sale">Sale</span>

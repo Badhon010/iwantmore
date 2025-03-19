@@ -13,7 +13,6 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('edit/', views.edit_profile, name='edit_profile'),
     path('product/<slug:slug>/', views.product_detail, name='product_detail'),
-    path('search/', views.search_view, name='search'),
     path("autocomplete/", views.autocomplete_suggestions, name="autocomplete"),
     path('submit-review/<slug:product_slug>/', views.submit_review, name='submit_review'),
     path('signup/', views.signup, name='signup'),
