@@ -69,11 +69,18 @@ function initPriceRange() {
     
     if (!minPriceSlider || !maxPriceSlider || !minPriceInput || !maxPriceInput) return;
     
-        const minPrice = 0;
-        const maxPrice = 10000;
-        let currentMinPrice = parseInt(minPriceInput.value || minPrice);
-        let currentMaxPrice = parseInt(maxPriceInput.value || maxPrice);
-        
+    const minPrice = 0;
+    const maxPrice = 10000;
+    let currentMinPrice = parseInt(minPriceInput.value || minPrice);
+    let currentMaxPrice = parseInt(maxPriceInput.value || maxPrice);
+    
+    // Set initial z-index
+    minPriceSlider.style.zIndex = "5";
+    maxPriceSlider.style.zIndex = "4";
+    
+    // Minimum distance between sliders (in price units)
+    const minDistance = 100;
+    
     function updatePriceRange() {
         const urlParams = new URLSearchParams(window.location.search);
         if (currentMinPrice > 0) urlParams.set('min_price', currentMinPrice);
@@ -86,26 +93,52 @@ function initPriceRange() {
     }
     
     // Price slider event listeners - update visuals during sliding but don't trigger URL change
-        minPriceSlider.addEventListener('input', function() {
-            currentMinPrice = Math.min(parseInt(this.value), currentMaxPrice - 100);
-            minPriceInput.value = currentMinPrice;
-            minValue.textContent = '৳' + currentMinPrice.toLocaleString();
-            updateSliderRange();
-        });
+    minPriceSlider.addEventListener('input', function() {
+        // Bring this slider to front when being used
+        minPriceSlider.style.zIndex = "6";
+        maxPriceSlider.style.zIndex = "4";
         
+        // Enforce minimum distance from max slider
+        const newValue = parseInt(this.value);
+        currentMinPrice = Math.min(newValue, currentMaxPrice - minDistance);
+        
+        // Update slider position if constrained
+        if (newValue !== currentMinPrice) {
+            this.value = currentMinPrice;
+        }
+        
+        // Update UI
+        minPriceInput.value = currentMinPrice;
+        minValue.textContent = '৳' + currentMinPrice.toLocaleString();
+        updateSliderRange();
+    });
+    
     // Update URL only when slider interaction is complete
     minPriceSlider.addEventListener('change', function() {
         if (applyPriceButton) return; // If apply button exists, let the button handle URL updates
         updatePriceRange();
     });
     
-        maxPriceSlider.addEventListener('input', function() {
-            currentMaxPrice = Math.max(parseInt(this.value), currentMinPrice + 100);
-            maxPriceInput.value = currentMaxPrice;
-            maxValue.textContent = '৳' + currentMaxPrice.toLocaleString();
-            updateSliderRange();
-        });
+    maxPriceSlider.addEventListener('input', function() {
+        // Bring this slider to front when being used
+        maxPriceSlider.style.zIndex = "6";
+        minPriceSlider.style.zIndex = "4";
         
+        // Enforce minimum distance from min slider
+        const newValue = parseInt(this.value);
+        currentMaxPrice = Math.max(newValue, currentMinPrice + minDistance);
+        
+        // Update slider position if constrained
+        if (newValue !== currentMaxPrice) {
+            this.value = currentMaxPrice;
+        }
+        
+        // Update UI
+        maxPriceInput.value = currentMaxPrice;
+        maxValue.textContent = '৳' + currentMaxPrice.toLocaleString();
+        updateSliderRange();
+    });
+    
     // Update URL only when slider interaction is complete
     maxPriceSlider.addEventListener('change', function() {
         if (applyPriceButton) return; // If apply button exists, let the button handle URL updates
@@ -113,21 +146,29 @@ function initPriceRange() {
     });
     
     // Price input event listeners
-        minPriceInput.addEventListener('change', function() {
-        currentMinPrice = Math.max(minPrice, Math.min(parseInt(this.value), currentMaxPrice - 100));
-            this.value = currentMinPrice;
-            minPriceSlider.value = currentMinPrice;
-            minValue.textContent = '৳' + currentMinPrice.toLocaleString();
-            updateSliderRange();
-        if (!applyPriceButton) updatePriceRange();
-        });
+    minPriceInput.addEventListener('change', function() {
+        const newValue = parseInt(this.value) || minPrice;
+        currentMinPrice = Math.max(minPrice, Math.min(newValue, currentMaxPrice - minDistance));
         
-        maxPriceInput.addEventListener('change', function() {
-        currentMaxPrice = Math.min(maxPrice, Math.max(parseInt(this.value), currentMinPrice + 100));
-            this.value = currentMaxPrice;
-            maxPriceSlider.value = currentMaxPrice;
-            maxValue.textContent = '৳' + currentMaxPrice.toLocaleString();
-            updateSliderRange();
+        // Update all UI elements
+        this.value = currentMinPrice;
+        minPriceSlider.value = currentMinPrice;
+        minValue.textContent = '৳' + currentMinPrice.toLocaleString();
+        updateSliderRange();
+        
+        if (!applyPriceButton) updatePriceRange();
+    });
+    
+    maxPriceInput.addEventListener('change', function() {
+        const newValue = parseInt(this.value) || maxPrice;
+        currentMaxPrice = Math.min(maxPrice, Math.max(newValue, currentMinPrice + minDistance));
+        
+        // Update all UI elements
+        this.value = currentMaxPrice;
+        maxPriceSlider.value = currentMaxPrice;
+        maxValue.textContent = '৳' + currentMaxPrice.toLocaleString();
+        updateSliderRange();
+        
         if (!applyPriceButton) updatePriceRange();
     });
     
@@ -138,18 +179,22 @@ function initPriceRange() {
         });
     }
     
-        function updateSliderRange() {
+    function updateSliderRange() {
         if (!sliderRange) return;
-                const minPercent = (currentMinPrice / maxPrice) * 100;
-                const maxPercent = (currentMaxPrice / maxPrice) * 100;
-                sliderRange.style.left = minPercent + '%';
-                sliderRange.style.width = (maxPercent - minPercent) + '%';
+        const minPercent = (currentMinPrice / maxPrice) * 100;
+        const maxPercent = (currentMaxPrice / maxPrice) * 100;
+        sliderRange.style.left = minPercent + '%';
+        sliderRange.style.width = (maxPercent - minPercent) + '%';
     }
     
     // Initialize displays
     minValue.textContent = '৳' + currentMinPrice.toLocaleString();
     maxValue.textContent = '৳' + currentMaxPrice.toLocaleString();
     updateSliderRange();
+    
+    // Set initial slider values
+    minPriceSlider.value = currentMinPrice;
+    maxPriceSlider.value = currentMaxPrice;
 }
 
 function initFilters() {
