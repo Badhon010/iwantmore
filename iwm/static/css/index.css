@@ -433,17 +433,18 @@ body {
 /* Product Enhancements */
 .product-badge {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 20px;
+    right: -60px;
+    transform: rotate(45deg);
     background: var(--btn-bg);
     color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 20px;
-    z-index: 2;
-    box-shadow: 0 3px 8px rgba(255, 111, 145, 0.25);
+    padding: 8px 60px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 3;
     letter-spacing: 1px;
+    animation: pulseLight 2s infinite;
 }
 
 .product-rating {
@@ -1413,21 +1414,6 @@ body {
 
 .product-item:hover img {
     transform: scale(1.08);
-}
-
-.product-badge {
-    position: absolute;
-    top: 20px;
-    right: -60px;
-    transform: rotate(45deg);
-    background: var(--btn-bg);
-    color: white;
-    padding: 8px 60px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 3;
-    animation: pulseLight 2s infinite;
 }
 
 @keyframes pulseLight {

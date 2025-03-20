@@ -17,7 +17,41 @@
     --dropdown-bg: #f9f9f9;
     --dropdown-border: #dddddd;
 }
-
+  /* Message styling */
+  .messages-container {
+    max-width: 900px;
+    margin: 10px auto;
+  }
+  
+  .alert {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+  }
+  
+  .alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+  
+  .alert-error, .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+  
+  .alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    color: #856404;
+  }
+  
+  .alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+  }
 body {
     margin: 0;
     padding: 0;

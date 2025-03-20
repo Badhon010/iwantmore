@@ -17,6 +17,8 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def rd(request):
     return redirect('home')
@@ -45,6 +47,10 @@ def shop(request):
         else:
             product.avg_rating = int_part + 1
             product.half = False
+
+        # Calculate stars for display
+        product.full_stars = range(product.avg_rating)
+        product.empty_stars = range(5 - product.avg_rating - (1 if product.half else 0))
 
     return render(request, 'shop.html', {'products': products,'categories': Category.objects.all()})
 
@@ -251,6 +257,10 @@ def search_view(request):
         else:
             product.avg_rating = int_part + 1
             product.half = False
+            
+        # Calculate stars for display
+        product.full_stars = range(product.avg_rating)
+        product.empty_stars = range(5 - product.avg_rating - (1 if product.half else 0))
 
     context = {
         "products": products,

@@ -193,10 +193,10 @@ today!{% endblock dis %}
             {% if product.is_popular %}
             <span class="product-badge hot">Hot</span>
             {% endif %}
-            {% if product.is_featured and product.featured_reason %}
-            <div class="product-badge">{{ product.featured_reason|upper }}</div>
+            {% if product.is_featured and product.feature_reason %}
+            <span class="featured">{{ product.feature_reason }}</span>
             {% elif product.is_featured %}
-            <div class="product-badge">FEATURED</div>
+            <span class="featured">FEATURED</span>
             {% endif %}
 
             <div class="product-image-wrapper">
@@ -207,18 +207,14 @@ today!{% endblock dis %}
               <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
               <span class="quick-action-btn" title="Quick view"><i class="fas fa-eye"></i></span>
             </div>
-            
-            <div class="quick-preview">
-              <span>Quick Preview</span>
-            </div>
           </div>
 
           <div class="product-info">
-            {% if product.category %}
-            <span class="product-category">{{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span>
-            {% endif %}
+            
 
-            <h3 class="product-name">{{ product.name }}</h3>
+            <h3 class="product-name"><span class="name">{{ product.name }}</span> {% if product.category %}
+              <span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span></span>
+              {% endif %}</h3>
             <div class="rating-price">
               <!-- Display rating stars -->
               <div class="product-rating">

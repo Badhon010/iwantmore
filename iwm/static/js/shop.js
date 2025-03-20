@@ -488,22 +488,7 @@ function initProductInteractions() {
             }
     });
   });
-    
-    // Quick preview hover
-    const quickPreviews = document.querySelectorAll('.quick-preview');
-    quickPreviews.forEach(preview => {
-        preview.addEventListener('click', function() {
-            const productItem = this.closest('.product-item');
-            const productName = productItem.querySelector('.product-name').textContent;
-            const productImage = productItem.querySelector('.product-image').src;
-            
-            showQuickViewModal({
-                name: productName,
-                image: productImage
-            });
-        });
-    });
-    
+
     // Add to cart buttons
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     addToCartButtons.forEach(button => {
