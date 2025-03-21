@@ -179,6 +179,7 @@ today!{% endblock dis %}
       <div class="product-grid" id="productGrid">
         {% for product in products %}
         <div class="product-item" 
+          data-id="{{ product.id }}"
           data-category="{{ product.category.slug }}" 
           data-subcategory="{{ product.subcategory.slug }}" 
           data-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}" 
@@ -205,7 +206,7 @@ today!{% endblock dis %}
 
             <div class="quick-actions">
               <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
-              <span class="quick-action-btn" title="Quick view"><i class="fas fa-eye"></i></span>
+              <a class="quick-action-btn" title="Quick view" href="{% url 'product_detail' slug=product.slug %}"><i class="fas fa-eye"></i></a>
             </div>
           </div>
 

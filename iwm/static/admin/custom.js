@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("I Want More Admin Panel Loaded!");
-
     // Example: Toggle class on navbar click
     const navbar = document.querySelector(".iwm-admin-navbar");
     navbar.addEventListener("click", () => {

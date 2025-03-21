@@ -3,7 +3,6 @@
 {% block title %}{{ product.name }} - I Want More{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/product.css' %}">
-    <script src="{% static 'js/product.js' %}"></script>
 {% endblock head %}
 {% block content %}
 <section class="product-detail">
@@ -27,6 +26,9 @@
             <div class="price-stock-container">
                 <p class="price">৳{{ product.price }}</p>
                 <p class="stock">In Stock: {{ product.stock }} items</p>
+                <button class="wishlist-toggle" id="wishlistToggle" title="Add to Wishlist" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{{ product.image.url }}">
+                    <i class="fa-heart" id="wishlistIcon"></i>
+                </button>
             </div>
             
             <p class="description"><strong>Description:</strong> {{ product.description }}</p>
@@ -45,53 +47,71 @@
                 {% endfor %}
             </div>
             
-            <button class="order-button">Add to Cart</button>
-            
-            <div class="review-section">
-                <h3>Leave a Review</h3>
-                {% if user.is_authenticated %}
-                <form class="review-form" method="post" action="{% url 'submit_review' product_slug=product.slug %}">
-                    {% csrf_token %}
-                    <div class="rating">
-                        <label>Rating:</label>
-                        <div class="stars">
-                            <button type="button" class="star-btn" data-value="5"><i class="fa-solid fa-star"></i></button>
-                            <button type="button" class="star-btn" data-value="4"><i class="fa-solid fa-star"></i></button>
-                            <button type="button" class="star-btn" data-value="3"><i class="fa-solid fa-star"></i></button>
-                            <button type="button" class="star-btn" data-value="2"><i class="fa-solid fa-star"></i></button>
-                            <button type="button" class="star-btn" data-value="1"><i class="fa-solid fa-star"></i></button>
-                        </div>
-                        <input type="hidden" name="rating" id="selected-rating" required>
+            <div class="product-actions">
+                <div class="quantity-selector">
+                    <label for="quantity">Quantity:</label>
+                    <div class="quantity-control">
+                        <button id="quantityMinus" class="quantity-btn">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                        <button id="quantityPlus" class="quantity-btn">+</button>
                     </div>
-        
-                    <textarea class="review-textarea" name="review" placeholder="Write your review here..." required></textarea>
-                    <button type="submit" class="submit-review-btn">Submit Review</button>
-                </form>
-                {% else %}
-                    <p>You must <a href="{% url 'login' %}">log in</a> to leave a review.</p>
-                {% endif %}
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="addToCartBtn" class="action-button add-to-cart-button">Add to Cart</button>
+                    <button id="orderNowBtn" class="action-button order-now-button">Order Now</button>
+                </div>
             </div>
             
             <div class="existing-reviews">
-                <h3>Customer Reviews</h3>
-                {% for review in product.reviews.all %}
-                    <div class="review">
-                        <div class="review-header">
-                            <span class="review-user">{{ review.user.username }}</span>
-                            <span class="review-rating">
-                                {% for i in review.get_stars %}
-                                    <i class="fa-solid fa-star"></i>
-                                {% endfor %}
-                                ({{ review.rating }}/5)
-                            </span>
+                <h3>Customer Reviews ({{ product.reviews.count }})</h3>
+                {% if product.reviews.all %}
+                    {% for review in product.reviews.all %}
+                        <div class="review">
+                            <div class="review-header">
+                                <span class="review-user">{{ review.user.username }}</span>
+                                <span class="review-rating">
+                                    {% for i in review.get_stars %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% endfor %}
+                                    ({{ review.rating }}/5)
+                                </span>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                            <p class="review-date">Posted on: {{ review.created_at|date:"F d, Y" }}</p>
                         </div>
-                        <p class="review-comment">{{ review.comment }}</p>
-                        <p class="review-date">Posted on: {{ review.created_at|date:"F d, Y" }}</p>
-                    </div>
-                {% empty %}
-                    <p>No reviews yet. Be the first to leave a review!</p>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p>No reviews yet.</p>
+                {% endif %}
             </div>
+            
+            {% if user.is_authenticated %}
+                <div class="review-section">
+                    <h3>Write a Review</h3>
+                    <form class="review-form" method="post" action="{% url 'submit_review' product_slug=product.slug %}">
+                        {% csrf_token %}
+                        <div class="rating">
+                            <label>Rating:</label>
+                            <div class="stars">
+                                <button type="button" class="star-btn" data-value="5"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" class="star-btn" data-value="4"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" class="star-btn" data-value="3"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" class="star-btn" data-value="2"><i class="fa-solid fa-star"></i></button>
+                                <button type="button" class="star-btn" data-value="1"><i class="fa-solid fa-star"></i></button>
+                            </div>
+                            <input type="hidden" name="rating" id="selected-rating" required>
+                        </div>
+            
+                        <textarea class="review-textarea" name="review" placeholder="Write your review here..." required></textarea>
+                        <button type="submit" class="submit-review-btn">Submit Review</button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="login-to-review">
+                    <p>Please <a href="{% url 'login' %}">log in</a> to leave a review.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
     
@@ -117,4 +137,206 @@
         </div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wishlist functionality
+        const wishlistIcon = document.getElementById('wishlistIcon');
+        const wishlistToggle = document.getElementById('wishlistToggle');
+        const productId = wishlistToggle.dataset.productId;
+        const productName = wishlistToggle.dataset.productName;
+        const productPrice = parseFloat(wishlistToggle.dataset.productPrice);
+        const productImage = wishlistToggle.dataset.productImage;
+        
+        // Check if product is already in wishlist
+        function checkWishlistStatus() {
+            const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+            const isInWishlist = wishlistItems.some(item => item.id == productId);
+            
+            if (isInWishlist) {
+                wishlistIcon.classList.add('fas');
+                wishlistIcon.classList.add('active');
+            } else {
+                wishlistIcon.classList.add('far');
+            }
+        }
+        
+        // Toggle wishlist status
+        wishlistToggle.addEventListener('click', function() {
+            const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+            const itemIndex = wishlistItems.findIndex(item => item.id == productId);
+            
+            if (itemIndex !== -1) {
+                // Remove from wishlist
+                wishlistItems.splice(itemIndex, 1);
+                wishlistIcon.classList.remove('fas', 'active');
+                wishlistIcon.classList.add('far');
+                showNotification('Removed from wishlist');
+            } else {
+                // Add to wishlist
+                wishlistItems.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage
+                });
+                wishlistIcon.classList.remove('far');
+                wishlistIcon.classList.add('fas', 'active');
+                showNotification('Added to wishlist');
+            }
+            
+            localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
+        });
+        
+        // Function to show notification
+        function showNotification(message) {
+            // Create notification element if it doesn't exist
+            if (!document.querySelector('.notification-container')) {
+                const container = document.createElement('div');
+                container.className = 'notification-container';
+                document.body.appendChild(container);
+            }
+            
+            const container = document.querySelector('.notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <i class="notification-icon ${message.includes('Added') ? 'fas fa-check-circle' : 'fas fa-info-circle'}"></i>
+                <span class="notification-message">${message}</span>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Show notification with animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Quantity control
+        const quantityInput = document.getElementById('quantity');
+        const quantityMinus = document.getElementById('quantityMinus');
+        const quantityPlus = document.getElementById('quantityPlus');
+        
+        quantityMinus.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+        
+        quantityPlus.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value);
+            const maxValue = parseInt(quantityInput.getAttribute('max'));
+            if (currentValue < maxValue) {
+                quantityInput.value = currentValue + 1;
+            }
+        });
+        
+        // Add to Cart functionality
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        
+        addToCartBtn.addEventListener('click', function() {
+            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+            const quantity = parseInt(quantityInput.value);
+            
+            // Check if product is already in cart
+            const existingItemIndex = cartItems.findIndex(item => item.id == productId);
+            
+            if (existingItemIndex !== -1) {
+                // Update quantity
+                cartItems[existingItemIndex].quantity += quantity;
+                showNotification(`Added ${quantity} more items to cart`);
+            } else {
+                // Add new item
+                cartItems.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage,
+                    quantity: quantity
+                });
+                showNotification('Added to cart');
+            }
+            
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            
+            // Animate cart icon in header if exists
+            const cartIcon = document.querySelector('#cart i');
+            if (cartIcon) {
+                cartIcon.classList.add('pulse');
+                setTimeout(() => {
+                    cartIcon.classList.remove('pulse');
+                }, 500);
+            }
+        });
+        
+        // Order Now functionality
+        const orderNowBtn = document.getElementById('orderNowBtn');
+        
+        orderNowBtn.addEventListener('click', function() {
+            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+            const quantity = parseInt(quantityInput.value);
+            
+            // Add to cart first
+            const existingItemIndex = cartItems.findIndex(item => item.id == productId);
+            
+            if (existingItemIndex !== -1) {
+                // Update quantity
+                cartItems[existingItemIndex].quantity += quantity;
+            } else {
+                // Add new item
+                cartItems.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage,
+                    quantity: quantity
+                });
+            }
+            
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            
+            // Redirect to cart page
+            window.location.href = "{% url 'cart' %}";
+        });
+        
+        // Star rating functionality
+        const starButtons = document.querySelectorAll('.star-btn');
+        const selectedRating = document.getElementById('selected-rating');
+        
+        starButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.dataset.value;
+                selectedRating.value = value;
+                
+                // Update star appearances
+                starButtons.forEach(star => {
+                    star.classList.remove('selected');
+                    star.classList.remove('pop');
+                });
+                
+                // Select clicked star and all stars to its right
+                for (let i = 0; i < starButtons.length; i++) {
+                    const currentValue = starButtons[i].dataset.value;
+                    if (currentValue <= value) {
+                        starButtons[i].classList.add('selected');
+                        starButtons[i].classList.add('pop');
+                    }
+                }
+            });
+        });
+        
+        // Initialize wishlist status
+        checkWishlistStatus();
+    });
+</script>
 {% endblock %}

@@ -65,8 +65,9 @@
           {% endif %}
         </div>
 
-        <div id="cart"><a class="account cart"><i class="fa-solid fa-cart-plus"></i></a>
-        </div>
+        <div id="wishlist"><a class="account wishlist" href="{% url 'wishlist' %}"><i class="fa-solid fa-heart"></i></a></div>
+
+        <div id="cart"><a class="account cart" href="{% url 'cart' %}"><i class="fa-solid fa-cart-plus"></i></a></div>
       </nav>
     </div>
     <div id="search">

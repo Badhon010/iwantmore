@@ -45,4 +45,6 @@ urlpatterns = [
             template_name='password_reset_complete.html'
         ), 
         name='password_reset_complete'),
+    path('cart/', views.cart, name='cart'),
+    path('wishlist/', views.wishlist, name='wishlist'),
 ]

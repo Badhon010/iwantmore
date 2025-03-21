@@ -144,6 +144,36 @@
     gap: 20px;
     margin: 20px 0;
     flex-wrap: wrap;
+    position: relative;
+}
+
+/* Wishlist toggle button */
+.wishlist-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    padding: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.wishlist-toggle:hover {
+    background-color: rgba(233, 30, 99, 0.1);
+    color: #e91e63;
+    transform: scale(1.1);
+}
+
+.wishlist-toggle .fa-heart.active {
+    color: #e91e63;
+}
+
+.wishlist-toggle .fas.fa-heart {
+    color: #e91e63;
 }
 
 /* Product Meta Styling */
@@ -219,78 +249,11 @@
 
 /* Order button styling */
 .order-button {
-    display: block;
-    background: linear-gradient(135deg, var(--btn-bg), rgba(var(--btn-bg-rgb), 0.8));
-    color: var(--white);
-    padding: 15px 30px;
-    border: none;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
-    margin: 30px 0;
-    transition: all 0.4s ease;
-    text-align: center;
-    max-width: 220px;
-    letter-spacing: 0.5px;
-    box-shadow: 0 5px 15px rgba(var(--btn-bg-rgb), 0.25);
-    position: relative;
-    overflow: hidden;
-}
-
-.order-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: all 0.5s ease;
-}
-
-.order-button:hover {
-    background: linear-gradient(135deg, rgba(var(--btn-bg-rgb), 0.9), var(--btn-bg));
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(var(--btn-bg-rgb), 0.3);
-}
-
-.order-button:hover::before {
-    left: 100%;
-}
-
-.order-button.clicked {
-    animation: buttonClick 0.3s ease;
-}
-
-@keyframes buttonClick {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(0.95);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Add animation for cart icon in base.html */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-    }
+    display: none;
 }
 
 #cart i.pulse {
-    animation: pulse 0.5s ease;
-    color: var(--btn-bg);
+    color: var(--btn-bg);   
 }
 
 /* Review section styling */
@@ -592,7 +555,6 @@
 
 /* Quantity Selector */
 .quantity-selector {
-    margin: 20px 0;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -600,76 +562,97 @@
 
 .quantity-selector label {
     font-weight: 600;
-    color: var(--text-color);
+    color: #555;
+    min-width: 70px;
 }
 
-.quantity-controls {
+.quantity-control {
     display: flex;
     align-items: center;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
-    height: 40px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .quantity-btn {
+    background-color: #f8f9fa;
+    border: none;
     width: 40px;
     height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s;
 }
 
 .quantity-btn:hover {
-    background: #e9e9e9;
-}
-
-.quantity-btn:active {
-    transform: scale(0.95);
+    background-color: #e9ecef;
 }
 
 #quantity {
-    width: 50px;
+    width: 60px;
     height: 40px;
     border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
     text-align: center;
     font-size: 1rem;
-    font-weight: 500;
-    -moz-appearance: textfield;
 }
 
-#quantity::-webkit-outer-spin-button,
-#quantity::-webkit-inner-spin-button {
+#quantity:focus {
+    outline: none;
+}
+
+#quantity::-webkit-inner-spin-button,
+#quantity::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Button Ripple Effect */
-.order-button {
-    position: relative;
-    overflow: hidden;
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
-.ripple {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: scale(0);
-    animation: ripple 0.6s linear;
-    pointer-events: none;
+.action-button {
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes ripple {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
+.add-to-cart-button {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.add-to-cart-button:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-now-button {
+    background: linear-gradient(135deg, var(--btn-bg), rgba(var(--btn-bg-rgb), 0.8));
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--btn-bg-rgb), 0.25);
+}
+
+.order-now-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(var(--btn-bg-rgb), 0.35);
 }
 
 /* Star Rating Animation */

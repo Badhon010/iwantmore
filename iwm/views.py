@@ -552,3 +552,9 @@ def subscribe_newsletter(request):
     
     # If not POST, redirect to home
     return redirect('home')
+
+def cart(request):
+    return render(request, 'cart.html')
+
+def wishlist(request):
+    return render(request, 'wishlist.html')

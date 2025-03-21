@@ -117,12 +117,14 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Create suggestion item with appropriate styling
             suggestionsHtml += `
-              <div class="suggestion-item">
+            <div class="suggestion-item">
+            <a href="${item.url}">
                 ${icon}
                 <div style="width: 100%;">
-                  <a href="${item.url}">${highlightMatch(item.name, query)}</a>
+                  <span>${highlightMatch(item.name, query)}</span>
                   ${detailsHtml}
                 </div>
+              </a>
               </div>`;
           });
           
@@ -187,9 +189,9 @@ document.addEventListener("DOMContentLoaded", function () {
           break;
         case "Enter":
           event.preventDefault();
-          const selectedItem = suggestionsContainer.querySelector('.suggestion-item.selected a');
+          const selectedItem = suggestionsContainer.querySelector('.suggestion-item');
           if (selectedItem) {
-            window.location.href = selectedItem.getAttribute('href');
+            window.location.href = selectedItem.querySelector('a').getAttribute('href');
           } else {
             // Submit the form if no suggestion is selected
             this.closest('form').submit();
