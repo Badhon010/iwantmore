@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber, Category, SubCategory, FeatureReason
+from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber, Category, SubCategory, FeatureReason, \
+    Order, OrderItem, Address, Coupon
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -274,3 +275,111 @@ class NewsletterSubscriberAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['show_send_to_all'] = True
         return super().changelist_view(request, extra_context=extra_context)
+
+# Admin for Order Management
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('product', 'product_name', 'product_price', 'quantity', 'get_total_price')
+    fields = ('product', 'product_name', 'product_price', 'quantity', 'get_total_price')
+    can_delete = False
+    
+    def get_total_price(self, obj):
+        return f"৳{obj.get_total_price()}"
+    get_total_price.short_description = "Total"
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'full_name', 'email', 'phone', 'total_price', 'order_status', 'payment_status', 'created_at')
+    list_filter = ('order_status', 'payment_status', 'payment_method', 'created_at')
+    search_fields = ('full_name', 'email', 'phone', 'tracking_number')
+    readonly_fields = ('created_at', 'updated_at', 'total_items', 'is_paid')
+    inlines = [OrderItemInline]
+    date_hierarchy = 'created_at'
+    fieldsets = (
+        ("Customer Information", {
+            'fields': ('user', 'full_name', 'email', 'phone')
+        }),
+        ("Address Information", {
+            'fields': ('shipping_address', 'billing_address')
+        }),
+        ("Order Details", {
+            'fields': ('order_status', 'payment_method', 'payment_status', 'transaction_id')
+        }),
+        ("Pricing", {
+            'fields': ('original_price', 'shipping_cost', 'discount_amount', 'total_price')
+        }),
+        ("Shipping Information", {
+            'fields': ('tracking_number', 'estimated_delivery', 'notes')
+        }),
+        ("Order Metrics", {
+            'fields': ('total_items', 'is_paid', 'created_at', 'updated_at')
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only for new orders
+            super().save_model(request, obj, form, change)
+        else:
+            # Check if status changed to 'shipped'
+            if 'order_status' in form.changed_data and obj.order_status == 'shipped':
+                # Send shipping notification
+                try:
+                    subject = f"Your order #{obj.id} has been shipped!"
+                    message = f"Hello {obj.full_name},\n\nYour order #{obj.id} has been shipped."
+                    if obj.tracking_number:
+                        message += f"\nTracking number: {obj.tracking_number}"
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [obj.email])
+                except Exception as e:
+                    pass  # Don't block the save if email fails
+            
+            super().save_model(request, obj, form, change)
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product_name', 'product_price', 'quantity', 'get_total')
+    list_filter = ('order__order_status',)
+    search_fields = ('product_name', 'order__full_name')
+    
+    def get_total(self, obj):
+        return f"৳{obj.get_total_price()}"
+    get_total.short_description = "Total"
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'address_type', 'city', 'default', 'created_at')
+    list_filter = ('address_type', 'default', 'city', 'country')
+    search_fields = ('full_name', 'address_line1', 'city', 'postal_code')
+    fieldsets = (
+        ("User Information", {
+            'fields': ('user', 'full_name', 'phone', 'address_type', 'default')
+        }),
+        ("Address Details", {
+            'fields': ('address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country')
+        }),
+    )
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_display', 'minimum_order_value', 'is_active', 'valid_from', 'valid_to', 'usage_limit', 'used_count')
+    list_filter = ('is_active', 'valid_from', 'valid_to')
+    search_fields = ('code',)
+    readonly_fields = ('used_count',)
+    fieldsets = (
+        ("Coupon Information", {
+            'fields': ('code', 'is_active')
+        }),
+        ("Discount Details", {
+            'fields': ('discount_amount', 'discount_percent', 'minimum_order_value')
+        }),
+        ("Validity", {
+            'fields': ('valid_from', 'valid_to', 'usage_limit', 'used_count')
+        }),
+    )
+    
+    def discount_display(self, obj):
+        if obj.discount_amount > 0:
+            return f"৳{obj.discount_amount}"
+        return f"{obj.discount_percent}%"
+    discount_display.short_description = "Discount"

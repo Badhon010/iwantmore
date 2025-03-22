@@ -213,3 +213,79 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   });
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Update cart and wishlist count badges when page loads
+    updateCartCount();
+    updateWishlistCount();
+});
+
+// Function to update cart count badge
+function updateCartCount() {
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartCountBadges = document.querySelectorAll('.cart-count');
+    
+    if (cartCountBadges.length === 0) return;
+    
+    const totalItems = cartItems.reduce((total, item) => total + (parseInt(item.quantity) || 1), 0);
+    
+    cartCountBadges.forEach(badge => {
+        badge.textContent = totalItems > 0 ? totalItems : '';
+        badge.setAttribute('data-count', totalItems);
+    });
+}
+
+// Function to update wishlist count badge
+function updateWishlistCount() {
+    const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+    const wishlistCountBadges = document.querySelectorAll('.wishlist-count');
+    
+    if (wishlistCountBadges.length === 0) return;
+    
+    const totalItems = wishlistItems.length;
+    
+    wishlistCountBadges.forEach(badge => {
+        badge.textContent = totalItems > 0 ? totalItems : '';
+        badge.setAttribute('data-count', totalItems);
+    });
+}
+
+// Function to add item to cart
+function addToCart(productId, productName, productPrice, productImage, quantity = 1) {
+    // Get existing cart items or initialize empty array
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    
+    // Check if product already in cart
+    const existingItemIndex = cartItems.findIndex(item => item.id == productId);
+    
+    if (existingItemIndex !== -1) {
+        // Update quantity if already in cart
+        cartItems[existingItemIndex].quantity += quantity;
+    } else {
+        // Add new item to cart
+        cartItems.push({
+            id: productId,
+            name: productName,
+            price: productPrice,
+            image: productImage,
+            quantity: quantity
+        });
+    }
+    
+    // Save updated cart
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    
+    // Update cart count
+    updateCartCount();
+    
+    // Add pulse animation to cart icon
+    const cartIcon = document.querySelector('.cart i');
+    if (cartIcon) {
+        cartIcon.classList.add('pulse');
+        setTimeout(() => {
+            cartIcon.classList.remove('pulse');
+        }, 500);
+    }
+    
+    return cartItems;
+}

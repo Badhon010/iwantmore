@@ -616,6 +616,7 @@
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
+    margin-top: 10px;
 }
 
 .action-button {
@@ -645,9 +646,8 @@
 }
 
 .order-now-button {
-    background: linear-gradient(135deg, var(--btn-bg), rgba(var(--btn-bg-rgb), 0.8));
+    background-color: #2e7d32;
     color: white;
-    box-shadow: 0 4px 15px rgba(var(--btn-bg-rgb), 0.25);
 }
 
 .order-now-button:hover {

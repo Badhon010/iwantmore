@@ -16,7 +16,41 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Check if we're on search page and add 'data-id' attributes if missing
     ensureProductIds();
+    
+    // Update cart and wishlist count badges
+    updateCartCount();
+    updateWishlistCount();
 });
+
+// Function to update cart count badge
+function updateCartCount() {
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartCountBadges = document.querySelectorAll('.cart-count');
+    
+    if (cartCountBadges.length === 0) return;
+    
+    const totalItems = cartItems.reduce((total, item) => total + (parseInt(item.quantity) || 1), 0);
+    
+    cartCountBadges.forEach(badge => {
+        badge.textContent = totalItems > 0 ? totalItems : '';
+        badge.setAttribute('data-count', totalItems);
+    });
+}
+
+// Function to update wishlist count badge
+function updateWishlistCount() {
+    const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+    const wishlistCountBadges = document.querySelectorAll('.wishlist-count');
+    
+    if (wishlistCountBadges.length === 0) return;
+    
+    const totalItems = wishlistItems.length;
+    
+    wishlistCountBadges.forEach(badge => {
+        badge.textContent = totalItems > 0 ? totalItems : '';
+        badge.setAttribute('data-count', totalItems);
+    });
+}
 
 // Ensure all product items have data-id attributes
 function ensureProductIds() {
@@ -682,6 +716,9 @@ function initProductInteractions() {
         
         // Save updated wishlist
         localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
+        
+        // Update wishlist count badge
+        updateWishlistCount();
     }
     
     // Function to add item to cart
@@ -708,6 +745,9 @@ function initProductInteractions() {
         
         // Save updated cart
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        
+        // Update cart count
+        updateCartCount();
         
         // Update cart count if there's a cart counter element
         const cartCount = document.querySelector('.cart-count');

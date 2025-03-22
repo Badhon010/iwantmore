@@ -240,17 +240,48 @@ header .nav1 a:hover {
 
 .cart {
     padding-top: 4px;
+    position: relative;
 }
 
 .wishlist {
     text-decoration: none;
     color: red;
     font-size: 1.18rem;
+    position: relative;
 }
 
+.item-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    color: var(--btn-bg);
+    background-color: rgb(250, 250, 250);
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 2px 4px rgba(138, 128, 128, 0.1);
+}
+
+/* Hide count badge when zero items */
+.cart-count:empty, .wishlist-count:empty, 
+.cart-count[data-count="0"], .wishlist-count[data-count="0"] {
+    display: none;
+}
 
 .fa-heart.pulse, .fa-cart-plus.pulse {
-    animation: pulse 0.5s ease;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
 }
 
 /* Notification styles for global use */
