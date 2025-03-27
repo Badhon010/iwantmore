@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory
+from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem
 from .forms import ReviewForm
 from django.db.models import Q,Avg, Case, When, DecimalField
 from django.contrib.auth.decorators import login_required
@@ -19,6 +19,9 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+import time
+from django.utils import timezone
 
 def rd(request):
     return redirect('home')
@@ -406,7 +409,7 @@ def signup(request):
 
             current_site = get_current_site(request)
             mail_subject = 'Activate your account'
-            message = render_to_string('emails/acc_active.html', {
+            message = render_to_string('acc_active.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -558,3 +561,202 @@ def cart(request):
 
 def wishlist(request):
     return render(request, 'wishlist.html')
+
+def checkout(request):
+    if request.method == 'POST':
+        # Process the order form submission
+        return redirect('order_confirmation')
+    return render(request, 'checkout.html')
+
+def order_confirmation(request):
+    order_slug = request.GET.get('order.slug')
+    
+    if order_slug:
+        # Try to get the order by order_slug
+        order = Order.objects.filter(order_slug=order_slug).first()
+        
+        # If authenticated user, verify the order belongs to them or is a guest order
+        if request.user.is_authenticated and order and order.user and order.user != request.user:
+            order = None
+    else:
+        # If no order_slug is provided, try to get the latest order for the user
+        if request.user.is_authenticated:
+            order = Order.objects.filter(user=request.user).order_by('-created_at').first()
+        else:
+            order = None
+    
+    return render(request, 'order_confirmation.html', {'order': order})
+
+def apply_coupon(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        code = request.POST.get('coupon_code')
+        
+        try:
+            coupon = Coupon.objects.get(code=code, active=True)
+            
+            # Check if coupon is expired
+            if coupon.valid_until and coupon.valid_until < timezone.now().date():
+                return JsonResponse({'status': 'error', 'message': 'This coupon has expired'})
+            
+            # Store coupon in session
+            request.session['coupon_id'] = coupon.id
+            request.session['discount'] = float(coupon.discount)
+            
+            return JsonResponse({
+                'status': 'success', 
+                'message': 'Coupon applied successfully', 
+                'discount': float(coupon.discount),
+                'discount_type': coupon.discount_type
+            })
+            
+        except Coupon.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Invalid coupon code'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+def place_order(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        data = json.loads(request.body)
+        
+        # Extract order data
+        personal_info = data.get('personal_info', {})
+        shipping_address_data = data.get('shipping_address', {})
+        billing_address_data = data.get('billing_address', {})
+        payment_method = data.get('payment_method', '')
+        payment_details = data.get('payment_details', {})
+        items = data.get('items', [])
+        additional_notes = data.get('additional_notes', '')
+        totals = data.get('totals', {})
+        
+        # Verify stock availability
+        for item in items:
+            product_id = item.get('id')
+            quantity = item.get('quantity', 1)
+            
+            try:
+                product = Product.objects.get(id=product_id)
+                if product.stock < quantity:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Not enough stock for {product.name}. Available: {product.stock}'
+                    })
+            except Product.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Product with ID {product_id} does not exist'
+                })
+        
+        try:
+            # Create shipping address
+            shipping_address = Address.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                address_type='shipping',
+                default=False,
+                full_name=shipping_address_data.get('full_name', personal_info.get('full_name', '')),
+                phone=personal_info.get('phone', ''),
+                address_line1=shipping_address_data.get('address_line1', ''),
+                address_line2=shipping_address_data.get('address_line2', ''),
+                city=shipping_address_data.get('city', ''),
+                postal_code=shipping_address_data.get('postal_code', ''),
+                state=shipping_address_data.get('state', ''),
+                country=shipping_address_data.get('country', 'Bangladesh')
+            )
+            
+            # Create billing address if different from shipping
+            if data.get('same_billing_address', False):
+                billing_address = shipping_address
+            else:
+                billing_address = Address.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    address_type='billing',
+                    default=False,
+                    full_name=billing_address_data.get('full_name', personal_info.get('full_name', '')),
+                    phone=personal_info.get('phone', ''),
+                    address_line1=billing_address_data.get('address_line1', ''),
+                    address_line2=billing_address_data.get('address_line2', ''),
+                    city=billing_address_data.get('city', ''),
+                    postal_code=billing_address_data.get('postal_code', ''),
+                    state=billing_address_data.get('state', ''),
+                    country=billing_address_data.get('country', 'Bangladesh')
+                )
+            
+            # Get or create coupon if applied
+            coupon = None
+            coupon_id = request.session.get('coupon_id')
+            if coupon_id:
+                try:
+                    coupon = Coupon.objects.get(id=coupon_id)
+                except Coupon.DoesNotExist:
+                    pass
+            
+            # Calculate pricing info
+            total_price = totals.get('total', 0)
+            original_price = totals.get('subtotal', 0)
+            shipping_cost = totals.get('shipping', 0)
+            discount_amount = totals.get('discount', 0)
+            
+            # Create order
+            order = Order.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                full_name=personal_info.get('full_name', ''),
+                email=personal_info.get('email', ''),
+                phone=personal_info.get('phone', ''),
+                shipping_address=shipping_address,
+                billing_address=billing_address,
+                total_price=total_price,
+                original_price=original_price,
+                shipping_cost=shipping_cost,
+                discount_amount=discount_amount,
+                order_status='pending',
+                payment_method=payment_method,
+                payment_status=False,
+                transaction_id=payment_details.get('transaction_id', '') if payment_details else '',
+                notes=additional_notes
+            )
+            
+            # Create order items and update stock
+            for item in items:
+                product = None
+                if item.get('id'):
+                    try:
+                        product = Product.objects.get(id=item.get('id'))
+                    except Product.DoesNotExist:
+                        pass
+                        
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    product_name=item.get('name', ''),
+                    product_price=item.get('price', 0),
+                    quantity=item.get('quantity', 1)
+                )
+                
+                # Update product stock
+                if product:
+                    product.update_stock(-item.get('quantity', 1))
+            
+            # Clear coupon from session
+            if 'coupon_id' in request.session:
+                del request.session['coupon_id']
+            if 'discount' in request.session:
+                del request.session['discount']
+            
+            # Send order confirmation email
+            # This would be implemented here or called as a method on the order
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Order placed successfully',
+                'order_slug': order.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Error processing order: {str(e)}'
+            })
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+def my_orders(request):
+    return render(request,'my_orders.html')

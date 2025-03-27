@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout - I Want More{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+  <h1 class="checkout-title">Checkout</h1>
+  
+  <div class="checkout-content">
+    <div class="checkout-form-container">
+      <form class="checkout-form" id="checkout-form">
+        <div class="form-sections">
+          <!-- Personal Information Section -->
+          <div class="form-section">
+            <h3 class="section-title">Personal Information</h3>
+            
+            <div class="form-group">
+              <label for="full-name">Full Name <span class="required">*</span></label>
+              <input type="text" id="full-name" name="full_name" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="phone">Phone <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" required>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Shipping Address Section -->
+          <div class="form-section">
+            <h3 class="section-title">Shipping Address</h3>
+            
+            {% if user.is_authenticated %}
+            <div class="form-group">
+              <label for="shipping-address-select" class="select-label">Saved Addresses</label>
+              <select id="shipping-address-select" class="address-select">
+                <option value="">-- Select a saved address --</option>
+                {% for address in user.addresses.all %}
+                {% if address.address_type == 'shipping' %}
+                <option value="{{ address.id }}" data-address="{{ address.as_json }}">
+                  {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
+                </option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+              <label for="shipping-address-line1">Address Line 1 <span class="required">*</span></label>
+              <input type="text" id="shipping-address-line1" name="shipping_address_line1" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="shipping-address-line2">Address Line 2</label>
+              <input type="text" id="shipping-address-line2" name="shipping_address_line2">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shipping-city">City <span class="required">*</span></label>
+                <input type="text" id="shipping-city" name="shipping_city" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="shipping-postal-code">Postal Code <span class="required">*</span></label>
+                <input type="text" id="shipping-postal-code" name="shipping_postal_code" required value="1000">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shipping-state">State/Division <span class="required">*</span></label>
+                <input type="text" id="shipping-state" name="shipping_state" required value="Dhaka">
+              </div>
+              
+              <div class="form-group">
+                <label for="shipping-country">Country <span class="required">*</span></label>
+                <input type="text" id="shipping-country" name="shipping_country" required value="Bangladesh" readonly>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="shipping-location-description">Describe Your Location <span class="required">*</span></label>
+              <textarea id="shipping-location-description" name="shipping_location_description" placeholder="Please provide detailed instructions to find your location" required></textarea>
+            </div>
+            
+            <div class="checkbox-group">
+              <label class="checkbox-container">
+                Save this address for future use
+                <input type="checkbox" id="save-shipping-address" name="save_shipping_address">
+                <span class="checkbox-checkmark"></span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Billing Address Section -->
+          <div class="form-section">
+            <h3 class="section-title">Billing Address</h3>
+            
+            <div class="checkbox-group">
+              <label class="checkbox-container">
+                Same as shipping address
+                <input type="checkbox" id="same-billing-address" name="same_billing_address" checked>
+                <span class="checkbox-checkmark"></span>
+              </label>
+            </div>
+            
+            <div id="billing-address-section" style="display: none;">
+              {% if user.is_authenticated %}
+              <div class="form-group">
+                <label for="billing-address-select" class="select-label">Saved Addresses</label>
+                <select id="billing-address-select" class="address-select">
+                  <option value="">-- Select a saved address --</option>
+                  {% for address in user.addresses.all %}
+                  {% if address.address_type == 'billing' %}
+                  <option value="{{ address.id }}" data-address="{{ address.as_json }}">
+                    {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
+                  </option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              
+              <div class="form-group">
+                <label for="billing-full-name">Full Name <span class="required">*</span></label>
+                <input type="text" id="billing-full-name" name="billing_full_name">
+              </div>
+              
+              <div class="form-group">
+                <label for="billing-address-line1">Address Line 1 <span class="required">*</span></label>
+                <input type="text" id="billing-address-line1" name="billing_address_line1">
+              </div>
+              
+              <div class="form-group">
+                <label for="billing-address-line2">Address Line 2</label>
+                <input type="text" id="billing-address-line2" name="billing_address_line2">
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="billing-city">City <span class="required">*</span></label>
+                  <input type="text" id="billing-city" name="billing_city">
+                </div>
+                
+                <div class="form-group">
+                  <label for="billing-postal-code">Postal Code <span class="required">*</span></label>
+                  <input type="text" id="billing-postal-code" name="billing_postal_code" value="1000">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="billing-state">State/Division <span class="required">*</span></label>
+                  <input type="text" id="billing-state" name="billing_state" value="Dhaka">
+                </div>
+                
+                <div class="form-group">
+                  <label for="billing-country">Country <span class="required">*</span></label>
+                  <input type="text" id="billing-country" name="billing_country" value="Bangladesh" readonly>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="billing-location-description">Describe Your Location <span class="required">*</span></label>
+                <textarea id="billing-location-description" name="billing_location_description" placeholder="Please provide detailed instructions to find your location"></textarea>
+              </div>
+              
+              <div class="checkbox-group">
+                <label class="checkbox-container">
+                  Save this address for future use
+                  <input type="checkbox" id="save-billing-address" name="save_billing_address">
+                  <span class="checkbox-checkmark"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Payment Method Section -->
+          <div class="form-section">
+            <h3 class="section-title">Payment Method</h3>
+            
+            <div class="payment-methods">
+              <div class="payment-method">
+                <label class="radio-container">
+                  <input type="radio" name="payment_method" value="cod" checked>
+                  <span class="radio-checkmark"></span>
+                  <div class="payment-label">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Cash on Delivery
+                  </div>
+                </label>
+              </div>
+              
+              <div class="payment-method">
+                <label class="radio-container">
+                  <input type="radio" name="payment_method" value="bkash">
+                  <span class="radio-checkmark"></span>
+                  <div class="payment-label">
+                    <img src="{% static 'images/payment/bkash.png' %}" alt="bKash" onerror="this.src='https://via.placeholder.com/30?text=bKash'">
+                    bKash
+                  </div>
+                </label>
+              </div>
+              
+              <div class="payment-method">
+                <label class="radio-container">
+                  <input type="radio" name="payment_method" value="nagad">
+                  <span class="radio-checkmark"></span>
+                  <div class="payment-label">
+                    <img src="{% static 'images/payment/nagad.png' %}" alt="Nagad" onerror="this.src='https://via.placeholder.com/30?text=Nagad'">
+                    Nagad
+                  </div>
+                </label>
+              </div>
+              
+              <div class="payment-method">
+                <label class="radio-container">
+                  <input type="radio" name="payment_method" value="card">
+                  <span class="radio-checkmark"></span>
+                  <div class="payment-label">
+                    <i class="far fa-credit-card"></i>
+                    Credit/Debit Card
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div class="payment-fields bkash-fields" style="display: none;">
+              <div class="form-group">
+                <label for="bkash-number">bKash Number <span class="required">*</span></label>
+                <input type="text" id="bkash-number" name="bkash_number">
+              </div>
+              <p class="payment-instructions">
+                Please make the payment to our bKash merchant number (01XXXXXXXXX) before confirming your order. 
+                Use your order ID as the reference number.
+              </p>
+            </div>
+            
+            <div class="payment-fields nagad-fields" style="display: none;">
+              <div class="form-group">
+                <label for="nagad-number">Nagad Number <span class="required">*</span></label>
+                <input type="text" id="nagad-number" name="nagad_number">
+              </div>
+              <p class="payment-instructions">
+                Please make the payment to our Nagad merchant number (01XXXXXXXXX) before confirming your order. 
+                Use your order ID as the reference number.
+              </p>
+            </div>
+            
+            <div class="payment-fields card-fields" style="display: none;">
+              <p class="payment-instructions">
+                You will be redirected to our secure payment gateway to complete your payment after confirming your order.
+              </p>
+            </div>
+          </div>
+          
+          <!-- Additional Information Section -->
+          <div class="form-section">
+            <h3 class="section-title">Additional Information</h3>
+            
+            <div class="form-group">
+              <label for="additional-notes">Order Notes (optional)</label>
+              <textarea id="additional-notes" name="additional_notes" placeholder="Notes about your order, e.g. special delivery instructions"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hidden fields for order processing -->
+        <input type="hidden" id="order-subtotal" name="order_subtotal" value="0">
+        <input type="hidden" id="order-shipping" name="order_shipping" value="0">
+        <input type="hidden" id="order-discount" name="order_discount" value="0">
+        <input type="hidden" id="order-total" name="order_total" value="0">
+      </form>
+      
+      <!-- Coupon Section -->
+      <div class="coupon-section">
+        <h3>Apply Coupon</h3>
+        <form id="coupon-form" class="coupon-form">
+          <input type="text" id="coupon-code" name="coupon_code" placeholder="Enter coupon code">
+          <button type="submit" class="apply-coupon-btn">Apply</button>
+        </form>
+        <div id="coupon-message" class="coupon-message" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Order Summary Sidebar -->
+    <div class="order-summary">
+      <h3 class="summary-title">Order Summary</h3>
+      
+      <div class="summary-items">
+        <!-- Cart items will be loaded here dynamically with JavaScript -->
+      </div>
+      
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="subtotal-amount">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span id="shipping-amount">$0.00</span>
+        </div>
+        <div class="summary-row" id="discount-row" style="display: none;">
+          <span>Discount</span>
+          <span id="discount-amount">-$0.00</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="total-amount">$0.00</span>
+        </div>
+      </div>
+      
+      <button id="place-order-btn" class="place-order-btn">
+        <i class="fas fa-lock"></i> Place Order
+      </button>
+      
+      <div class="back-to-cart">
+        <a href="{% url 'cart' %}">
+          <i class="fas fa-chevron-left"></i> Back to Cart
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Preview Modal -->
+<div id="order-preview-modal" class="modal">
+  <div class="modal-content">
+    <span id="close-modal" class="close-modal">&times;</span>
+    <h2>Order Preview</h2>
+    
+    <div class="modal-order-details">
+      <div class="modal-section">
+        <h3>Personal Information</h3>
+        <p><strong>Name:</strong> <span id="preview-name"></span></p>
+        <p><strong>Email:</strong> <span id="preview-email"></span></p>
+        <p><strong>Phone:</strong> <span id="preview-phone"></span></p>
+      </div>
+      
+      <div class="modal-section">
+        <h3>Shipping Address</h3>
+        <p id="preview-shipping-address"></p>
+      </div>
+      
+      <div class="modal-section">
+        <h3>Payment Method</h3>
+        <p id="preview-payment-method"></p>
+      </div>
+      
+      <div class="modal-section">
+        <h3>Order Items</h3>
+        <div id="preview-order-items">
+          <!-- Order items will be added here dynamically -->
+        </div>
+        
+        <div class="preview-totals">
+          <div class="detail-row">
+            <div class="detail-label">Subtotal</div>
+            <div class="detail-value" id="preview-subtotal">$0.00</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Shipping</div>
+            <div class="detail-value" id="preview-shipping">$0.00</div>
+          </div>
+          <div class="detail-row" id="preview-discount-row" style="display: none;">
+            <div class="detail-label">Discount</div>
+            <div class="detail-value" id="preview-discount">-$0.00</div>
+          </div>
+          <div class="detail-row" style="font-weight: 700; margin-top: 10px;">
+            <div class="detail-label">Total</div>
+            <div class="detail-value" id="preview-total">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button id="confirm-order-btn" class="confirm-order-btn">Confirm Order</button>
+      <button id="edit-order-btn" class="edit-order-btn">Edit Order</button>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %} 

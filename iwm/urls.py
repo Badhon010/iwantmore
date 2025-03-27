@@ -47,4 +47,9 @@ urlpatterns = [
         name='password_reset_complete'),
     path('cart/', views.cart, name='cart'),
     path('wishlist/', views.wishlist, name='wishlist'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order-confirmation/', views.order_confirmation, name='order_confirmation'),
+    path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
+    path('place-order/', views.place_order, name='place_order'),
+    path('my-orders/', views.my_orders, name='my_orders'),
 ]

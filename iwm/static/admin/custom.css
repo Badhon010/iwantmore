@@ -30,8 +30,8 @@ html[data-theme="light"], :root {
     --button-fg: #ffffff;
     --button-bg: #ff6f91;
     --button-hover-bg: #ff4e6a;
-    --default-button-bg: var(--btn-bg-hover);
-    --default-button-hover-bg: var(--btn-bg);
+    --default-button-bg: #e63b55b9;
+    --default-button-hover-bg: #e63b55;
     --close-button-bg: #747474;
     --close-button-hover-bg: #333;
     --delete-button-bg: #ba2121;

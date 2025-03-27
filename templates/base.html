@@ -64,19 +64,39 @@
           </a>
           {% endif %}
         </div>
+        <div class="order_links">
 
-        <div id="wishlist">
-          <a class="account wishlist" href="{% url 'wishlist' %}">
-            <i class="fa-solid fa-heart"></i>
-            <span class="item-count wishlist-count">0</span>
-          </a>
-        </div>
+          <div>
+            <a class="account" id="store">
+              <i class="fa-solid fa-store"></i>
+            </a>
+          </div>
 
-        <div id="cart">
-          <a class="account cart" href="{% url 'cart' %}">
-            <i class="fa-solid fa-cart-plus"></i>
-            <span class="item-count cart-count">0</span>
-          </a>
+          <nav>
+          <div id="wishlist">
+            <a class="cart" href="{% url 'wishlist' %}">
+              <i class="fa-solid fa-heart"></i>
+              <span class="item-count wishlist-count">0</span>
+              <p>Wishlist</p>
+            </a>
+          </div>
+
+          <div id="cart">
+            <a class="cart" href="{% url 'cart' %}">
+              <i class="fa-solid fa-cart-plus" style="margin-left:-2px"></i>
+              <span class="item-count cart-count">0</span>
+              <p>Cart</p>
+            </a>
+          </div>
+
+          <div id="my_orders">
+            <a class="cart" href="{% url 'my_orders' %}">
+              <i class="fas fa-box"></i> 
+              <span class="item-count cart-count">0</span>
+              <p>My Orders</p>
+            </a>
+          </div>
+        </nav>
         </div>
       </nav>
     </div>

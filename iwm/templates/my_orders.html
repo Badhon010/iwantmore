@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Orders - I Want More{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/my_orders.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="orders-container">
+    <h2>My Orders</h2>
+    
+    <div class="order">
+        <div class="order-header">
+            <span class="order-id">Order #12345</span>
+            <span class="order-date">Placed on: March 26, 2025</span>
+        </div>
+        <div class="order-items">
+            <div class="order-item">
+                <img src="{% static 'images/sample-product.jpg' %}" alt="Product Image">
+                <div class="order-info">
+                    <h3>Product Name</h3>
+                    <p>Quantity: 2</p>
+                    <p class="price">$50</p>
+                </div>
+                <span class="order-status delivered">Delivered</span>
+            </div>
+        </div>
+        <div class="order-actions">
+            <a href="#" class="btn details-btn">View Details</a>
+            <a href="#" class="btn track-btn">Track Order</a>
+        </div>
+    </div>
+
+    <div class="order">
+        <div class="order-header">
+            <span class="order-id">Order #67890</span>
+            <span class="order-date">Placed on: March 20, 2025</span>
+        </div>
+        <div class="order-items">
+            <div class="order-item">
+                <img src="{% static 'images/sample-product.jpg' %}" alt="Product Image">
+                <div class="order-info">
+                    <h3>Another Product</h3>
+                    <p>Quantity: 1</p>
+                    <p class="price">$30</p>
+                </div>
+                <span class="order-status pending">Pending</span>
+            </div>
+        </div>
+        <div class="order-actions">
+            <a href="#" class="btn details-btn">View Details</a>
+            <a href="#" class="btn cancel-btn">Cancel Order</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -179,7 +179,8 @@
       
       // Checkout button
       document.getElementById('checkoutBtn').addEventListener('click', function() {
-        alert('Checkout functionality will be implemented soon!');
+        // Redirect to checkout page
+        window.location.href = "{% url 'checkout' %}";
       });
     }
     

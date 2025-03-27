@@ -644,14 +644,14 @@ function initProductInteractions() {
         }, 10);
         
         // Remove the element after animation completes
-        setTimeout(() => {
+                setTimeout(() => {
             element.remove();
             
             // Add a pulse animation to the cart icon
             const cartIcon = document.querySelector('.cart i');
             if (cartIcon) {
                 cartIcon.classList.add('pulse');
-                setTimeout(() => {
+                    setTimeout(() => {
                     cartIcon.classList.remove('pulse');
                 }, 500);
             }

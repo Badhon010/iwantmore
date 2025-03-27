@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from django.urls import reverse
+import json
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -44,6 +46,24 @@ class FeatureReason(models.Model):
     def __str__(self):
         return self.Reason
 
+class Color(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Size(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Brand(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
@@ -58,6 +78,9 @@ class Product(models.Model):
     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, related_name='products')
     is_featured = models.BooleanField(default=False)
     feature_reason = models.ForeignKey('FeatureReason', on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_products')
+    color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True)
+    size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True, blank=True)
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     # SEO fields
     meta_title = models.CharField(max_length=255, blank=True, null=True, help_text="SEO Meta Title")
     meta_description = models.TextField(blank=True, null=True, help_text="SEO Meta Description")
@@ -92,6 +115,23 @@ class Product(models.Model):
     def get_absolute_url(self):
         """ পণ্যের বিস্তারিত পেজের URL তৈরি করে """
         return f"/product/{self.slug}/"
+
+    def update_stock(self, quantity_change):
+        """
+        Update product stock level
+        
+        Args:
+            quantity_change: Integer indicating change in quantity (positive for increase, negative for decrease)
+        
+        Returns:
+            Boolean: True if update was successful, False if there's not enough stock
+        """
+        if self.stock + quantity_change < 0:
+            return False
+            
+        self.stock += quantity_change
+        self.save(update_fields=['stock'])
+        return True
 
 class MoreImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="more_images")  # ForeignKey ব্যবহার করা হয়েছে
@@ -144,8 +184,13 @@ class NewsletterSubscriber(models.Model):
         return self.email
 
 class Address(models.Model):
+    ADDRESS_TYPES = (
+        ('shipping', 'Shipping'),
+        ('billing', 'Billing'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
-    address_type = models.CharField(max_length=20, choices=[('shipping', 'Shipping'), ('billing', 'Billing')])
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
     default = models.BooleanField(default=False)
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
@@ -157,47 +202,65 @@ class Address(models.Model):
     country = models.CharField(max_length=100, default='Bangladesh')
     created_at = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return f"{self.full_name} - {self.address_line1}, {self.city}"
+    
+    def save(self, *args, **kwargs):
+        if self.default:
+            # If this address is set as default, unset default for other addresses of same type for this user
+            if self.user:
+                Address.objects.filter(
+                    user=self.user,
+                    address_type=self.address_type,
+                    default=True
+                ).update(default=False)
+        super().save(*args, **kwargs)
+    
+    @property
+    def as_json(self):
+        """Return address as JSON string for use in templates"""
+        return json.dumps({
+            'full_name': self.full_name,
+            'phone': self.phone,
+            'address_line1': self.address_line1,
+            'address_line2': self.address_line2 or '',
+            'city': self.city,
+            'postal_code': self.postal_code,
+            'state': self.state,
+            'country': self.country,
+        })
+
     class Meta:
         verbose_name_plural = "Addresses"
-    
-    def __str__(self):
-        return f"{self.full_name}'s {self.address_type} address"
 
 class Order(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('processing', 'Processing'),
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
         ('refunded', 'Refunded'),
-    ]
+    )
     
-    PAYMENT_METHOD_CHOICES = [
+    PAYMENT_METHOD_CHOICES = (
         ('cash_on_delivery', 'Cash on Delivery'),
         ('credit_card', 'Credit Card'),
         ('bkash', 'bKash'),
         ('nagad', 'Nagad'),
-    ]
+    )
     
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     full_name = models.CharField(max_length=255)
-    email = models.EmailField()
+    email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=20)
+    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='shipping_orders')
+    billing_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='billing_orders')
     
-    shipping_address = models.ForeignKey(
-        Address, on_delete=models.SET_NULL, null=True, blank=True, 
-        related_name='shipping_orders'
-    )
-    billing_address = models.ForeignKey(
-        Address, on_delete=models.SET_NULL, null=True, blank=True, 
-        related_name='billing_orders'
-    )
-    
-    total_price = models.PositiveIntegerField(default=0)
-    original_price = models.PositiveIntegerField(default=0)  # Before any discounts
-    shipping_cost = models.PositiveIntegerField(default=0)
-    discount_amount = models.PositiveIntegerField(default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     order_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash_on_delivery')
@@ -207,49 +270,28 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Optional fields for additional information
     notes = models.TextField(blank=True)
     tracking_number = models.CharField(max_length=100, blank=True, null=True)
     estimated_delivery = models.DateField(blank=True, null=True)
     
+    def __str__(self):
+        return f"Order {self.id}"
+    
     class Meta:
         ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"Order #{self.id} - {self.full_name}"
-    
-    @property
-    def total_items(self):
-        return self.items.count()
-    
-    @property
-    def is_paid(self):
-        return self.payment_status
-    
-    def calculate_total(self):
-        """Calculate order total based on items, shipping, and discounts"""
-        items_total = sum(item.get_total_price() for item in self.items.all())
-        self.original_price = items_total
-        self.total_price = items_total + self.shipping_cost - self.discount_amount
-        return self.total_price
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='order_items')
-    
-    # Store product data in case the product is deleted later
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='order_items')
     product_name = models.CharField(max_length=255)
-    product_price = models.PositiveIntegerField(default=0)
+    product_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     quantity = models.PositiveIntegerField(default=1)
+    
+    def __str__(self):
+        return f"{self.product_name} x {self.quantity}"
     
     class Meta:
         ordering = ['id']
-    
-    def __str__(self):
-        return f"{self.quantity} x {self.product_name} in Order #{self.order.id}"
-    
-    def get_total_price(self):
-        return self.product_price * self.quantity
 
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)

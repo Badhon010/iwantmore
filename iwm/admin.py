@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber, Category, SubCategory, FeatureReason, \
-    Order, OrderItem, Address, Coupon
+from .models import Product, Review, Tag, MoreImages, NewsletterSubscriber, Category, SubCategory, FeatureReason, Order, OrderItem, Address, Coupon, Color, Size, Brand
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -44,6 +43,19 @@ class MoreImagesInline(admin.TabularInline):
     model = MoreImages
     extra = 1  # নতুন ইমেজ আপলোড করার জন্য ফাঁকা ফিল্ড দেখাবে
 
+@admin.register(Color)
+class ColorAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(Size)
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
 # Register Product model with custom admin - FIXED ORDER
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -51,9 +63,9 @@ class ProductAdmin(admin.ModelAdmin):
         css = {"all": ("admin/custom.css",)}
         js = ("admin/custom.js",)
 
-    list_display = ('name', 'price', 'discount_price', 'subcategory', 'is_featured', 'created_at')
+    list_display = ('name', 'price', 'discount_price', 'subcategory', 'is_featured', 'created_at', 'get_color', 'get_size', 'get_brand')
     search_fields = ('name', 'description')
-    list_filter = ('price', 'discount_price', 'tags', 'subcategory', 'is_featured')
+    list_filter = ('price', 'discount_price', 'tags', 'subcategory', 'is_featured','color', 'size', 'brand')
     filter_horizontal = ('tags',)
     inlines = [MoreImagesInline]
     
@@ -63,6 +75,9 @@ class ProductAdmin(admin.ModelAdmin):
         }),
         ('Categorization', {
             'fields': ('subcategory', 'tags')  # এখানে 'category' বাদ দেওয়া হয়েছে
+        }),
+        ('Product Attributes', {
+        'fields': ('color', 'size', 'brand')  # Add your ManyToMany fields here.
         }),
         ('Featured', {
             'fields': ('is_featured', 'feature_reason')
@@ -78,6 +93,18 @@ class ProductAdmin(admin.ModelAdmin):
         if db_field.name == "subcategory":
             kwargs["queryset"] = SubCategory.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_color(self, obj):
+        return obj.color.name if obj.color else "-"
+    get_color.short_description = "Color"
+
+    def get_size(self, obj):
+        return obj.size.name if obj.size else "-"
+    get_size.short_description = "Size"
+
+    def get_brand(self, obj):
+        return obj.brand.name if obj.brand else "-"
+    get_brand.short_description = "Brand"
 
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
@@ -281,84 +308,83 @@ class NewsletterSubscriberAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ('product', 'product_name', 'product_price', 'quantity', 'get_total_price')
-    fields = ('product', 'product_name', 'product_price', 'quantity', 'get_total_price')
+    readonly_fields = ['product', 'product_name', 'product_price', 'quantity']
     can_delete = False
     
-    def get_total_price(self, obj):
-        return f"৳{obj.get_total_price()}"
-    get_total_price.short_description = "Total"
+    def has_add_permission(self, request, obj=None):
+        return False
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'email', 'phone', 'total_price', 'order_status', 'payment_status', 'created_at')
-    list_filter = ('order_status', 'payment_status', 'payment_method', 'created_at')
-    search_fields = ('full_name', 'email', 'phone', 'tracking_number')
-    readonly_fields = ('created_at', 'updated_at', 'total_items', 'is_paid')
+    list_display = ['id', 'user', 'get_customer_name', 'total_price', 'order_status', 'payment_status', 'created_at']
+    list_filter = ['order_status', 'payment_status', 'payment_method', 'created_at']
+    search_fields = ['id', 'user__username', 'shipping_address__full_name', 'shipping_address__phone']
+    readonly_fields = ['user', 'full_name', 'email', 'phone', 'shipping_address', 'billing_address', 
+                      'payment_method', 'transaction_id', 'original_price', 'shipping_cost', 
+                      'discount_amount', 'total_price', 'created_at', 'updated_at']
+    fieldsets = [
+        ('Order Information', {
+            'fields': ['order_status', 'user', 'full_name', 'email', 'phone', 'created_at', 'updated_at']
+        }),
+        ('Customer Information', {
+            'fields': ['shipping_address', 'billing_address']
+        }),
+        ('Payment Information', {
+            'fields': ['payment_method', 'payment_status', 'transaction_id']
+        }),
+        ('Financial Details', {
+            'fields': ['original_price', 'shipping_cost', 'discount_amount', 'total_price']
+        }),
+        ('Shipping Details', {
+            'fields': ['tracking_number', 'estimated_delivery']
+        }),
+        ('Additional Information', {
+            'fields': ['notes']
+        }),
+    ]
     inlines = [OrderItemInline]
-    date_hierarchy = 'created_at'
-    fieldsets = (
-        ("Customer Information", {
-            'fields': ('user', 'full_name', 'email', 'phone')
-        }),
-        ("Address Information", {
-            'fields': ('shipping_address', 'billing_address')
-        }),
-        ("Order Details", {
-            'fields': ('order_status', 'payment_method', 'payment_status', 'transaction_id')
-        }),
-        ("Pricing", {
-            'fields': ('original_price', 'shipping_cost', 'discount_amount', 'total_price')
-        }),
-        ("Shipping Information", {
-            'fields': ('tracking_number', 'estimated_delivery', 'notes')
-        }),
-        ("Order Metrics", {
-            'fields': ('total_items', 'is_paid', 'created_at', 'updated_at')
-        }),
-    )
     
-    def save_model(self, request, obj, form, change):
-        if not change:  # Only for new orders
-            super().save_model(request, obj, form, change)
-        else:
-            # Check if status changed to 'shipped'
-            if 'order_status' in form.changed_data and obj.order_status == 'shipped':
-                # Send shipping notification
-                try:
-                    subject = f"Your order #{obj.id} has been shipped!"
-                    message = f"Hello {obj.full_name},\n\nYour order #{obj.id} has been shipped."
-                    if obj.tracking_number:
-                        message += f"\nTracking number: {obj.tracking_number}"
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [obj.email])
-                except Exception as e:
-                    pass  # Don't block the save if email fails
-            
-            super().save_model(request, obj, form, change)
+    def get_customer_name(self, obj):
+        if obj.shipping_address:
+            return obj.shipping_address.full_name
+        return "N/A"
+    get_customer_name.short_description = "Customer"
+    
+    def has_delete_permission(self, request, obj=None):
+        # Prevent deletion of orders for data integrity
+        return False
+    
+    def has_add_permission(self, request):
+        # Orders should be created through the website, not the admin
+        return False
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('order', 'product_name', 'product_price', 'quantity', 'get_total')
     list_filter = ('order__order_status',)
-    search_fields = ('product_name', 'order__full_name')
+    search_fields = ('product_name', 'order__id')
     
     def get_total(self, obj):
-        return f"৳{obj.get_total_price()}"
+        return f"৳{obj.product_price * obj.quantity}"
     get_total.short_description = "Total"
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'address_type', 'city', 'default', 'created_at')
-    list_filter = ('address_type', 'default', 'city', 'country')
-    search_fields = ('full_name', 'address_line1', 'city', 'postal_code')
-    fieldsets = (
-        ("User Information", {
-            'fields': ('user', 'full_name', 'phone', 'address_type', 'default')
+    list_display = ['full_name', 'city', 'address_type', 'user', 'created_at']
+    list_filter = ['address_type', 'city', 'created_at']
+    search_fields = ['full_name', 'address_line1', 'city', 'phone']
+    readonly_fields = ['created_at']
+    fieldsets = [
+        ('Personal Information', {
+            'fields': ['user', 'full_name', 'phone']
         }),
-        ("Address Details", {
-            'fields': ('address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country')
+        ('Address Information', {
+            'fields': ['address_line1', 'address_line2', 'city', 'postal_code', 'state', 'country', 'address_type', 'default']
         }),
-    )
+        ('System Information', {
+            'fields': ['created_at']
+        }),
+    ]
 
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
