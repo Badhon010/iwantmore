@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem
+from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand
 from .forms import ReviewForm
 from django.db.models import Q,Avg, Case, When, DecimalField
 from django.contrib.auth.decorators import login_required
@@ -55,7 +55,7 @@ def shop(request):
         product.full_stars = range(product.avg_rating)
         product.empty_stars = range(5 - product.avg_rating - (1 if product.half else 0))
 
-    return render(request, 'shop.html', {'products': products,'categories': Category.objects.all()})
+    return render(request, 'shop.html', {'products': products,'categories': Category.objects.all(),'colors': Color.objects.all(),'sizes': Size.objects.all(),'brangs': Brand.objects.all() })
 
 
 def about(request):
@@ -151,6 +151,9 @@ def search_view(request):
     sort = request.GET.get("sort", "newest")
     discount = request.GET.get("discount", "false") == "true"
     featured = request.GET.get("featured", "false") == "true"
+    selected_color = request.GET.get("color", "").strip()
+    selected_size = request.GET.get("size", "").strip()
+    selected_brand = request.GET.get("brand", "").strip()
     
     products = Product.objects.all()
 
@@ -223,6 +226,18 @@ def search_view(request):
     if featured:
         products = products.filter(is_featured=True)
 
+    # Apply color filter
+    if selected_color:
+        products = products.filter(color__name__iexact=selected_color)
+
+    # Apply size filter
+    if selected_size:
+        products = products.filter(size__name__iexact=selected_size)
+
+    # Apply brand filter
+    if selected_brand:
+        products = products.filter(brand__name__iexact=selected_brand)
+    
     # Apply sorting
     if sort == "price-low":
         products = products.annotate(
@@ -276,6 +291,12 @@ def search_view(request):
         "discount": discount,
         "featured": featured,
         "categories": Category.objects.all(),
+        "colors": Color.objects.all(),
+        "sizes": Size.objects.all(),
+        "brands": Brand.objects.all(),
+        "selected_color": selected_color,
+        "selected_size": selected_size,
+        "selected_brand": selected_brand,
     }
     
     # If it's an AJAX request, return only the product grid

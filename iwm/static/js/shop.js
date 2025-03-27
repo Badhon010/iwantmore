@@ -293,6 +293,9 @@ function initFilters() {
     const discountFilter = document.getElementById('discountFilter');
     const featuredFilter = document.getElementById('featuredFilter');
     const resetAllButton = document.getElementById('resetAllFilters');
+    const colorFilters = document.querySelectorAll(".color-options input[type='radio']");
+    const sizeFilter = document.querySelector(".size-filter select");
+    const brandFilter = document.querySelector(".brand-filter select");
     
     // Search input handler with debounce
     let searchTimeout;
@@ -416,6 +419,39 @@ function initFilters() {
     });
     }
     
+    colorFilters.forEach((color) => {
+        color.addEventListener("change", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set("color", this.value);
+            updateURL(urlParams);
+        });
+    });
+
+    // Handle size selection
+    if (sizeFilter) {
+        sizeFilter.addEventListener("change", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (this.value !== "all") {
+                urlParams.set("size", this.value);
+            } else {
+                urlParams.delete("size");
+            }
+            updateURL(urlParams);
+        });
+    }
+
+    // Handle brand selection
+    if (brandFilter) {
+        brandFilter.addEventListener("change", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (this.value !== "all") {
+                urlParams.set("brand", this.value);
+            } else {
+                urlParams.delete("brand");
+            }
+            updateURL(urlParams);
+        });}
+
     // Reset all filters
     if (resetAllButton) {
     resetAllButton.addEventListener('click', function() {

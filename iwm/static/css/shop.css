@@ -829,6 +829,19 @@ select.filter-sort:focus {
   z-index: 4;
 }
 
+.color-option{
+  display: none;
+}
+.color-circle{
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #8e8e8e;
+}
+.color-option:checked + .color-circle {
+  border: 3px solid #ffea00;
+  transform: scale(1.2);
+}
 .product-item:hover .quick-actions {
   right: 15px;
   opacity: 1;

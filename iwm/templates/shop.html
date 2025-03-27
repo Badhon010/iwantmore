@@ -114,43 +114,32 @@ today!{% endblock dis %}
           <div class="filter-group">
               <!-- Color Filter (Radio Buttons with Circles) -->
               <div class="filter-item color-filter">
-                  <h5>Color</h5>
+                  <h4>Color</h4>
                   <div class="color-options">
+                      {% for color in colors %}
                       <label>
-                          <input type="radio" name="color" value="red" class="color-option">
-                          <span class="color-circle" style="background-color: red;"></span>
+                          <input type="radio" name="color" value="{{ color.name }}" class="color-option">
+                          <div class="color-circle" style="background-color: {{ color.name }};"></div>
                       </label>
-                      <label>
-                          <input type="radio" name="color" value="blue" class="color-option">
-                          <span class="color-circle" style="background-color: blue;"></span>
-                      </label>
-                      <label>
-                          <input type="radio" name="color" value="green" class="color-option">
-                          <span class="color-circle" style="background-color: green;"></span>
-                      </label>
-                      <!-- Add more colors as needed -->
+                      {% endfor %}
                   </div>
               </div>
       
               <!-- Size Filter (Select Option) -->
               <div class="filter-item size-filter">
-                  <h5>Size</h5>
-                  <select name="size" class="size-select">
-                      <option value="small">Small</option>
-                      <option value="medium">Medium</option>
-                      <option value="large">Large</option>
-                      <!-- Add more size options as needed -->
+                  <h4>Size</h4>
+                  <select name="size" class="filter-sort">
+                      <option value="all">All</option>
+                      {% for size in sizes %}<option value="{{ size.name }}">{{ size.name }}</option>{% endfor %}
                   </select>
               </div>
       
               <!-- Brand Filter (Select Option) -->
               <div class="filter-item brand-filter">
-                  <h5>Brand</h5>
-                  <select name="brand" class="brand-select">
-                      <option value="brand1">Brand 1</option>
-                      <option value="brand2">Brand 2</option>
-                      <option value="brand3">Brand 3</option>
-                      <!-- Add more brand options as needed -->
+                  <h4>Brand</h4>
+                  <select name="brand" class="filter-sort">
+                    <option value="all">All</option>
+                    {% for brand in brands %}<option value="{{ brand.name }}">{{ brand.name }}</option>{% endfor %}
                   </select>
               </div>
           </div>
