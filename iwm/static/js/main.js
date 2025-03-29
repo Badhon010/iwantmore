@@ -187,16 +187,15 @@ document.addEventListener("DOMContentLoaded", function () {
           event.preventDefault();
           navigateSuggestions('up');
           break;
-        case "Enter":
-          event.preventDefault();
-          const selectedItem = suggestionsContainer.querySelector('.suggestion-item');
-          if (selectedItem) {
-            window.location.href = selectedItem.querySelector('a').getAttribute('href');
-          } else {
-            // Submit the form if no suggestion is selected
-            this.closest('form').submit();
-          }
-          break;
+          case "Enter":
+            event.preventDefault();
+            const selectedItem = suggestionsContainer.querySelector('.suggestion-item.selected');
+            if (selectedItem) {
+                window.location.href = selectedItem.querySelector('a').getAttribute('href');
+            } else {
+                this.closest('form').submit();
+            }
+            break;
         case "Escape":
           suggestionsContainer.classList.remove("active");
           selectedIndex = -1;

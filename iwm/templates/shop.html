@@ -222,7 +222,10 @@ today!{% endblock dis %}
           data-stock="{{ product.stock }}" 
           data-featured="{% if product.is_featured %}true{% else %}false{% endif %}" 
           data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}"
-          data-date="{{ product.created_at|date:'U' }}">
+          data-date="{{ product.created_at|date:'U' }}"
+          data-color="{% if product.color %}{{ product.color.name }}{% else %}none{% endif %}"
+          data-size="{% if product.size %}{{ product.size.name }}{% else %}none{% endif %}"
+          data-brand="{% if product.brand %}{{ product.brand.name }}{% else %}none{% endif %}">
           <div class="product-image-container">
             {% if product.discount_price %}
             <span class="product-badge sale">Sale</span>

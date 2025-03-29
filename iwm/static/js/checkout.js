@@ -605,7 +605,7 @@ function submitOrder() {
             }
             
             // Redirect to order confirmation page
-            window.location.href = `/order-confirmation/?order_slug=${data.order_slug}`;
+            window.location.href = `/order-confirmation/?order_id=${data.order_id}`;
         } else {
             alert('Error: ' + data.message);
             

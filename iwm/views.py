@@ -55,7 +55,7 @@ def shop(request):
         product.full_stars = range(product.avg_rating)
         product.empty_stars = range(5 - product.avg_rating - (1 if product.half else 0))
 
-    return render(request, 'shop.html', {'products': products,'categories': Category.objects.all(),'colors': Color.objects.all(),'sizes': Size.objects.all(),'brangs': Brand.objects.all() })
+    return render(request, 'shop.html', {'products': products,'categories': Category.objects.all(),'colors': Color.objects.all(),'sizes': Size.objects.all(),'brands': Brand.objects.all() })
 
 
 def about(request):
@@ -590,17 +590,17 @@ def checkout(request):
     return render(request, 'checkout.html')
 
 def order_confirmation(request):
-    order_slug = request.GET.get('order.slug')
+    order_id = request.GET.get('order.slug')
     
-    if order_slug:
-        # Try to get the order by order_slug
-        order = Order.objects.filter(order_slug=order_slug).first()
+    if order_id:
+        # Try to get the order by order_id
+        order = Order.objects.filter(order_id=order_id).first()
         
         # If authenticated user, verify the order belongs to them or is a guest order
         if request.user.is_authenticated and order and order.user and order.user != request.user:
             order = None
     else:
-        # If no order_slug is provided, try to get the latest order for the user
+        # If no order_id is provided, try to get the latest order for the user
         if request.user.is_authenticated:
             order = Order.objects.filter(user=request.user).order_by('-created_at').first()
         else:
@@ -613,21 +613,26 @@ def apply_coupon(request):
         code = request.POST.get('coupon_code')
         
         try:
-            coupon = Coupon.objects.get(code=code, active=True)
+            coupon = Coupon.objects.get(code=code, is_active=True)
             
             # Check if coupon is expired
-            if coupon.valid_until and coupon.valid_until < timezone.now().date():
+            if coupon.valid_to and coupon.valid_to < timezone.now():
                 return JsonResponse({'status': 'error', 'message': 'This coupon has expired'})
             
             # Store coupon in session
             request.session['coupon_id'] = coupon.id
-            request.session['discount'] = float(coupon.discount)
+            
+            # Apply the correct discount (amount or percentage)
+            if coupon.discount_amount > 0:
+                request.session['discount'] = float(coupon.discount_amount)
+            else:
+                request.session['discount'] = float(coupon.discount_percent)
             
             return JsonResponse({
                 'status': 'success', 
                 'message': 'Coupon applied successfully', 
-                'discount': float(coupon.discount),
-                'discount_type': coupon.discount_type
+                'discount': request.session['discount'],
+                'discount_type': 'amount' if coupon.discount_amount > 0 else 'percent'
             })
             
         except Coupon.DoesNotExist:
@@ -768,7 +773,7 @@ def place_order(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Order placed successfully',
-                'order_slug': order.id
+                'order_id': order.id
             })
             
         except Exception as e:

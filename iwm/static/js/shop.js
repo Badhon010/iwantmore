@@ -142,6 +142,26 @@ function initFromURL() {
     if (query) {
         document.getElementById('searchInput').value = query;
     }
+    // Set color filter from URL
+    const color = urlParams.get('color');
+    if (color) {
+        const colorRadio = document.querySelector(`.color-options input[value="${color}"]`);
+        if (colorRadio) colorRadio.checked = true;
+    }
+
+    // Set size filter from URL
+    const size = urlParams.get('size');
+    if (size) {
+        const sizeSelect = document.querySelector('.size-filter select');
+        if (sizeSelect) sizeSelect.value = size;
+    }
+
+    // Set brand filter from URL
+    const brand = urlParams.get('brand');
+    if (brand) {
+        const brandSelect = document.querySelector('.brand-filter select');
+        if (brandSelect) brandSelect.value = brand;
+    }
 }
 
 function initPriceRange() {
@@ -461,12 +481,19 @@ function initFilters() {
 }
 
 function updateURL(urlParams) {
-    // Determine if we're on /shop or /search route
-    const currentPath = window.location.pathname;
-    const basePath = currentPath.includes('/shop') ? '/shop/' : '/search/';
-    
-    const newURL = `${basePath}?${urlParams.toString()}`;
+    let currentPath = window.location.pathname;
+
+    // Ensure we always redirect to /search/ when filters are applied
+    if (currentPath.startsWith('/shop/')) {
+        currentPath = currentPath.replace('/shop/', '/search/');
+    } else if (!currentPath.startsWith('/search/')) {
+        currentPath = '/search/'; // Default to /search/ if not already there
+    }
+
+    const newURL = `${currentPath}?${urlParams.toString()}`;
     window.history.pushState({}, '', newURL);
+    
+    // Call fetchProducts if you have AJAX-based content update
     fetchProducts(newURL);
 }
 
