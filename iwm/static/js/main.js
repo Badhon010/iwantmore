@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Update cart and wishlist count badges when page loads
     updateCartCount();
     updateWishlistCount();
+    updateOrderCount();
 });
 
 // Function to update cart count badge
@@ -246,6 +247,27 @@ function updateWishlistCount() {
     wishlistCountBadges.forEach(badge => {
         badge.textContent = totalItems > 0 ? totalItems : '';
         badge.setAttribute('data-count', totalItems);
+    });
+}
+// Function to update order count badge
+function updateOrderCount() {
+    const orderItems = JSON.parse(localStorage.getItem('orderItems')) || [];
+    const orderCountBadges = document.querySelectorAll('.order-count');
+    
+    if (orderCountBadges.length === 0) return;
+    
+    const totalItems = orderItems.length;
+    
+    orderCountBadges.forEach(badge => {
+        if (totalItems > 0) {
+            badge.textContent = totalItems;
+            badge.setAttribute('data-count', totalItems);
+            badge.style.display = ''; // Show badge
+        } else {
+            badge.textContent = '';
+            badge.setAttribute('data-count', 0);
+            badge.style.display = 'none'; // Hide badge
+        }
     });
 }
 

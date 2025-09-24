@@ -3,56 +3,134 @@
 {% block title %}My Orders - I Want More{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/my_orders.css' %}">
+<style>
+    /* Tracking Modal Styles */
+    .tracking-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .tracking-modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        position: relative;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close-modal:hover {
+        color: #000;
+    }
+
+    .tracking-info {
+        margin-top: 20px;
+    }
+
+    .tracking-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        text-transform: capitalize;
+    }
+
+    .tracking-status.pending { background-color: #ffc107; }
+    .tracking-status.processing { background-color: #17a2b8; }
+    .tracking-status.shipped { background-color: #007bff; }
+    .tracking-status.delivered { background-color: #28a745; }
+    .tracking-status.cancelled { background-color: #dc3545; }
+</style>
 {% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/orders.js' %}"></script>
+{% endblock %}
+
 {% block content %}
+<!-- Add CSRF Token -->
+{% csrf_token %}
 
 <div class="orders-container">
     <h2>My Orders</h2>
     
-    <div class="order">
-        <div class="order-header">
-            <span class="order-id">Order #12345</span>
-            <span class="order-date">Placed on: March 26, 2025</span>
-        </div>
-        <div class="order-items">
-            <div class="order-item">
-                <img src="{% static 'imgs/product1.jpg' %}" alt="Product Image">
-                <div class="order-info">
-                    <h3>Product Name</h3>
-                    <p>Quantity: 2</p>
-                    <p class="price">$50</p>
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order">
+            <div class="order-header">
+                <span class="order-id">Order #{{ order.id }}</span>
+                <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
+            </div>
+            <div class="order-items">
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    {% if item.product and item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                    {% else %}
+                        <div class="no-image">No Image</div>
+                    {% endif %}
+                    <div class="order-info">
+                        <h3>{{ item.product_name }}</h3>
+                        <p>Quantity: {{ item.quantity }}</p>
+                        <p class="price">৳{{ item.product_price }}</p>
+                    </div>
+                    <span class="order-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
                 </div>
-                <span class="order-status delivered">Delivered</span>
+                {% endfor %}
+            </div>
+            <div class="order-actions">
+                <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn details-btn">View Details</a>
+                {% if order.order_status != 'cancelled' %}
+                    <a href="#" class="btn track-btn" data-tracking="{{ order.tracking_number }}" data-order="{{ order.id }}">Track Order</a>
+                {% endif %}
+                {% if order.order_status == 'pending' %}
+                    <a href="#" class="btn cancel-btn" data-order="{{ order.id }}">Cancel Order</a>
+                {% endif %}
             </div>
         </div>
-        <div class="order-actions">
-            <a href="#" class="btn details-btn">View Details</a>
-            <a href="#" class="btn track-btn">Track Order</a>
+        {% endfor %}
+    {% else %}
+        <div class="no-orders">
+            <p>You haven't placed any orders yet.</p>
+            <a href="{% url 'shop' %}" class="btn shop-btn">Start Shopping</a>
         </div>
-    </div>
+    {% endif %}
+</div>
 
-    <div class="order">
-        <div class="order-header">
-            <span class="order-id">Order #67890</span>
-            <span class="order-date">Placed on: March 20, 2025</span>
-        </div>
-        <div class="order-items">
-            <div class="order-item">
-                <img src="{% static 'imgs/product2.jpg' %}" alt="Product Image">
-                <div class="order-info">
-                    <h3>Another Product</h3>
-                    <p>Quantity: 1</p>
-                    <p class="price">$30</p>
-                </div>
-                <span class="order-status pending">Pending</span>
+<!-- Tracking Modal -->
+<div id="tracking-modal" class="tracking-modal">
+    <div class="tracking-modal-content">
+        <span id="close-tracking-modal" class="close-modal">&times;</span>
+        <h2>Order Tracking</h2>
+        <div class="tracking-info">
+            <p><strong>Status:</strong> <span id="order-tracking-status" class="tracking-status"></span></p>
+            <p><strong>Tracking Number:</strong> <span id="order-tracking-number"></span></p>
+            <div id="tracking-timeline">
+                <p>Track your order using this tracking number at our shipping partner's website.</p>
+                {% if order.estimated_delivery %}
+                <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|date:"F d, Y" }}</p>
+                {% endif %}
             </div>
         </div>
-        <div class="order-actions">
-            <a href="#" class="btn details-btn">View Details</a>
-            <a href="#" class="btn cancel-btn">Cancel Order</a>
-        </div>
     </div>
-
 </div>
 
 {% endblock %}
