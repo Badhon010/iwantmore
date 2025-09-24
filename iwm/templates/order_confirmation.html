@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load order_tags %}
 
 {% block title %}Order Confirmation - I Want More{% endblock %}
 {% block styles %}
@@ -59,13 +58,13 @@
       <div class="detail-section">
         <h3>Order Summary</h3>
         <div class="order-items">
-          {% for item in order.orderitem_set.all %}
+          {% for item in items %}
           <div class="order-item">
             <div class="item-details">
               <div class="item-name">{{ item.product_name }}</div>
               <div class="item-price">৳{{ item.product_price }} × {{ item.quantity }}</div>
             </div>
-            <div class="item-total">৳{{ item.product_price|multiply:item.quantity }}</div>
+            <div class="item-total">৳{{ item.line_total }}</div>
           </div>
           {% endfor %}
         </div>

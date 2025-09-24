@@ -583,30 +583,168 @@ def cart(request):
 def wishlist(request):
     return render(request, 'wishlist.html')
 
+from django.db import transaction
+
+
 def checkout(request):
-    if request.method == 'POST':
-        # Process the order form submission
-        return redirect('order_confirmation')
-    return render(request, 'checkout.html')
+    """Create an Order from the session cart and redirect to a success/confirmation page.
+
+    Expects `request.session['cart']` to be a list of items with keys:
+      - id (product id)
+      - name
+      - price
+      - quantity
+      - image (optional)
+
+    Also looks for optional `request.session['shipping_cost']` and `request.session['coupon_id']`.
+    """
+    if request.method != 'POST':
+        return render(request, 'checkout.html')
+
+    cart = request.session.get('cart', [])
+    if not cart:
+        messages.error(request, 'Your cart is empty.')
+        return redirect('cart')
+
+    # Simple form fields (adapt if your checkout form uses different names)
+    full_name = request.POST.get('full_name', '').strip()
+    email = request.POST.get('email', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    address_line1 = request.POST.get('address_line1', '').strip()
+    address_line2 = request.POST.get('address_line2', '').strip()
+    city = request.POST.get('city', '').strip()
+    state = request.POST.get('state', '').strip()
+    postal_code = request.POST.get('postal_code', '').strip()
+    country = request.POST.get('country', 'Bangladesh').strip()
+    shipping_cost = float(request.session.get('shipping_cost', 0))
+
+    # Compute totals from cart
+    subtotal = 0
+    for item in cart:
+        qty = int(item.get('quantity', 1))
+        price = float(item.get('price', 0))
+        subtotal += qty * price
+
+    total = subtotal + shipping_cost
+
+    # Create order atomically
+    try:
+        with transaction.atomic():
+            # create or reuse addresses - simple Address creation here
+            shipping_address = Address.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                address_type='shipping',
+                default=False,
+                full_name=full_name,
+                phone=phone,
+                address_line1=address_line1,
+                address_line2=address_line2,
+                city=city,
+                postal_code=postal_code,
+                state=state,
+                country=country,
+            )
+
+            order = Order.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                shipping_address=shipping_address,
+                billing_address=shipping_address,
+                total_price=total,
+                original_price=subtotal,
+                shipping_cost=shipping_cost,
+                discount_amount=0,
+                order_status='pending',
+            )
+
+            # Create order items and update stock
+            for entry in cart:
+                product = None
+                product_id = entry.get('id')
+                try:
+                    if product_id:
+                        product = Product.objects.select_for_update().get(id=product_id)
+                except Product.DoesNotExist:
+                    product = None
+
+                qty = int(entry.get('quantity', 1))
+                price = float(entry.get('price', 0))
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    product_name=entry.get('name', '')[:255],
+                    product_price=price,
+                    quantity=qty,
+                )
+
+                # decrement product stock if product exists
+                if product:
+                    product.stock = max(0, product.stock - qty)
+                    product.save(update_fields=['stock'])
+
+            # Clear cart and related session data
+            if 'cart' in request.session:
+                del request.session['cart']
+            if 'shipping_cost' in request.session:
+                del request.session['shipping_cost']
+            if 'coupon_id' in request.session:
+                del request.session['coupon_id']
+
+            # If this was a guest checkout, store the order id in session so the guest can view it
+            if not request.user.is_authenticated:
+                request.session['guest_order_id'] = str(order.id)
+
+            # Optionally send confirmation email here (omitted for brevity)
+
+            # Redirect to confirmation page with order id
+            return redirect(reverse('order_confirmation') + f'?order_id={order.id}')
+
+    except Exception as e:
+        messages.error(request, f'Error placing order: {str(e)}')
+        return redirect('cart')
 
 def order_confirmation(request):
-    order_id = request.GET.get('order.slug')
-    
+    # Accept ?order_id=<id> or show the latest order for authenticated users
+    order_id = request.GET.get('order_id')
+
+    order = None
     if order_id:
-        # Try to get the order by order_id
-        order = Order.objects.filter(order_id=order_id).first()
-        
-        # If authenticated user, verify the order belongs to them or is a guest order
-        if request.user.is_authenticated and order and order.user and order.user != request.user:
+        try:
+            order = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').get(id=order_id)
+            # Security: allow if the order belongs to the logged in user
+            if request.user.is_authenticated:
+                if order.user and order.user != request.user:
+                    order = None
+            else:
+                # allow guest only if session has the guest_order_id
+                if request.session.get('guest_order_id') != str(order_id):
+                    order = None
+        except Order.DoesNotExist:
             order = None
     else:
-        # If no order_id is provided, try to get the latest order for the user
         if request.user.is_authenticated:
             order = Order.objects.filter(user=request.user).order_by('-created_at').first()
-        else:
-            order = None
-    
-    return render(request, 'order_confirmation.html', {'order': order})
+
+    items = []
+    if order:
+        for it in order.items.all():
+            try:
+                line_total = it.product_price * it.quantity
+            except Exception:
+                # fallback to numeric multiplication
+                line_total = float(it.product_price) * int(it.quantity)
+            items.append({
+                'product_name': it.product_name,
+                'product_price': it.product_price,
+                'quantity': it.quantity,
+                'line_total': line_total,
+                'product': it.product,
+            })
+
+    return render(request, 'order_confirmation.html', {'order': order, 'items': items})
 
 def apply_coupon(request):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
