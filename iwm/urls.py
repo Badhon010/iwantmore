@@ -52,4 +52,7 @@ urlpatterns = [
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
     path('place-order/', views.place_order, name='place_order'),
     path('my-orders/', views.my_orders, name='my_orders'),
+    path('sslcommerz/success/', views.sslcommerz_success, name='sslcommerz_success'),
+    path('sslcommerz/fail/', views.sslcommerz_fail, name='sslcommerz_fail'),
+    path('sslcommerz/cancel/', views.sslcommerz_cancel, name='sslcommerz_cancel'),
 ]

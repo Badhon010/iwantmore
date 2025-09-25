@@ -75,12 +75,13 @@
         </div>
         <div class="line"><hr>or<hr></div>
         <div class="more-option">
-          <button type="button" id="signup-google">
+          <!-- Use django-allauth endpoints to initiate social signup -->
+          <a class="social-btn google" href="/accounts/google/login/?process=signup">
             Sign up with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign up with Google" />
-          </button>
-          <button type="button" id="signup-facebook">
+          </a>
+          <a class="social-btn facebook" href="/accounts/facebook/login/?process=signup">
             Sign up with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign up with Facebook" />
-          </button>
+          </a>
         </div>
       </form>
     </div>

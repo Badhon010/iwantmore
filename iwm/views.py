@@ -22,6 +22,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 import time
 from django.utils import timezone
+import urllib.request
+import urllib.parse
 
 def rd(request):
     return redirect('home')
@@ -616,6 +618,7 @@ def checkout(request):
     state = request.POST.get('state', '').strip()
     postal_code = request.POST.get('postal_code', '').strip()
     country = request.POST.get('country', 'Bangladesh').strip()
+    payment_method = request.POST.get('payment_method', 'cash_on_delivery').strip()
     shipping_cost = float(request.session.get('shipping_cost', 0))
 
     # Compute totals from cart
@@ -658,6 +661,56 @@ def checkout(request):
                 discount_amount=0,
                 order_status='pending',
             )
+
+            # If payment method requires external gateway (bkash or nagad), initiate SSLCOMMERZ
+            if payment_method in ['bkash', 'nagad']:
+                # create a transaction id and save it on order
+                gateway_tran_id = f"ORDER{order.id}-{int(time.time())}"
+                order.transaction_id = gateway_tran_id
+                order.payment_method = payment_method
+                order.save(update_fields=['transaction_id', 'payment_method'])
+
+                # Prepare payload for SSLCOMMERZ sandbox
+                store_id = getattr(settings, 'SSLCOMMERZ_STORE_ID', 'testbox')
+                store_pass = getattr(settings, 'SSLCOMMERZ_STORE_PASSWD', 'qwerty')
+                success_url = request.build_absolute_uri(reverse('sslcommerz_success'))
+                fail_url = request.build_absolute_uri(reverse('sslcommerz_fail'))
+                cancel_url = request.build_absolute_uri(reverse('sslcommerz_cancel'))
+
+                payload = {
+                    'store_id': store_id,
+                    'store_passwd': store_pass,
+                    'total_amount': str(total),
+                    'currency': 'BDT',
+                    'tran_id': gateway_tran_id,
+                    'success_url': success_url,
+                    'fail_url': fail_url,
+                    'cancel_url': cancel_url,
+                    'emi_option': 0,
+                    'cus_name': full_name,
+                    'cus_email': email,
+                    'cus_phone': phone,
+                    'cus_add1': address_line1,
+                    'cus_city': city,
+                    'cus_country': country,
+                    'ship_method': 'NO',
+                }
+
+                try:
+                    data = urllib.parse.urlencode(payload).encode()
+                    req = urllib.request.Request('https://sandbox.sslcommerz.com/gwprocess/v4/api.php', data=data)
+                    with urllib.request.urlopen(req, timeout=15) as resp:
+                        resp_body = resp.read().decode()
+                        resp_json = json.loads(resp_body)
+                        gateway_url = resp_json.get('GatewayPageURL') or resp_json.get('redirect_url')
+                        if gateway_url:
+                            return redirect(gateway_url)
+                        else:
+                            messages.error(request, 'Payment gateway error, please try another method.')
+                            return redirect('checkout')
+                except Exception as e:
+                    messages.error(request, f'Payment initiation failed: {str(e)}')
+                    return redirect('checkout')
 
             # Create order items and update stock
             for entry in cart:
@@ -745,6 +798,66 @@ def order_confirmation(request):
             })
 
     return render(request, 'order_confirmation.html', {'order': order, 'items': items})
+
+
+@require_POST
+def sslcommerz_success(request):
+    # SSLCOMMERZ will post back transaction details
+    post = request.POST
+    tran_id = post.get('tran_id')
+    val_id = post.get('val_id')
+    status = post.get('status')
+
+    # Find order by our stored transaction id
+    try:
+        order = Order.objects.get(transaction_id=tran_id)
+        # Update payment status if success
+        if status and status.lower() in ('valid', 'success', 'completed'):
+            order.payment_status = True
+            order.transaction_id = val_id or tran_id
+            order.order_status = 'processing'
+            order.save(update_fields=['payment_status', 'transaction_id', 'order_status'])
+            # Clear guest_order_id since order completed
+            if 'guest_order_id' in request.session:
+                try:
+                    del request.session['guest_order_id']
+                except Exception:
+                    pass
+            return redirect(reverse('order_confirmation') + f'?order_id={order.id}')
+    except Order.DoesNotExist:
+        pass
+
+    messages.error(request, 'Payment verification failed.')
+    return redirect('checkout')
+
+
+@require_POST
+def sslcommerz_fail(request):
+    # Payment failed - find order and mark as cancelled or failed
+    post = request.POST
+    tran_id = post.get('tran_id')
+    try:
+        order = Order.objects.get(transaction_id=tran_id)
+        order.order_status = 'cancelled'
+        order.save(update_fields=['order_status'])
+    except Order.DoesNotExist:
+        pass
+    messages.error(request, 'Payment failed or was declined.')
+    return redirect('checkout')
+
+
+@require_POST
+def sslcommerz_cancel(request):
+    post = request.POST
+    tran_id = post.get('tran_id')
+    try:
+        order = Order.objects.get(transaction_id=tran_id)
+        order.order_status = 'cancelled'
+        order.save(update_fields=['order_status'])
+    except Order.DoesNotExist:
+        pass
+    messages.warning(request, 'Payment was cancelled.')
+    return redirect('checkout')
 
 def apply_coupon(request):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':

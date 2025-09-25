@@ -176,9 +176,71 @@ SOCIALACCOUNT_PROVIDERS.update({
     }
 })
 
+# ========================
+# django-allauth configuration
+# ========================
+# You should set these environment variables in your .env or system environment:
+# - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+# - FACEBOOK_CLIENT_ID, FACEBOOK_CLIENT_SECRET
+# The values above are used by the socialaccount providers. If you prefer,
+# you can also create SocialApp entries in Django admin (recommended for multiple
+# environments). See the instructions below.
+
+SOCIALACCOUNT_LOGIN_ON_GET=True
+
+# Basic allauth settings - adjust as needed
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # can be 'mandatory' in production
+ACCOUNT_USERNAME_REQUIRED = True
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Socialaccount settings - optional custom scopes, can be tuned per provider
+SOCIALACCOUNT_PROVIDERS.setdefault('google', {})
+SOCIALACCOUNT_PROVIDERS['google'].setdefault('SCOPE', ['profile', 'email'])
+SOCIALACCOUNT_PROVIDERS['google'].setdefault('AUTH_PARAMS', {'access_type': 'online'})
+
+SOCIALACCOUNT_PROVIDERS.setdefault('facebook', {})
+SOCIALACCOUNT_PROVIDERS['facebook'].setdefault('METHOD', 'oauth2')
+SOCIALACCOUNT_PROVIDERS['facebook'].setdefault('SCOPE', ['email', 'public_profile'])
+
+# Important: After adding the provider credentials either via environment or
+# via the Django admin (SocialApp), open Django admin -> Social applications ->
+# Add SocialApp (choose provider google/facebook), set client id & secret, and
+# set the Sites (select your site, e.g., example.com or 127.0.0.1:8000) so
+# Django-allauth can match the site. You must also register the correct
+# redirect/callback URL(s) in the provider developer console:
+#
+# Google: Authorized redirect URI -> http://127.0.0.1:8000/accounts/google/login/callback/
+# Facebook: Valid OAuth Redirect URI -> http://127.0.0.1:8000/accounts/facebook/login/callback/
+
+
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ========================
+# SSLCOMMERZ Configuration
+# ========================
+
+# Sandbox credentials (for testing)
+SSLCOMMERZ_STORE_ID = "testbox"
+SSLCOMMERZ_STORE_PASSWD = "qwerty"
+
+# Gateway URLs
+if DEBUG:  # sandbox mode
+    SSLCOMMERZ_API_URL = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+    SSLCOMMERZ_VALIDATION_URL = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
+else:  # production mode
+    SSLCOMMERZ_API_URL = "https://securepay.sslcommerz.com/gwprocess/v4/api.php"
+    SSLCOMMERZ_VALIDATION_URL = "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
+
+# Your site callback URLs
+SSLCOMMERZ_SUCCESS_URL = "http://127.0.0.1:8000/sslcommerz/success/"
+SSLCOMMERZ_FAIL_URL = "http://127.0.0.1:8000/sslcommerz/fail/"
+SSLCOMMERZ_CANCEL_URL = "http://127.0.0.1:8000/sslcommerz/cancel/"

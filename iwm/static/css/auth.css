@@ -225,7 +225,7 @@ button[id*="eye-button"] .open {
   gap: 10px;
 }
 
-.more-option button {
+.more-option a {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,19 +235,19 @@ button[id*="eye-button"] .open {
   font-weight: bold;
   border-radius: 8px;
   background: rgb(236, 236, 236);
-  border: none;
+  text-decoration: none;
   color: rgb(76, 76, 76);
   cursor: pointer;
   transition: background 0.3s, color 0.3s;
   flex: 1 1 calc(50% - 10px);
 }
 
-.more-option button:hover {
+.more-option a:hover {
   background: rgb(192, 192, 192);
   color: rgb(45, 45, 45);
 }
 
-.more-option button img {
+.more-option a img {
   width: 20px;
 }
 
