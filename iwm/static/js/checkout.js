@@ -40,6 +40,14 @@ function initializeCheckout() {
             updateOrderSummary();
         });
     });
+    
+    // Add event listener for shipping state changes
+    const shippingStateField = document.getElementById('shipping-state');
+    if (shippingStateField) {
+        shippingStateField.addEventListener('change', function() {
+            updateOrderSummary();
+        });
+    }
 }
 
 // Load cart items from localStorage
@@ -222,8 +230,20 @@ function updateOrderSummary(discount = 0, discountType = 'fixed') {
         subtotal += parseFloat(item.price) * parseInt(item.quantity);
     });
     
-    // Calculate shipping cost - can be adjusted based on your business logic
-    const shippingCost = subtotal > 0 ? 15 : 0;
+    // Calculate shipping cost based on location
+    let shippingCost = 0;
+    if (subtotal > 0) {
+        // Get shipping location
+        const shippingState = document.getElementById('shipping-state')?.value || '';
+        console.log("Shipping state:", shippingState); // Debug log
+        // Check if location is in Dhaka Division
+        if (shippingState.toLowerCase().includes('dhaka')) {
+            shippingCost = 80; // Inside Dhaka Division: 80 taka
+        } else {
+            shippingCost = 150; // Outside Dhaka Division: 150 taka
+        }
+        console.log("Shipping cost set to:", shippingCost); // Debug log
+    }
     
     // Apply discount if any
     let discountAmount = 0;
@@ -239,20 +259,20 @@ function updateOrderSummary(discount = 0, discountType = 'fixed') {
     const total = subtotal + shippingCost - discountAmount;
     
     // Update UI
-    document.getElementById('subtotal-amount').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('shipping-amount').textContent = `$${shippingCost.toFixed(2)}`;
+    document.getElementById('subtotal-amount').textContent = `৳${subtotal.toFixed(2)}`;
+    document.getElementById('shipping-amount').textContent = `৳${shippingCost.toFixed(2)}`;
     
     const discountElement = document.getElementById('discount-row');
     const discountAmountElement = document.getElementById('discount-amount');
     
     if (discountAmount > 0) {
         discountElement.style.display = 'flex';
-        discountAmountElement.textContent = `-$${discountAmount.toFixed(2)}`;
+        discountAmountElement.textContent = `-৳${discountAmount.toFixed(2)}`;
     } else {
         discountElement.style.display = 'none';
     }
     
-    document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
+    document.getElementById('total-amount').textContent = `৳${total.toFixed(2)}`;
     
     // Store values for order processing
     document.getElementById('order-subtotal').value = subtotal.toFixed(2);
@@ -638,4 +658,4 @@ function getCSRFToken() {
 function isValidEmail(email) {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(email);
-} 
+}
