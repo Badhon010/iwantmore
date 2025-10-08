@@ -251,24 +251,59 @@ function updateWishlistCount() {
 }
 // Function to update order count badge
 function updateOrderCount() {
-    const orderItems = JSON.parse(localStorage.getItem('orderItems')) || [];
     const orderCountBadges = document.querySelectorAll('.order-count');
-    
     if (orderCountBadges.length === 0) return;
-    
-    const totalItems = orderItems.length;
-    
-    orderCountBadges.forEach(badge => {
-        if (totalItems > 0) {
-            badge.textContent = totalItems;
-            badge.setAttribute('data-count', totalItems);
-            badge.style.display = ''; // Show badge
-        } else {
+
+    const isLoggedIn = document.body.classList.contains('logged-in');
+
+    if (!isLoggedIn) {
+        // Hide badge for logged-out users
+        orderCountBadges.forEach(badge => {
             badge.textContent = '';
             badge.setAttribute('data-count', 0);
-            badge.style.display = 'none'; // Hide badge
-        }
-    });
+            badge.style.display = 'none';
+        });
+        return;
+    }
+
+    fetch('/api/order-count/')
+        .then(response => {
+            if (!response.ok) {
+                orderCountBadges.forEach(badge => {
+                    badge.textContent = '';
+                    badge.setAttribute('data-count', 0);
+                    badge.style.display = 'none';
+                });
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return;
+            const count = parseInt(data.count || '0');
+            updateOrderBadges(count);
+        })
+        .catch(() => {
+            orderCountBadges.forEach(badge => {
+                badge.textContent = '';
+                badge.setAttribute('data-count', 0);
+                badge.style.display = 'none';
+            });
+        });
+
+    function updateOrderBadges(count) {
+        orderCountBadges.forEach(badge => {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.setAttribute('data-count', count);
+                badge.style.display = ''; // show badge
+            } else {
+                badge.textContent = '';
+                badge.setAttribute('data-count', 0);
+                badge.style.display = 'none'; // hide badge
+            }
+        });
+    }
 }
 
 // Function to add item to cart

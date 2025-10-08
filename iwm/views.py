@@ -1035,5 +1035,13 @@ def place_order(request):
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
+@login_required
 def my_orders(request):
-    return render(request,'my_orders.html')
+    orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
+    return render(request, 'my_orders.html', {'orders': orders})
+
+@login_required
+def order_count(request):
+    active_statuses = ['pending', 'processing', 'shipped']
+    count = request.user.orders.filter(order_status__in=active_statuses).count()
+    return JsonResponse({'count': count})
