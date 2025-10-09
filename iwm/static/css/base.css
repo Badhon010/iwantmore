@@ -17,41 +17,105 @@
     --dropdown-bg: #f9f9f9;
     --dropdown-border: #dddddd;
 }
-  /* Message styling */
-  .messages-container {
-    max-width: 900px;
-    margin: 10px auto;
-  }
-  
-  .alert {
+/* Alert message styles */
+.messages-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    padding: 0 15px;
+}
+
+.alert {
+    position: relative;
     padding: 12px 20px;
-    border-radius: 5px;
     margin-bottom: 15px;
-  }
-  
-  .alert-success {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.alert-success {
+    color: #155724;
     background-color: #d4edda;
     border-color: #c3e6cb;
-    color: #155724;
-  }
-  
-  .alert-error, .alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-  }
-  
-  .alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-    color: #856404;
-  }
-  
-  .alert-info {
+}
+
+.alert-info {
+    color: #0c5460;
     background-color: #d1ecf1;
     border-color: #bee5eb;
-    color: #0c5460;
-  }
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+.alert-danger, .alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-dismissible {
+    padding-right: 40px;
+}
+
+.btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 12px 15px;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+.fade {
+    transition: opacity 0.15s linear;
+}
+
+.fade.show {
+    opacity: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 576px) {
+    .messages-container {
+        padding: 0 10px;
+    }
+    
+    .alert {
+        padding: 10px 15px;
+    }
+    
+    .btn-close {
+        padding: 10px 12px;
+    }
+}
+
+/* Base styles */
 body {
     margin: 0;
     padding: 0;

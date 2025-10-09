@@ -121,3 +121,32 @@
     background: #FF4E6A;
     color: white;
 }
+
+.tracking-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.tracking-status.pending {
+    background-color: #ffc107;
+}
+
+.tracking-status.processing {
+    background-color: #17a2b8;
+}
+
+.tracking-status.shipped {
+    background-color: #007bff;
+}
+
+.tracking-status.delivered {
+    background-color: #28a745;
+}
+
+.tracking-status.cancelled {
+    background-color: #dc3545;
+}

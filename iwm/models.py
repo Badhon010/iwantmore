@@ -104,8 +104,11 @@ class Product(models.Model):
 
     @property
     def discount_percentage(self):
-        if self.discount_price:
-            return round(100 - (self.discount_price / self.price) * 100, 2)
+        try:
+            if self.discount_price and self.price > 0:
+                return round(100 - (self.discount_price / self.price) * 100, 2)
+        except (TypeError, ZeroDivisionError):
+            pass
         return 0
 
     @property

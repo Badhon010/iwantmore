@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Track Order - I Want More{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/track_order.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="track-order-container">
+    <h2>Track Your Order</h2>
+    
+    {% if order %}
+        <div class="order-details">
+            <div class="order-header">
+                <span class="order-id">Order #{{ order.id }}</span>
+                <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
+            </div>
+            
+            <div class="tracking-info">
+                <div class="tracking-header">
+                    <h3>Tracking Information</h3>
+                    {% if order.tracking_number %}
+                        <p class="tracking-number">Tracking Number: <span>{{ order.tracking_number }}</span></p>
+                    {% else %}
+                        <p class="tracking-number">Tracking Number: <span>Not available yet</span></p>
+                    {% endif %}
+                </div>
+                
+                <div class="tracking-status-container">
+                    <div class="tracking-timeline">
+                        <div class="timeline-item {% if order.order_status != 'pending' %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4>Order Placed</h4>
+                                <p>{{ order.created_at|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item {% if order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4>Processing</h4>
+                                <p>Your order is being processed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item {% if order.order_status == 'shipped' or order.order_status == 'delivered' %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4>Shipped</h4>
+                                <p>Your order is on the way</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item {% if order.order_status == 'delivered' %}completed{% endif %}">
+                            <div class="timeline-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4>Delivered</h4>
+                                <p>{% if order.estimated_delivery %}Estimated: {{ order.estimated_delivery|date:"F d, Y" }}{% else %}Pending{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="current-status">
+                    <h3>Current Status</h3>
+                    <div class="status-badge {{ order.order_status }}">
+                        {{ order.get_order_status_display }}
+                    </div>
+                    {% if order.order_status == 'cancelled' %}
+                        <p class="cancelled-message">This order has been cancelled.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="shipping-details">
+                <h3>Shipping Details</h3>
+                {% if order.shipping_address %}
+                    <p><strong>Name:</strong> {{ order.full_name }}</p>
+                    <p><strong>Address:</strong> {{ order.shipping_address.address_line1 }}</p>
+                    {% if order.shipping_address.address_line2 %}
+                        <p>{{ order.shipping_address.address_line2 }}</p>
+                    {% endif %}
+                    <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}</p>
+                    <p>{{ order.shipping_address.country }}</p>
+                    <p><strong>Phone:</strong> {{ order.phone }}</p>
+                {% else %}
+                    <p>Shipping address not available.</p>
+                {% endif %}
+            </div>
+            
+            <div class="order-items">
+                <h3>Order Items</h3>
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    {% if item.product and item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                    {% else %}
+                        <div class="no-image">No Image</div>
+                    {% endif %}
+                    <div class="item-details">
+                        <h4>{{ item.product_name }}</h4>
+                        <p>Quantity: {{ item.quantity }}</p>
+                        <p class="price">৳{{ item.product_price }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="order-actions">
+                <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
+                {% if order.order_status == 'pending' %}
+                    <a href="{% url 'cancel_order' order.id %}" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</a>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="no-order">
+            <p>Order not found or you don't have permission to view this order.</p>
+            <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

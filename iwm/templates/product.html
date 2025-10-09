@@ -24,9 +24,19 @@
         <div class="product-info">
             <h1>{{ product.name }}</h1>
             <div class="price-stock-container">
-                <p class="price">৳{{ product.price }}</p>
+                {% if product.discount_price %}
+                    <div class="price-container">
+                        <p class="original-price">৳{{ product.price }}</p>
+                        <p class="discount-price">৳{{ product.discount_price }}</p>
+                        <p class="discount-percentage">
+                            {{ product.discount_percent|floatformat:0 }}% OFF
+                        </p>
+                    </div>
+                {% else %}
+                    <p class="price">৳{{ product.price }}</p>
+                {% endif %}
                 <p class="stock">In Stock: {{ product.stock }} items</p>
-                <button class="wishlist-toggle" id="wishlistToggle" title="Add to Wishlist" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{{ product.image.url }}">
+                <button class="wishlist-toggle" id="wishlistToggle" title="Add to Wishlist" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.image.url }}">
                     <i class="fa-heart" id="wishlistIcon"></i>
                 </button>
             </div>

@@ -1036,6 +1036,38 @@ def place_order(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 @login_required
+def track_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Security check: ensure the order belongs to the current user
+    if order.user != request.user:
+        messages.error(request, "You don't have permission to view this order.")
+        return redirect('my_orders')
+        
+    return render(request, 'track_order.html', {'order': order})
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Security check: ensure the order belongs to the current user
+    if order.user != request.user:
+        messages.error(request, "You don't have permission to cancel this order.")
+        return redirect('my_orders')
+    
+    # Only allow cancellation if order is in 'pending' status
+    if order.order_status != 'pending':
+        messages.error(request, "Only pending orders can be cancelled.")
+        return redirect('my_orders')
+    
+    # Update order status to cancelled
+    order.order_status = 'cancelled'
+    order.save()
+    
+    messages.success(request, f"Order #{order.id} has been cancelled successfully.")
+    return redirect('my_orders')
+
+@login_required
 def my_orders(request):
     orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
     return render(request, 'my_orders.html', {'orders': orders})

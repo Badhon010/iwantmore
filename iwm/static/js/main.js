@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-  });
+});
 
 document.addEventListener("DOMContentLoaded", function() {
     // Update cart and wishlist count badges when page loads
@@ -345,3 +345,45 @@ function addToCart(productId, productName, productPrice, productImage, quantity 
     
     return cartItems;
 }
+
+// Alert message handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all close buttons in alert messages
+    const closeButtons = document.querySelectorAll('.alert .btn-close');
+    
+    // Add click event listener to each close button
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Find the parent alert element
+            const alert = this.closest('.alert');
+            
+            // Add the fade-out class
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-10px)';
+            alert.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            
+            // Remove the alert after animation completes
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
+        });
+    });
+    
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(function() {
+            if (alert && alert.parentNode) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                alert.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                
+                setTimeout(function() {
+                    if (alert && alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    });
+});

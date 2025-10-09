@@ -1,72 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}My Orders - I Want More{% endblock %}
-{% block styles %}
-<link rel="stylesheet" href="{% static 'css/my_orders.css' %}">
-<style>
-    /* Tracking Modal Styles */
-    .tracking-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .tracking-modal-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 500px;
-        border-radius: 8px;
-        position: relative;
-    }
-
-    .close-modal {
-        position: absolute;
-        right: 15px;
-        top: 10px;
-        font-size: 24px;
-        cursor: pointer;
-        color: #666;
-    }
-
-    .close-modal:hover {
-        color: #000;
-    }
-
-    .tracking-info {
-        margin-top: 20px;
-    }
-
-    .tracking-status {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 4px;
-        color: white;
-        font-weight: bold;
-        text-transform: capitalize;
-    }
-
-    .tracking-status.pending { background-color: #ffc107; }
-    .tracking-status.processing { background-color: #17a2b8; }
-    .tracking-status.shipped { background-color: #007bff; }
-    .tracking-status.delivered { background-color: #28a745; }
-    .tracking-status.cancelled { background-color: #dc3545; }
-</style>
-{% endblock %}
-
-{% block scripts %}
-<script src="{% static 'js/orders.js' %}"></script>
-{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/my_orders.css' %}">{% endblock %}
+{% block scripts %}<script src="{% static 'js/orders.js' %}"></script>{% endblock %}
 
 {% block content %}
-<!-- Add CSRF Token -->
 {% csrf_token %}
 
 <div class="orders-container">
@@ -99,10 +37,10 @@
             <div class="order-actions">
                 <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn details-btn">View Details</a>
                 {% if order.order_status != 'cancelled' %}
-                    <a href="#" class="btn track-btn" data-tracking="{{ order.tracking_number }}" data-order="{{ order.id }}">Track Order</a>
+                    <a href="{% url 'track_order' order.id %}" class="btn track-btn">Track Order</a>
                 {% endif %}
                 {% if order.order_status == 'pending' %}
-                    <a href="#" class="btn cancel-btn" data-order="{{ order.id }}">Cancel Order</a>
+                    <a href="{% url 'cancel_order' order.id %}" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</a>
                 {% endif %}
             </div>
         </div>
@@ -113,24 +51,6 @@
             <a href="{% url 'shop' %}" class="btn shop-btn">Start Shopping</a>
         </div>
     {% endif %}
-</div>
-
-<!-- Tracking Modal -->
-<div id="tracking-modal" class="tracking-modal">
-    <div class="tracking-modal-content">
-        <span id="close-tracking-modal" class="close-modal">&times;</span>
-        <h2>Order Tracking</h2>
-        <div class="tracking-info">
-            <p><strong>Status:</strong> <span id="order-tracking-status" class="tracking-status"></span></p>
-            <p><strong>Tracking Number:</strong> <span id="order-tracking-number"></span></p>
-            <div id="tracking-timeline">
-                <p>Track your order using this tracking number at our shipping partner's website.</p>
-                {% if order.estimated_delivery %}
-                <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|date:"F d, Y" }}</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 </div>
 
 {% endblock %}

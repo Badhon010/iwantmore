@@ -91,7 +91,7 @@
           <div id="my_orders">
             <a class="cart" href="{% url 'my_orders' %}">
               <i class="fas fa-box"></i> 
-              <span class="item-count order-count">0</span>
+              <span class="item-count order-count" id="order-count">0</span>
               <p>My Orders</p>
             </a>
           </div>
@@ -116,7 +116,7 @@
       {% for message in messages %}
       <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">×</button>
       </div>
       {% endfor %}
     </div>

@@ -1,5 +1,65 @@
 /* Product Detail Page Styles */
 /* Base layout styles */
+/* === Price Display Styles === */
+.price-container {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Discounted price (highlighted) */
+.discount-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #39e6a4; /* Bright green for emphasis */
+    margin-right: 6px;
+}
+
+/* Original price (crossed out) */
+.original-price {
+    font-size: 1.1rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-right: 6px;
+}
+
+/* Discount percentage badge */
+.discount-percentage {
+    background: linear-gradient(135deg, #39e6a4, #1cb782);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    animation: popIn 0.3s ease-in-out;
+}
+
+/* When no discount — show normal price */
+.price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 10px 0;
+}
+
+/* Optional subtle animation for discount badge */
+@keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ✨ Small screen tweaks */
+@media (max-width: 480px) {
+    .discount-price { font-size: 1.4rem; }
+    .price { font-size: 1.4rem; }
+    .discount-percentage { font-size: 0.75rem; padding: 3px 8px; }
+}
+
 .product-detail {
     padding: 60px 40px;
     background: linear-gradient(to bottom, #f9f9f9, #f1f1f1);
