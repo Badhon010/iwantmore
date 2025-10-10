@@ -1,0 +1,274 @@
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<style>
+  /* Chat widget styles (uses your :root vars) */
+  .chat-widget {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    font-family: inherit;
+    color: var(--text-color, #495057);
+  }
+
+  .chat-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: var(--btn-bg, #ff6f91);
+    color: var(--white, #ffffff);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12), 0 6px 6px rgba(0,0,0,0.10);
+    transition: transform .15s ease, background .2s ease;
+    font-size: 24px;
+  }
+  .chat-toggle:hover { background: var(--btn-bg-hover, #ff4e6a); transform: translateY(-1px); }
+  .chat-toggle:active { transform: translateY(0); }
+
+  .chat-window {
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: var(--white, #ffffff);
+    border: 1px solid var(--dropdown-border, #dddddd);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    display: none;
+  }
+  .chat-window.open { display: flex; flex-direction: column; }
+
+  .chat-header {
+    background: var(--header-bg, #ffffff);
+    padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--dropdown-border, #dddddd);
+  }
+  .chat-header .title {
+    display: flex; align-items: center; gap: 8px; font-weight: 600;
+  }
+  .chat-header .title .badge {
+    background: var(--btn-bg, #ff6f91);
+    color: var(--white, #ffffff);
+    font-size: 11px; padding: 2px 6px; border-radius: 999px;
+  }
+  .chat-close {
+    background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--text-color, #495057);
+  }
+
+  .chat-messages {
+    padding: 12px;
+    height: 320px;
+    overflow-y: auto;
+    background: var(--dropdown-bg, #f9f9f9);
+  }
+  .msg {
+    max-width: 84%;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    line-height: 1.35;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+  .msg.user {
+    margin-left: auto;
+    background: rgba(255,111,145,0.12);
+    border: 1px solid rgba(255,111,145,0.35);
+  }
+  .msg.bot {
+    background: #fff;
+    border: 1px solid var(--dropdown-border, #ddd);
+  }
+  .msg .small {
+    display: block; font-size: 11px; opacity: .6; margin-top: 6px;
+  }
+
+  .typing {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-color, #495057);
+    opacity: .6;
+    box-shadow: 10px 0 0 rgba(0,0,0,.35), 20px 0 0 rgba(0,0,0,.2);
+    animation: blink 1.2s infinite linear;
+  }
+  @keyframes blink {
+    0% { opacity: .2; }
+    50% { opacity: .8; }
+    100% { opacity: .2; }
+  }
+
+  .chat-input {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; border-top: 1px solid var(--dropdown-border, #dddddd);
+    background: #fff;
+  }
+  .chat-input textarea {
+    flex: 1; resize: none; min-height: 38px; max-height: 120px;
+    padding: 8px 10px; border-radius: 10px; border: 1px solid var(--dropdown-border, #dddddd);
+    outline: none;
+  }
+  .chat-send {
+    background: var(--btn-bg, #ff6f91); color: var(--white, #ffffff);
+    border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer;
+  }
+  .chat-send[disabled] { opacity: .6; cursor: not-allowed; }
+  .chat-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 10px; background: #fff; border-top: 1px solid var(--dropdown-border, #dddddd);
+  }
+  .chat-footer button {
+    background: transparent; border: none; color: var(--text-color, #495057); cursor: pointer; opacity: .8;
+  }
+
+  @media (max-width: 480px) {
+    .chat-window { right: 10px; left: 10px; width: auto; bottom: 80px; }
+    .chat-widget { right: 10px; bottom: 67px; }
+  }
+</style>
+
+<div class="chat-widget" id="chat-widget">
+  <button class="chat-toggle" id="chat-toggle" aria-label="Chat with us">
+    <!-- Chat bubble + sparkle icon -->
+    <i class="fa-solid fa-message"></i>
+  </button>
+
+  <div class="chat-window" id="chat-window" role="dialog" aria-modal="true" aria-label="Shop assistant chat">
+    <div class="chat-header">
+      <div class="title">
+        <span>Assistant</span>
+        <span class="badge">Gemini</span>
+      </div>
+      <button class="chat-close" id="chat-close" aria-label="Close">×</button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages" aria-live="polite" aria-busy="false"></div>
+
+    <div class="chat-input">
+      <textarea id="chat-textarea" placeholder="Ask about products, orders, shipping..."></textarea>
+      <button class="chat-send" id="chat-send">Send</button>
+    </div>
+
+    <div class="chat-footer">
+      <small style="opacity:.6;">Ask me about your order, returns, sizing, etc.</small>
+      <button id="chat-clear" title="Clear conversation">Clear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const API_URL = "/api/chat/"; // Django endpoint we'll add
+  const HISTORY_LIMIT = 10;
+
+  const toggle = document.getElementById("chat-toggle");
+  const panel  = document.getElementById("chat-window");
+  const close  = document.getElementById("chat-close");
+  const sendBtn = document.getElementById("chat-send");
+  const textarea = document.getElementById("chat-textarea");
+  const messages = document.getElementById("chat-messages");
+  const clearBtn = document.getElementById("chat-clear");
+
+  let history = []; // {role: 'user'|'assistant', text: string}
+
+  function openPanel() {
+    panel.classList.add("open");
+    setTimeout(() => textarea.focus(), 30);
+    if (messages.children.length === 0) {
+      appendMessage("bot","Hi! I’m your shop assistant. How can I help today?");
+    }
+  }
+  function closePanel() { panel.classList.remove("open"); }
+
+  toggle.addEventListener("click", () => {
+    if (panel.classList.contains("open")) closePanel(); else openPanel();
+  });
+  close.addEventListener("click", closePanel);
+
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  sendBtn.addEventListener("click", handleSend);
+  clearBtn.addEventListener("click", () => {
+    history = [];
+    messages.innerHTML = "";
+    appendMessage("bot", "Conversation cleared. How can I help?");
+  });
+
+  function appendMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = `msg ${role}`;
+    div.innerText = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function appendTyping() {
+    const div = document.createElement("div");
+    div.className = "msg bot";
+    div.innerHTML = '<span class="typing"></span>';
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div; // return node to remove later
+  }
+
+  function getCSRFToken() {
+    // Prefer meta tag if present
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    // Fallback to cookie if available
+    const match = document.cookie.match(/(^|; )csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+
+  async function handleSend() {
+    const text = textarea.value.trim();
+    if (!text) return;
+    textarea.value = "";
+    sendBtn.disabled = true;
+
+    appendMessage("user", text);
+    history.push({ role: "user", text });
+    if (history.length > HISTORY_LIMIT * 2) history = history.slice(-HISTORY_LIMIT * 2);
+
+    const typingNode = appendTyping();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken() || ""
+        },
+        body: JSON.stringify({ message: text, history })
+      });
+
+      if (!res.ok) {
+        throw new Error("Network error " + res.status);
+      }
+      const data = await res.json();
+      typingNode.remove();
+
+      const reply = data.reply || "Sorry, I couldn't get a response right now.";
+      appendMessage("bot", reply);
+      history.push({ role: "assistant", text: reply });
+      if (history.length > HISTORY_LIMIT * 2) history = history.slice(-HISTORY_LIMIT * 2);
+    } catch (err) {
+      typingNode.remove();
+      appendMessage("bot", "Oops, something went wrong. Please try again.");
+      console.error(err);
+    } finally {
+      sendBtn.disabled = false;
+      textarea.focus();
+    }
+  }
+})();
+</script>

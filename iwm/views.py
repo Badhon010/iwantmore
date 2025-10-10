@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand
 from .forms import ReviewForm
-from django.db.models import Q,Avg, Case, When, DecimalField
+from django.db.models import Q,Avg, Case, When, DecimalField, Count
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
@@ -24,6 +24,10 @@ import time
 from django.utils import timezone
 import urllib.request
 import urllib.parse
+import google.generativeai as genai
+import os
+import textwrap
+from decouple import config
 
 def rd(request):
     return redirect('home')
@@ -1077,3 +1081,151 @@ def order_count(request):
     active_statuses = ['pending', 'processing', 'shipped']
     count = request.user.orders.filter(order_status__in=active_statuses).count()
     return JsonResponse({'count': count})
+
+# Gemini API integration for AI features
+genai.configure(api_key=config("GEMINI_API_KEY"))
+GEMINI_API_KEY = config("GEMINI_API_KEY", default=None)# Configure Gemini API once
+
+def build_site_context(request):
+    parts = []
+
+    # --- Basic site/domain ---
+    try:
+        from django.contrib.sites.models import Site
+        domain = Site.objects.get_current(request).domain
+        parts.append(f"Site domain: {domain}")
+    except Exception:
+        pass
+
+    # --- Products & Categories ---
+    try:
+        from .models import Product, Category, SubCategory, Brand, Color, Size, Coupon, Review, OrderItem
+
+        # Recent/active products
+        products = Product.objects.filter(is_active=True).order_by("-updated_at")[:10]
+        if products:
+            parts.append("\nProducts:")
+            for p in products:
+                parts.append(
+                    f"- {getattr(p, 'name', 'N/A')} (${getattr(p, 'price', 'N/A')}) "
+                    f"[Category: {getattr(p.category, 'name', 'N/A')}, "
+                    f"SubCategory: {getattr(p.subcategory, 'name', 'N/A')}, "
+                    f"Brand: {getattr(p.brand, 'name', 'N/A')}, "
+                    f"Color: {getattr(p.color, 'name', 'N/A')}, "
+                    f"Size: {getattr(p.size, 'name', 'N/A')}]"
+                )
+
+        # Categories & Subcategories
+        categories = Category.objects.all()[:5]
+        if categories:
+            parts.append("\nCategories:")
+            for c in categories:
+                parts.append(f"- {c.name}")
+                subcats = SubCategory.objects.filter(category=c)[:5]
+                for sc in subcats:
+                    parts.append(f"  - {sc.name}")
+
+        # Brands
+        brands = Brand.objects.all()[:5]
+        if brands:
+            parts.append("\nBrands:")
+            for b in brands:
+                parts.append(f"- {b.name}")
+
+        # Colors & Sizes
+        colors = Color.objects.all()[:5]
+        if colors:
+            parts.append("\nColors: " + ", ".join([c.name for c in colors]))
+        sizes = Size.objects.all()[:5]
+        if sizes:
+            parts.append("\nSizes: " + ", ".join([s.name for s in sizes]))
+
+        # Popular products (by sold quantity)
+        popular = OrderItem.objects.values("product__name").annotate(count=Count("id")).order_by("-count")[:5]
+        if popular:
+            parts.append("\nPopular Products:")
+            for p in popular:
+                parts.append(f"- {p['product__name']} (sold {p['count']} times)")
+
+        # Coupons
+        coupons = Coupon.objects.all()[:5]
+        if coupons:
+            parts.append("\nCoupons:")
+            for c in coupons:
+                parts.append(f"- {c.code}: {getattr(c, 'discount', 'N/A')}% off")
+
+        # Recent Reviews
+        reviews = Review.objects.select_related("product").order_by("-created_at")[:5]
+        if reviews:
+            parts.append("\nRecent Reviews:")
+            for r in reviews:
+                parts.append(f"- {r.product.name}: {r.text[:100]}")  # first 100 chars
+    except Exception:
+        pass
+
+    # --- Optional: User info ---
+    if request.user.is_authenticated:
+        parts.append(f"\nUser: {request.user.get_username()} (authenticated)")
+
+    # --- Limit context length ---
+    context_text = "\n".join(parts)
+    return context_text[:8000]  # truncate to avoid token overflow
+
+def format_history(history):
+    # history: [{'role': 'user'|'assistant', 'text': '...'}]
+    lines = []
+    for turn in history[-20:]:
+        r = "User" if turn.get("role") == "user" else "Assistant"
+        t = turn.get("text", "").strip()
+        if t:
+            lines.append(f"{r}: {t}")
+    return "\n".join(lines)
+
+@require_POST
+def gemini_chat(request):
+    if not GEMINI_API_KEY:
+        return JsonResponse({"reply": "Server is missing GEMINI_API_KEY."}, status=500)
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"reply": "Invalid JSON"}, status=400)
+
+    message = (data.get("message") or "").strip()
+    history = data.get("history") or []
+
+    if not message:
+        return JsonResponse({"reply": "Please send a message."}, status=400)
+
+    # Build site context
+    site_context = build_site_context(request)  # keep your existing function
+    history_txt = format_history(history)
+
+    system_instruction = textwrap.dedent("""
+        You are a helpful e-commerce support assistant for this website.
+        Answer using the provided CONTEXT and be concise. If something is not in the context,
+        use general retail knowledge but never invent specific store policies.
+    """)
+
+    user_prompt = f"""
+    CONTEXT:
+    {site_context}
+
+    CHAT HISTORY:
+    {history_txt}
+
+    USER QUESTION:
+    {message}
+    """
+
+    try:
+        model = genai.GenerativeModel(
+            model_name="models/gemini-2.5-flash",
+            system_instruction=system_instruction.strip()
+        )
+        result = model.generate_content(user_prompt.strip())
+        reply = getattr(result, "text", None) or "Sorry, I couldn't generate a response."
+        return JsonResponse({"reply": reply})
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({"reply": f"Error: {str(e)}"}, status=500)
