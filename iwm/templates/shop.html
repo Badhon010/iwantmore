@@ -8,7 +8,9 @@ today!{% endblock dis %}
 {% block key %}online shop, fashion, accessories, buy products, I Want More{% endblock key %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static "css/item_cart.css" %}">
 <script src="{% static 'js/shop.js' %}" defer></script>
+<script src="{% static 'js/item_cart.js' %}" defer></script>
 {% endblock head %}
 {% block content %}
 <div class="shop-container">
@@ -252,9 +254,10 @@ today!{% endblock dis %}
           <div class="product-info">
             
 
-            <h3 class="product-name"><span class="name">{{ product.name }}</span> {% if product.category %}
-              <span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span></span>
-              {% endif %}</h3>
+            {% if product.category %}<span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} • {{ product.subcategory.name }}{% endif %}</span></span>{% endif %}
+            <h3 class="product-name">
+              <span class="name">{{ product.name }}</span> 
+            </h3>
             <div class="rating-price">
               <!-- Display rating stars -->
               <div class="product-rating">

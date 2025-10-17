@@ -7,346 +7,250 @@
 {% block content %}
 <section class="product-detail">
     <div class="product-container">
-        <div class="product-image">
-            {% if product.on_sale %}
-                <div class="product-badge sale">SALE</div>
-            {% endif %}
-            {% if product.is_hot %}
-                <div class="product-badge hot">HOT</div>
-            {% endif %}
-            {% if product.featured and product.featured_reason %}
-                <div class="product-badge">{{ product.featured_reason|upper }}</div>
-            {% elif product.featured %}
-                <div class="product-badge">FEATURED</div>
-            {% endif %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-        </div>
-        <div class="product-info">
-            <h1>{{ product.name }}</h1>
-            <div class="price-stock-container">
-                {% if product.discount_price %}
-                    <div class="price-container">
-                        <p class="original-price">৳{{ product.price }}</p>
-                        <p class="discount-price">৳{{ product.discount_price }}</p>
-                        <p class="discount-percentage">
-                            {{ product.discount_percent|floatformat:0 }}% OFF
-                        </p>
-                    </div>
-                {% else %}
-                    <p class="price">৳{{ product.price }}</p>
+        <!-- Product Image Section -->
+        <div class="product-image-section">
+            <div class="main-image-wrapper">
+                {% if product.is_featured and product.feature_reason %}
+                    <div class="product-badge featured">{{ product.feature_reason.Reason|upper }}</div>
+                {% elif product.is_featured %}
+                    <div class="product-badge featured">FEATURED</div>
                 {% endif %}
-                <p class="stock">In Stock: {{ product.stock }} items</p>
-                <button class="wishlist-toggle" id="wishlistToggle" title="Add to Wishlist" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.image.url }}">
-                    <i class="fa-heart" id="wishlistIcon"></i>
-                </button>
+                <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}">
             </div>
             
-            <p class="description"><strong>Description:</strong> {{ product.description }}</p>
-            
-            <div class="product-meta">
-                <p><strong>Category:</strong> {{ product.category.name }}</p>
-                <p><strong>Reviews:</strong> {{ product.reviews.count }} customer reviews</p>
-            </div>
-            
-            <div class="tags">
-                <strong>Tags:</strong>
-                {% for tag in product.tags.all %}
-                    <a href="/search/?min_price=&max_price=&q={{ tag.name }}">{{ tag.name }}</a>
-                {% empty %}
-                    <span class="no-tags">No tags available</span>
+            <!-- Thumbnail Images -->
+            {% if product.more_images.all %}
+            <div class="thumbnail-images">
+                <div class="thumbnail active">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                </div>
+                {% for img in product.more_images.all %}
+                <div class="thumbnail">
+                    <img src="{{ img.image.url }}" alt="{{ product.name }}">
+                </div>
                 {% endfor %}
             </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="product-info">
+            <h1>{{ product.name }}</h1>
             
+            <!-- Price Section -->
+            <div class="price-section">
+                {% if product.discount_price %}
+                    <span class="current-price">৳{{ product.discount_price }}</span>
+                    <span class="original-price">৳{{ product.price }}</span>
+                    <span class="discount-badge">Save {{ product.discount_percentage|floatformat:0 }}%</span>
+                {% else %}
+                    <span class="current-price">৳{{ product.price }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Stock & Wishlist -->
+            <div class="stock-wishlist">
+                <div class="stock-info {% if product.is_out_of_stock %}out-of-stock{% endif %}">
+                    {% if product.is_out_of_stock %}
+                        <i class="fas fa-times-circle"></i> Out of Stock
+                    {% else %}
+                        <i class="fas fa-check-circle"></i> In Stock: {{ product.stock }} items
+                    {% endif %}
+                </div>
+                <button class="wishlist-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.image.url }}">
+                    <i class="far fa-heart"></i>
+                    <span>Add to Wishlist</span>
+                </button>
+            </div>
+
+            <!-- Description -->
+            <div class="description">
+                <h3>Description</h3>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <!-- Product Details -->
+            <div class="product-details">
+                <div class="detail-item">
+                    <span class="label">Category:</span>
+                    <span class="value">{{ product.category.name }}</span>
+                </div>
+                {% if product.subcategory %}
+                <div class="detail-item">
+                    <span class="label">Subcategory:</span>
+                    <span class="value">{{ product.subcategory.name }}</span>
+                </div>
+                {% endif %}
+                {% if product.brand %}
+                <div class="detail-item">
+                    <span class="label">Brand:</span>
+                    <span class="value">{{ product.brand.name }}</span>
+                </div>
+                {% endif %}
+                {% if product.color %}
+                <div class="detail-item">
+                    <span class="label">Color:</span>
+                    <span class="value">{{ product.color.name }}</span>
+                </div>
+                {% endif %}
+                {% if product.size %}
+                <div class="detail-item">
+                    <span class="label">Size:</span>
+                    <span class="value">{{ product.size.name }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tags -->
+            {% if product.tags.all %}
+            <div class="tags-section">
+                <span class="tags-label">Tags:</span>
+                <div class="tags">
+                    {% for tag in product.tags.all %}
+                        <a href="{% url 'search' %}?q={{ tag.name }}" class="tag">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            {% if not product.is_out_of_stock %}
             <div class="product-actions">
                 <div class="quantity-selector">
-                    <label for="quantity">Quantity:</label>
-                    <div class="quantity-control">
-                        <button id="quantityMinus" class="quantity-btn">-</button>
-                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}">
-                        <button id="quantityPlus" class="quantity-btn">+</button>
+                    <label>Quantity:</label>
+                    <div class="quantity-controls">
+                        <button type="button" class="qty-btn minus">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="quantity" value="1" min="1" max="{{ product.stock }}" readonly>
+                        <button type="button" class="qty-btn plus">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                 </div>
                 
                 <div class="action-buttons">
-                    <button id="addToCartBtn" class="action-button add-to-cart-button">Add to Cart</button>
-                    <button id="orderNowBtn" class="action-button order-now-button">Order Now</button>
+                    <button class="btn btn-cart" id="addToCartBtn">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-order" id="orderNowBtn">
+                        <i class="fas fa-bolt"></i>
+                        Order Now
+                    </button>
                 </div>
             </div>
-            
-            <div class="existing-reviews">
-                <h3>Customer Reviews ({{ product.reviews.count }})</h3>
-                {% if product.reviews.all %}
-                    {% for review in product.reviews.all %}
-                        <div class="review">
-                            <div class="review-header">
-                                <span class="review-user">{{ review.user.username }}</span>
-                                <span class="review-rating">
-                                    {% for i in review.get_stars %}
-                                        <i class="fa-solid fa-star"></i>
-                                    {% endfor %}
-                                    ({{ review.rating }}/5)
-                                </span>
-                            </div>
-                            <p class="review-comment">{{ review.comment }}</p>
-                            <p class="review-date">Posted on: {{ review.created_at|date:"F d, Y" }}</p>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No reviews yet.</p>
-                {% endif %}
-            </div>
-            
-            {% if user.is_authenticated %}
-                <div class="review-section">
-                    <h3>Write a Review</h3>
-                    <form class="review-form" method="post" action="{% url 'submit_review' product_slug=product.slug %}">
-                        {% csrf_token %}
-                        <div class="rating">
-                            <label>Rating:</label>
-                            <div class="stars">
-                                <button type="button" class="star-btn" data-value="5"><i class="fa-solid fa-star"></i></button>
-                                <button type="button" class="star-btn" data-value="4"><i class="fa-solid fa-star"></i></button>
-                                <button type="button" class="star-btn" data-value="3"><i class="fa-solid fa-star"></i></button>
-                                <button type="button" class="star-btn" data-value="2"><i class="fa-solid fa-star"></i></button>
-                                <button type="button" class="star-btn" data-value="1"><i class="fa-solid fa-star"></i></button>
-                            </div>
-                            <input type="hidden" name="rating" id="selected-rating" required>
-                        </div>
-            
-                        <textarea class="review-textarea" name="review" placeholder="Write your review here..." required></textarea>
-                        <button type="submit" class="submit-review-btn">Submit Review</button>
-                    </form>
-                </div>
             {% else %}
-                <div class="login-to-review">
-                    <p>Please <a href="{% url 'login' %}">log in</a> to leave a review.</p>
-                </div>
+            <div class="out-of-stock-notice">
+                <i class="fas fa-exclamation-circle"></i>
+                This product is currently out of stock
+            </div>
             {% endif %}
         </div>
     </div>
-    
-    <div class="related-products">
-        <h2>You May Also Like</h2>
-        <div class="product-cards">
-            {% for related_product in related_products %}
-                <div class="product-card">
-                    <div class="product-card-image">
-                        <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
-                    </div>
-                    <div class="product-card-content">
-                        <h3 class="product-card-title">{{ related_product.name }}</h3>
-                        <p class="product-card-price">৳{{ related_product.price }}</p>
-                        <a href="{% url 'product_detail' slug=related_product.slug %}" class="product-card-button">View Details</a>
+
+    <!-- Reviews Section -->
+    <div class="reviews-container">
+        <h2>Customer Reviews ({{ product.reviews.count }})</h2>
+        
+        <!-- Review Form -->
+        {% if user.is_authenticated %}
+        <div class="review-form-section">
+            <h3>Write a Review</h3>
+            <form method="post" action="{% url 'submit_review' product_slug=product.slug %}" class="review-form">
+                {% csrf_token %}
+                <div class="rating-input">
+                    <label>Your Rating:</label>
+                    <div class="stars">
+                        <input type="radio" name="rating" value="5" id="star5" required>
+                        <label for="star5"><i class="fas fa-star"></i></label>
+                        <input type="radio" name="rating" value="4" id="star4">
+                        <label for="star4"><i class="fas fa-star"></i></label>
+                        <input type="radio" name="rating" value="3" id="star3">
+                        <label for="star3"><i class="fas fa-star"></i></label>
+                        <input type="radio" name="rating" value="2" id="star2">
+                        <label for="star2"><i class="fas fa-star"></i></label>
+                        <input type="radio" name="rating" value="1" id="star1">
+                        <label for="star1"><i class="fas fa-star"></i></label>
                     </div>
                 </div>
+                <textarea name="review" placeholder="Share your experience with this product..." required></textarea>
+                <button type="submit" class="btn btn-submit">Submit Review</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="login-prompt">
+            <i class="fas fa-user-lock"></i>
+            <p>Please <a href="{% url 'login' %}">log in</a> to write a review</p>
+        </div>
+        {% endif %}
+
+        <!-- Existing Reviews -->
+        <div class="reviews-list">
+            {% for review in product.reviews.all %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="avatar">{{ review.user.username|first|upper }}</div>
+                        <div>
+                            <h4>{{ review.user.username }}</h4>
+                            <p class="review-date">{{ review.created_at|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="review-text">{{ review.comment }}</p>
+            </div>
             {% empty %}
-                <div class="no-related-products">
-                    <p>No related products found.</p>
-                </div>
+            <div class="no-reviews">
+                <i class="fas fa-comments"></i>
+                <p>No reviews yet. Be the first to review this product!</p>
+            </div>
             {% endfor %}
         </div>
     </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="related-products">
+        <h2>You May Also Like</h2>
+        <div class="products-grid">
+            {% for related in related_products %}
+            <a href="{% url 'product_detail' slug=related.slug %}" class="product-card">
+                <div class="card-image">
+                    {% if related.discount_price %}
+                        <span class="badge-sale">-{{ related.discount_percentage|floatformat:0 }}%</span>
+                    {% endif %}
+                    <img src="{{ related.image.url }}" alt="{{ related.name }}">
+                </div>
+                <div class="card-content">
+                    <h3>{{ related.name|truncatewords:5 }}</h3>
+                    <div class="card-price">
+                        {% if related.discount_price %}
+                            <span class="price-current">৳{{ related.discount_price }}</span>
+                            <span class="price-old">৳{{ related.price }}</span>
+                        {% else %}
+                            <span class="price-current">৳{{ related.price }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Wishlist functionality
-        const wishlistIcon = document.getElementById('wishlistIcon');
-        const wishlistToggle = document.getElementById('wishlistToggle');
-        const productId = wishlistToggle.dataset.productId;
-        const productName = wishlistToggle.dataset.productName;
-        const productPrice = parseFloat(wishlistToggle.dataset.productPrice);
-        const productImage = wishlistToggle.dataset.productImage;
-        
-        // Check if product is already in wishlist
-        function checkWishlistStatus() {
-            const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-            const isInWishlist = wishlistItems.some(item => item.id == productId);
-            
-            if (isInWishlist) {
-                wishlistIcon.classList.add('fas');
-                wishlistIcon.classList.add('active');
-            } else {
-                wishlistIcon.classList.add('far');
-            }
-        }
-        
-        // Toggle wishlist status
-        wishlistToggle.addEventListener('click', function() {
-            const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-            const itemIndex = wishlistItems.findIndex(item => item.id == productId);
-            
-            if (itemIndex !== -1) {
-                // Remove from wishlist
-                wishlistItems.splice(itemIndex, 1);
-                wishlistIcon.classList.remove('fas', 'active');
-                wishlistIcon.classList.add('far');
-                showNotification('Removed from wishlist');
-            } else {
-                // Add to wishlist
-                wishlistItems.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    image: productImage
-                });
-                wishlistIcon.classList.remove('far');
-                wishlistIcon.classList.add('fas', 'active');
-                showNotification('Added to wishlist');
-            }
-            
-            localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
-        });
-        
-        // Function to show notification
-        function showNotification(message) {
-            // Create notification element if it doesn't exist
-            if (!document.querySelector('.notification-container')) {
-                const container = document.createElement('div');
-                container.className = 'notification-container';
-                document.body.appendChild(container);
-            }
-            
-            const container = document.querySelector('.notification-container');
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <i class="notification-icon ${message.includes('Added') ? 'fas fa-check-circle' : 'fas fa-info-circle'}"></i>
-                <span class="notification-message">${message}</span>
-            `;
-            
-            container.appendChild(notification);
-            
-            // Show notification with animation
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            
-            // Remove notification after 3 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }
-        
-        // Quantity control
-        const quantityInput = document.getElementById('quantity');
-        const quantityMinus = document.getElementById('quantityMinus');
-        const quantityPlus = document.getElementById('quantityPlus');
-        
-        quantityMinus.addEventListener('click', function() {
-            const currentValue = parseInt(quantityInput.value);
-            if (currentValue > 1) {
-                quantityInput.value = currentValue - 1;
-            }
-        });
-        
-        quantityPlus.addEventListener('click', function() {
-            const currentValue = parseInt(quantityInput.value);
-            const maxValue = parseInt(quantityInput.getAttribute('max'));
-            if (currentValue < maxValue) {
-                quantityInput.value = currentValue + 1;
-            }
-        });
-        
-        // Add to Cart functionality
-        const addToCartBtn = document.getElementById('addToCartBtn');
-        
-        addToCartBtn.addEventListener('click', function() {
-            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-            const quantity = parseInt(quantityInput.value);
-            
-            // Check if product is already in cart
-            const existingItemIndex = cartItems.findIndex(item => item.id == productId);
-            
-            if (existingItemIndex !== -1) {
-                // Update quantity
-                cartItems[existingItemIndex].quantity += quantity;
-                showNotification(`Added ${quantity} more items to cart`);
-            } else {
-                // Add new item
-                cartItems.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    image: productImage,
-                    quantity: quantity
-                });
-                showNotification('Added to cart');
-            }
-            
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            
-            // Animate cart icon in header if exists
-            const cartIcon = document.querySelector('#cart i');
-            if (cartIcon) {
-                cartIcon.classList.add('pulse');
-                setTimeout(() => {
-                    cartIcon.classList.remove('pulse');
-                }, 500);
-            }
-        });
-        
-        // Order Now functionality
-        const orderNowBtn = document.getElementById('orderNowBtn');
-        
-        orderNowBtn.addEventListener('click', function() {
-            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-            const quantity = parseInt(quantityInput.value);
-            
-            // Add to cart first
-            const existingItemIndex = cartItems.findIndex(item => item.id == productId);
-            
-            if (existingItemIndex !== -1) {
-                // Update quantity
-                cartItems[existingItemIndex].quantity += quantity;
-            } else {
-                // Add new item
-                cartItems.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    image: productImage,
-                    quantity: quantity
-                });
-            }
-            
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            
-            // Redirect to cart page
-            window.location.href = "{% url 'cart' %}";
-        });
-        
-        // Star rating functionality
-        const starButtons = document.querySelectorAll('.star-btn');
-        const selectedRating = document.getElementById('selected-rating');
-        
-        starButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const value = this.dataset.value;
-                selectedRating.value = value;
-                
-                // Update star appearances
-                starButtons.forEach(star => {
-                    star.classList.remove('selected');
-                    star.classList.remove('pop');
-                });
-                
-                // Select clicked star and all stars to its right
-                for (let i = 0; i < starButtons.length; i++) {
-                    const currentValue = starButtons[i].dataset.value;
-                    if (currentValue <= value) {
-                        starButtons[i].classList.add('selected');
-                        starButtons[i].classList.add('pop');
-                    }
-                }
-            });
-        });
-        
-        // Initialize wishlist status
-        checkWishlistStatus();
-    });
-</script>
+<!-- Notification Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="{% static 'js/product.js' %}"></script>
 {% endblock %}

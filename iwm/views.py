@@ -26,6 +26,7 @@ import urllib.request
 import urllib.parse
 import google.generativeai as genai
 import os
+import traceback
 import textwrap
 from decouple import config
 
@@ -36,7 +37,15 @@ def _404_view(request, exception):
     return render(request, '404.html', status=404)
 
 def home(request):
-    return render(request, 'home.html', {'categories': Category.objects.all()})
+    categories = Category.objects.all()
+    featured_products = Product.objects.filter(is_featured=True).order_by('-created_at')[:8]  # show latest 8 featured products
+    brands= Brand.objects.all()
+    context = {
+        'categories': categories,
+        'featured_products': featured_products,
+        'brands': brands
+    }
+    return render(request, 'home.html', context)
 
 def shop(request):
     products = Product.objects.all()
@@ -1198,7 +1207,7 @@ def gemini_chat(request):
         return JsonResponse({"reply": "Please send a message."}, status=400)
 
     # Build site context
-    site_context = build_site_context(request)  # keep your existing function
+    site_context = build_site_context(request)
     history_txt = format_history(history)
 
     system_instruction = textwrap.dedent("""

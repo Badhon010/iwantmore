@@ -58,8 +58,10 @@ class Size(models.Model):
     def __str__(self):
         return self.name
 
+
 class Brand(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    image = models.ImageField(upload_to='brands/', blank=True, null=True)
 
     def __str__(self):
         return self.name
