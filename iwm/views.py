@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+﻿from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand
 from .forms import ReviewForm
 from django.db.models import Q,Avg, Case, When, DecimalField, Count
@@ -16,17 +16,21 @@ from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 import time
 from django.utils import timezone
 import google.generativeai as genai
+from django.db.models import Count
 import os
-import traceback
+import logging
 import textwrap
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from decouple import config
+
+logger = logging.getLogger(__name__)
 
 def rd(request):
     return redirect('home')
@@ -596,369 +600,667 @@ def cart(request):
 def wishlist(request):
     return render(request, 'wishlist.html')
 
-from django.db import transaction
+
+MONEY_QUANTIZER = Decimal('0.01')
+INSIDE_DHAKA_SHIPPING = Decimal('80.00')
+OUTSIDE_DHAKA_SHIPPING = Decimal('150.00')
 
 
-def checkout(request):
-    if request.method != 'POST':
-        return render(request, 'checkout.html')
+def _to_money(value):
+    try:
+        amount = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        amount = Decimal('0.00')
+    return amount.quantize(MONEY_QUANTIZER, rounding=ROUND_HALF_UP)
 
-    cart = request.session.get('cart', [])
-    if not cart:
-        messages.error(request, 'Your cart is empty.')
-        return redirect('cart')
 
-    # Form data
-    full_name = request.POST.get('full_name', '').strip()
-    email = request.POST.get('email', '').strip()
-    phone = request.POST.get('phone', '').strip()
-    address_line1 = request.POST.get('address_line1', '').strip()
-    address_line2 = request.POST.get('address_line2', '').strip()
-    city = request.POST.get('city', '').strip()
-    state = request.POST.get('state', '').strip()
-    postal_code = request.POST.get('postal_code', '').strip()
-    country = request.POST.get('country', 'Bangladesh').strip()
-    payment_method = request.POST.get('payment_method', 'cash_on_delivery').strip()
+def _normalize_payment_method(method):
+    normalized = (method or '').strip().lower()
+    if normalized in {'cash_on_delivery', 'cash-on-delivery', 'cod'}:
+        return 'cash_on_delivery'
+    if normalized in {'bkash', 'nagad'}:
+        return normalized
+    return None
 
-    # 🆕 Manual payment fields
-    sender_number = request.POST.get('sender_number', '').strip()
-    trx_id = request.POST.get('trx_id', '').strip()
 
-    shipping_cost = float(request.session.get('shipping_cost', 0))
+def _normalize_phone(phone_number):
+    digits = ''.join(ch for ch in (phone_number or '') if ch.isdigit())
+    if len(digits) >= 11:
+        return digits[-11:]
+    return digits
 
-    # Calculate total
-    subtotal = sum(int(i.get('quantity', 1)) * float(i.get('price', 0)) for i in cart)
-    total = subtotal + shipping_cost
+
+def _resolve_checkout_items(raw_items):
+    if not isinstance(raw_items, list):
+        raise ValueError('Invalid cart data.')
+
+    quantities = {}
+    ordered_product_ids = []
+
+    for raw_item in raw_items:
+        if not isinstance(raw_item, dict):
+            raise ValueError('Invalid cart item.')
+
+        try:
+            product_id = int(raw_item.get('id'))
+            quantity = int(raw_item.get('quantity', 1))
+        except (TypeError, ValueError):
+            raise ValueError('Invalid cart item.')
+
+        if product_id <= 0 or quantity <= 0:
+            raise ValueError('Invalid cart item.')
+
+        if product_id not in quantities:
+            ordered_product_ids.append(product_id)
+            quantities[product_id] = 0
+
+        quantities[product_id] += quantity
+
+    if not ordered_product_ids:
+        raise ValueError('Cart is empty.')
+
+    products = Product.objects.in_bulk(ordered_product_ids)
+    missing_product_ids = [product_id for product_id in ordered_product_ids if product_id not in products]
+    if missing_product_ids:
+        raise ValueError('Some products are no longer available.')
+
+    resolved_items = []
+    subtotal = Decimal('0.00')
+
+    for product_id in ordered_product_ids:
+        product = products[product_id]
+        quantity = quantities[product_id]
+        unit_price = _to_money(product.get_final_price())
+        line_total = _to_money(unit_price * quantity)
+        resolved_items.append({
+            'product_id': product.id,
+            'product': product,
+            'product_name': product.name,
+            'quantity': quantity,
+            'unit_price': unit_price,
+            'line_total': line_total,
+        })
+        subtotal += line_total
+
+    return resolved_items, _to_money(subtotal)
+
+
+def _shipping_cost_for_state(state):
+    normalized_state = (state or '').strip().lower()
+    if 'dhaka' in normalized_state:
+        return INSIDE_DHAKA_SHIPPING
+    return OUTSIDE_DHAKA_SHIPPING
+
+
+def _session_coupon(request):
+    coupon_id = request.session.get('coupon_id')
+    if not coupon_id:
+        return None
 
     try:
-        with transaction.atomic():
-            shipping_address = Address.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                address_type='shipping',
-                full_name=full_name,
-                phone=phone,
-                address_line1=address_line1,
-                address_line2=address_line2,
-                city=city,
-                postal_code=postal_code,
-                state=state,
-                country=country,
-            )
+        coupon = Coupon.objects.get(pk=coupon_id, is_active=True)
+    except Coupon.DoesNotExist:
+        request.session.pop('coupon_id', None)
+        return None
 
-            order = Order.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                full_name=full_name,
-                email=email,
-                phone=phone,
-                shipping_address=shipping_address,
-                billing_address=shipping_address,
-                total_price=total,
-                original_price=subtotal,
-                shipping_cost=shipping_cost,
-                discount_amount=0,
-                order_status='pending',
-                payment_method=payment_method,
-                payment_status=False,  # unpaid by default
-                transaction_id=trx_id,
-            )
+    if not coupon.is_valid:
+        request.session.pop('coupon_id', None)
+        return None
 
-            # 🆕 Save sender number (if you added field in model)
-            if hasattr(order, 'sender_number'):
-                order.sender_number = sender_number
-                order.save(update_fields=['sender_number'])
+    return coupon
 
-            # Create order items
-            for entry in cart:
-                product = None
-                try:
-                    product = Product.objects.select_for_update().get(id=entry.get('id'))
-                except:
-                    pass
 
-                qty = int(entry.get('quantity', 1))
-                price = float(entry.get('price', 0))
+def _validate_coupon(coupon, subtotal):
+    if coupon is None:
+        return False, 'Invalid coupon code.'
 
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    product_name=entry.get('name', ''),
-                    product_price=price,
-                    quantity=qty,
-                )
+    if not coupon.is_valid:
+        return False, 'This coupon is no longer valid.'
 
-                if product:
-                    product.stock = max(0, product.stock - qty)
-                    product.save(update_fields=['stock'])
+    minimum_order_value = _to_money(coupon.minimum_order_value)
+    if minimum_order_value and subtotal < minimum_order_value:
+        return False, f'Minimum order amount for this coupon is à§³{minimum_order_value:.2f}.'
 
-            # Clear session
-            request.session.pop('cart', None)
-            request.session.pop('shipping_cost', None)
+    return True, ''
+
+
+def _coupon_discount_amount(coupon, subtotal):
+    if not coupon:
+        return Decimal('0.00')
+
+    if coupon.discount_amount > 0:
+        discount_amount = _to_money(coupon.discount_amount)
+    else:
+        discount_amount = _to_money(subtotal * Decimal(coupon.discount_percent) / Decimal('100'))
+
+    return min(discount_amount, subtotal)
+
+
+def _build_pricing_summary(resolved_items, shipping_state, coupon=None):
+    subtotal = _to_money(sum(item['line_total'] for item in resolved_items))
+    shipping_cost = _shipping_cost_for_state(shipping_state) if resolved_items else Decimal('0.00')
+    discount_amount = _coupon_discount_amount(coupon, subtotal)
+    total = _to_money(subtotal + shipping_cost - discount_amount)
+
+    return {
+        'subtotal': subtotal,
+        'shipping_cost': shipping_cost,
+        'discount_amount': discount_amount,
+        'total': total,
+    }
+
+
+def _serialize_checkout_items(resolved_items):
+    return [
+        {
+            'id': item['product_id'],
+            'name': item['product_name'],
+            'quantity': item['quantity'],
+            'unit_price': float(item['unit_price']),
+            'line_total': float(item['line_total']),
+            'image': item['product'].image.url if item['product'].image else '',
+        }
+        for item in resolved_items
+    ]
+
+
+def _serialize_pricing_summary(pricing):
+    return {
+        'subtotal': float(pricing['subtotal']),
+        'shipping': float(pricing['shipping_cost']),
+        'discount': float(pricing['discount_amount']),
+        'total': float(pricing['total']),
+    }
+
+def checkout(request):
+    return render(request, 'checkout.html')
+
+@require_POST
+def checkout_totals(request):
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    shipping_state = data.get('shipping_state', '')
+    coupon_code = (data.get('coupon_code') or '').strip()
+    clear_coupon = bool(data.get('clear_coupon'))
+
+    try:
+        resolved_items, subtotal = _resolve_checkout_items(data.get('items', []))
+    except ValueError as exc:
+        return JsonResponse({'status': 'error', 'message': str(exc)}, status=400)
+
+    coupon = None
+    message = ''
+
+    if clear_coupon:
+        request.session.pop('coupon_id', None)
+    elif coupon_code:
+        try:
+            coupon = Coupon.objects.get(code__iexact=coupon_code, is_active=True)
+        except Coupon.DoesNotExist:
             request.session.pop('coupon_id', None)
+            return JsonResponse({'status': 'error', 'message': 'Invalid coupon code'}, status=400)
 
-            if not request.user.is_authenticated:
-                request.session['guest_order_id'] = str(order.id)
+        is_valid, coupon_message = _validate_coupon(coupon, subtotal)
+        if not is_valid:
+            request.session.pop('coupon_id', None)
+            return JsonResponse({'status': 'error', 'message': coupon_message}, status=400)
 
-            return redirect(f"{reverse('order_confirmation')}?order_id={order.id}")
+        request.session['coupon_id'] = coupon.id
+        message = 'Coupon applied successfully.'
+    else:
+        coupon = _session_coupon(request)
+        if coupon:
+            is_valid, coupon_message = _validate_coupon(coupon, subtotal)
+            if not is_valid:
+                request.session.pop('coupon_id', None)
+                coupon = None
+                message = coupon_message
 
-    except Exception as e:
-        messages.error(request, f'Error placing order: {str(e)}')
-        return redirect('cart')
+    pricing = _build_pricing_summary(resolved_items, shipping_state, coupon)
+
+    return JsonResponse({
+        'status': 'success',
+        'items': _serialize_checkout_items(resolved_items),
+        'totals': _serialize_pricing_summary(pricing),
+        'coupon': {
+            'code': coupon.code,
+            'discount_amount': float(pricing['discount_amount']),
+        } if coupon else None,
+        'message': message,
+    })
+
 
 def order_confirmation(request):
-    # Accept ?order_id=<id> or show the latest order for authenticated users
     order_id = request.GET.get('order_id')
 
     order = None
     if order_id:
         try:
-            order = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').get(id=order_id)
-            # Security: allow if the order belongs to the logged in user
+            order = Order.objects.select_related(
+                'shipping_address',
+                'billing_address',
+                'user',
+            ).prefetch_related('items__product').get(id=order_id)
+
             if request.user.is_authenticated:
-                if order.user and order.user != request.user:
+                if order.user != request.user:
                     order = None
             else:
-                # allow guest only if session has the guest_order_id
                 if request.session.get('guest_order_id') != str(order_id):
                     order = None
         except Order.DoesNotExist:
             order = None
-    else:
-        if request.user.is_authenticated:
-            order = Order.objects.filter(user=request.user).order_by('-created_at').first()
+    elif request.user.is_authenticated:
+        order = Order.objects.filter(user=request.user).order_by('-created_at').first()
 
     items = []
     if order:
-        for it in order.items.all():
+        for item in order.items.all():
             try:
-                line_total = it.product_price * it.quantity
+                line_total = item.product_price * item.quantity
             except Exception:
-                # fallback to numeric multiplication
-                line_total = float(it.product_price) * int(it.quantity)
+                line_total = float(item.product_price) * int(item.quantity)
+
             items.append({
-                'product_name': it.product_name,
-                'product_price': it.product_price,
-                'quantity': it.quantity,
+                'product_name': item.product_name,
+                'product_price': item.product_price,
+                'quantity': item.quantity,
                 'line_total': line_total,
-                'product': it.product,
+                'product': item.product,
             })
 
     return render(request, 'order_confirmation.html', {'order': order, 'items': items})
 
+
 def apply_coupon(request):
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        code = request.POST.get('coupon_code')
-        
-        try:
-            coupon = Coupon.objects.get(code=code, is_active=True)
-            
-            # Check if coupon is expired
-            if coupon.valid_to and coupon.valid_to < timezone.now():
-                return JsonResponse({'status': 'error', 'message': 'This coupon has expired'})
-            
-            # Store coupon in session
-            request.session['coupon_id'] = coupon.id
-            
-            # Apply the correct discount (amount or percentage)
-            if coupon.discount_amount > 0:
-                request.session['discount'] = float(coupon.discount_amount)
-            else:
-                request.session['discount'] = float(coupon.discount_percent)
-            
-            return JsonResponse({
-                'status': 'success', 
-                'message': 'Coupon applied successfully', 
-                'discount': request.session['discount'],
-                'discount_type': 'amount' if coupon.discount_amount > 0 else 'percent'
-            })
-            
-        except Coupon.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Invalid coupon code'})
-    
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+    if request.method != 'POST' or request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+    code = (request.POST.get('coupon_code') or '').strip()
+    shipping_state = request.POST.get('shipping_state', '')
+    items_payload = request.POST.get('items_json', '[]')
+
+    try:
+        raw_items = json.loads(items_payload)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid cart data'}, status=400)
+
+    try:
+        resolved_items, subtotal = _resolve_checkout_items(raw_items)
+    except ValueError as exc:
+        return JsonResponse({'status': 'error', 'message': str(exc)}, status=400)
+
+    try:
+        coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+    except Coupon.DoesNotExist:
+        request.session.pop('coupon_id', None)
+        return JsonResponse({'status': 'error', 'message': 'Invalid coupon code'}, status=400)
+
+    is_valid, coupon_message = _validate_coupon(coupon, subtotal)
+    if not is_valid:
+        request.session.pop('coupon_id', None)
+        return JsonResponse({'status': 'error', 'message': coupon_message}, status=400)
+
+    request.session['coupon_id'] = coupon.id
+    pricing = _build_pricing_summary(resolved_items, shipping_state, coupon)
+
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Coupon applied successfully.',
+        'items': _serialize_checkout_items(resolved_items),
+        'totals': _serialize_pricing_summary(pricing),
+        'coupon': {
+            'code': coupon.code,
+            'discount_amount': float(pricing['discount_amount']),
+        },
+    })
+
 
 @require_POST
 def place_order(request):
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
     try:
         data = json.loads(request.body.decode('utf-8'))
     except Exception:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'})
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-    # Extract data
-    personal_info = data.get('personal_info', {})
-    shipping_address_data = data.get('shipping_address', {})
-    billing_address_data = data.get('billing_address', {})
-    payment_method = data.get('payment_method', 'cash_on_delivery')
-    payment_details = data.get('payment_details', {})
-    items = data.get('items', [])
-    additional_notes = data.get('additional_notes', '')
-    totals = data.get('totals', {})
+    personal_info = data.get('personal_info') or {}
+    shipping_address_data = data.get('shipping_address') or {}
+    billing_address_data = data.get('billing_address') or {}
+    payment_details = data.get('payment_details') or {}
+    raw_items = data.get('items') or []
+    additional_notes = (data.get('additional_notes') or '').strip()
+    same_billing_address = bool(data.get('same_billing_address', True))
+    payment_method = _normalize_payment_method(data.get('payment_method'))
+    idempotency_key = (data.get('idempotency_key') or '').strip()
 
-    if not items:
-        return JsonResponse({'status': 'error', 'message': 'Cart is empty'})
+    if not idempotency_key:
+        return JsonResponse({'status': 'error', 'message': 'Missing idempotency key.'}, status=400)
 
-    # 🔍 Stock validation
-    for item in items:
-        try:
-            product = Product.objects.get(id=item.get('id'))
-            if product.stock < int(item.get('quantity', 1)):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'Not enough stock for {product.name}'
-                })
-        except Product.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Product not found'
-            })
+    existing_order = Order.objects.filter(idempotency_key=idempotency_key).first()
+    if existing_order:
+        if not request.user.is_authenticated and existing_order.user is None:
+            request.session['guest_order_id'] = str(existing_order.id)
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Order already received. We will continue with the same order.',
+            'order_id': existing_order.id,
+        })
+
+    if payment_method is None:
+        return JsonResponse({'status': 'error', 'message': 'Invalid payment method.'}, status=400)
+
+    try:
+        requested_items, _ = _resolve_checkout_items(raw_items)
+    except ValueError as exc:
+        return JsonResponse({'status': 'error', 'message': str(exc)}, status=400)
+
+    full_name = (personal_info.get('full_name') or '').strip()
+    email = (personal_info.get('email') or '').strip()
+    phone = (personal_info.get('phone') or '').strip()
+    shipping_full_name = (shipping_address_data.get('full_name') or full_name).strip()
+    shipping_address_line1 = (shipping_address_data.get('address_line1') or '').strip()
+    shipping_address_line2 = (shipping_address_data.get('address_line2') or '').strip()
+    shipping_city = (shipping_address_data.get('city') or '').strip()
+    shipping_postal_code = (shipping_address_data.get('postal_code') or '').strip()
+    shipping_state = (shipping_address_data.get('state') or '').strip()
+    shipping_country = (shipping_address_data.get('country') or 'Bangladesh').strip()
+
+    required_values = [
+        (full_name, 'Full name'),
+        (email, 'Email'),
+        (phone, 'Phone number'),
+        (shipping_full_name, 'Shipping full name'),
+        (shipping_address_line1, 'Shipping address'),
+        (shipping_city, 'Shipping city'),
+        (shipping_postal_code, 'Shipping postal code'),
+        (shipping_state, 'Shipping state'),
+        (shipping_country, 'Shipping country'),
+    ]
+
+    for value, label in required_values:
+        if not value:
+            return JsonResponse({'status': 'error', 'message': f'{label} is required.'}, status=400)
+
+    billing_full_name = (billing_address_data.get('full_name') or full_name).strip()
+    billing_address_line1 = (billing_address_data.get('address_line1') or '').strip()
+    billing_address_line2 = (billing_address_data.get('address_line2') or '').strip()
+    billing_city = (billing_address_data.get('city') or '').strip()
+    billing_postal_code = (billing_address_data.get('postal_code') or '').strip()
+    billing_state = (billing_address_data.get('state') or '').strip()
+    billing_country = (billing_address_data.get('country') or 'Bangladesh').strip()
+
+    if not same_billing_address:
+        billing_required_values = [
+            (billing_full_name, 'Billing full name'),
+            (billing_address_line1, 'Billing address'),
+            (billing_city, 'Billing city'),
+            (billing_postal_code, 'Billing postal code'),
+            (billing_state, 'Billing state'),
+            (billing_country, 'Billing country'),
+        ]
+        for value, label in billing_required_values:
+            if not value:
+                return JsonResponse({'status': 'error', 'message': f'{label} is required.'}, status=400)
+
+    sender_number = (payment_details.get('sender_number') or '').strip()
+    transaction_id = (payment_details.get('transaction_id') or '').strip()
+    delivery_payment_method = _normalize_payment_method(payment_details.get('delivery_payment_method'))
+    delivery_transaction_id = (payment_details.get('delivery_transaction_id') or '').strip()
+
+    if payment_method in {'bkash', 'nagad'} and not sender_number:
+        return JsonResponse({'status': 'error', 'message': 'Sender number is required for manual payment.'}, status=400)
+
+    if delivery_payment_method == 'cash_on_delivery':
+        delivery_payment_method = None
+
+    if delivery_payment_method not in {None, 'bkash', 'nagad'}:
+        return JsonResponse({'status': 'error', 'message': 'Invalid delivery payment method.'}, status=400)
+
+    coupon = _session_coupon(request)
 
     try:
         with transaction.atomic():
+            existing_order = Order.objects.select_for_update().filter(idempotency_key=idempotency_key).first()
+            if existing_order:
+                if not request.user.is_authenticated and existing_order.user is None:
+                    request.session['guest_order_id'] = str(existing_order.id)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Order already received. We will continue with the same order.',
+                    'order_id': existing_order.id,
+                })
 
-            # ✅ Create shipping address
+            requested_quantities = {
+                item['product_id']: item['quantity']
+                for item in requested_items
+            }
+            locked_products = Product.objects.select_for_update().filter(
+                id__in=requested_quantities.keys()
+            ).order_by('id')
+            product_map = {product.id: product for product in locked_products}
+
+            if len(product_map) != len(requested_quantities):
+                return JsonResponse({'status': 'error', 'message': 'Some products are no longer available.'}, status=400)
+
+            locked_items = []
+            for item in requested_items:
+                product = product_map[item['product_id']]
+                quantity = requested_quantities[product.id]
+
+                if product.stock < quantity:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'Not enough stock for {product.name}.',
+                    }, status=400)
+
+                unit_price = _to_money(product.get_final_price())
+                line_total = _to_money(unit_price * quantity)
+                locked_items.append({
+                    'product': product,
+                    'product_name': product.name,
+                    'quantity': quantity,
+                    'unit_price': unit_price,
+                    'line_total': line_total,
+                })
+
+            subtotal = _to_money(sum(item['line_total'] for item in locked_items))
+            if coupon:
+                is_valid, _coupon_message = _validate_coupon(coupon, subtotal)
+                if not is_valid:
+                    request.session.pop('coupon_id', None)
+                    coupon = None
+
+            pricing = _build_pricing_summary(locked_items, shipping_state, coupon)
+
             shipping_address = Address.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 address_type='shipping',
-                full_name=shipping_address_data.get('full_name', personal_info.get('full_name', '')),
-                phone=personal_info.get('phone', ''),
-                address_line1=shipping_address_data.get('address_line1', ''),
-                address_line2=shipping_address_data.get('address_line2', ''),
-                city=shipping_address_data.get('city', ''),
-                postal_code=shipping_address_data.get('postal_code', ''),
-                state=shipping_address_data.get('state', ''),
-                country=shipping_address_data.get('country', 'Bangladesh')
+                full_name=shipping_full_name,
+                phone=phone,
+                address_line1=shipping_address_line1,
+                address_line2=shipping_address_line2,
+                city=shipping_city,
+                postal_code=shipping_postal_code,
+                state=shipping_state,
+                country=shipping_country,
             )
 
-            # ✅ Billing address
-            if data.get('same_billing_address', True):
+            if same_billing_address:
                 billing_address = shipping_address
             else:
                 billing_address = Address.objects.create(
                     user=request.user if request.user.is_authenticated else None,
                     address_type='billing',
-                    full_name=billing_address_data.get('full_name', personal_info.get('full_name', '')),
-                    phone=personal_info.get('phone', ''),
-                    address_line1=billing_address_data.get('address_line1', ''),
-                    address_line2=billing_address_data.get('address_line2', ''),
-                    city=billing_address_data.get('city', ''),
-                    postal_code=billing_address_data.get('postal_code', ''),
-                    state=billing_address_data.get('state', ''),
-                    country=billing_address_data.get('country', 'Bangladesh')
+                    full_name=billing_full_name,
+                    phone=phone,
+                    address_line1=billing_address_line1,
+                    address_line2=billing_address_line2,
+                    city=billing_city,
+                    postal_code=billing_postal_code,
+                    state=billing_state,
+                    country=billing_country,
                 )
 
-            # 💰 Pricing
-            total_price = float(totals.get('total', 0))
-            original_price = float(totals.get('subtotal', 0))
-            shipping_cost = float(totals.get('shipping', 0))
-            discount_amount = float(totals.get('discount', 0))
-
-            # ✅ Create order (ALL payments pending)
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
-                full_name=personal_info.get('full_name', ''),
-                email=personal_info.get('email', ''),
-                phone=personal_info.get('phone', ''),
+                idempotency_key=idempotency_key,
+                full_name=full_name,
+                email=email,
+                phone=phone,
                 shipping_address=shipping_address,
                 billing_address=billing_address,
-                total_price=total_price,
-                original_price=original_price,
-                shipping_cost=shipping_cost,
-                discount_amount=discount_amount,
+                total_price=pricing['total'],
+                original_price=pricing['subtotal'],
+                shipping_cost=pricing['shipping_cost'],
+                discount_amount=pricing['discount_amount'],
                 order_status='pending',
                 payment_method=payment_method,
-                payment_status=False,  # ❗ ALWAYS False initially
-                notes=additional_notes
+                sender_number=sender_number if payment_method in {'bkash', 'nagad'} else None,
+                transaction_id=transaction_id if payment_method in {'bkash', 'nagad'} else None,
+                payment_status=False,
+                delivery_charge_paid=False,
+                delivery_payment_method=delivery_payment_method if payment_method == 'cash_on_delivery' else None,
+                delivery_transaction_id=delivery_transaction_id if payment_method == 'cash_on_delivery' else None,
+                notes=additional_notes,
             )
 
-            # 🧾 Manual Payment Logic (FIXED)
-            order.sender_number = ''
-            order.transaction_id = ''
-            order.delivery_charge_paid = False
-            order.delivery_payment_method = None
-            order.delivery_transaction_id = ''
-
-            if payment_method == 'cash_on_delivery':
-                # User will pay delivery charge later via bKash/Nagad
-                order.delivery_payment_method = payment_details.get('delivery_payment_method', '')
-                order.delivery_transaction_id = payment_details.get('delivery_transaction_id', '')
-
-            elif payment_method in ['bkash', 'nagad']:
-                # User may provide details but still NOT confirmed
-                order.sender_number = payment_details.get('sender_number', '')
-                order.transaction_id = payment_details.get('transaction_id', '')
-
-            order.save()
-
-            # 📦 Create order items + update stock
-            for item in items:
-                product = None
-                try:
-                    product = Product.objects.select_for_update().get(id=item.get('id'))
-                except Product.DoesNotExist:
-                    pass
-
-                quantity = int(item.get('quantity', 1))
-                price = float(item.get('price', 0))
-
+            for item in locked_items:
                 OrderItem.objects.create(
                     order=order,
-                    product=product,
-                    product_name=item.get('name', ''),
-                    product_price=price,
-                    quantity=quantity
+                    product=item['product'],
+                    product_name=item['product_name'],
+                    product_price=item['unit_price'],
+                    quantity=item['quantity'],
                 )
+                item['product'].stock -= item['quantity']
+                item['product'].save(update_fields=['stock'])
 
-                if product:
-                    product.stock = max(0, product.stock - quantity)
-                    product.save(update_fields=['stock'])
+            if coupon:
+                Coupon.objects.filter(pk=coupon.pk).update(used_count=models.F('used_count') + 1)
 
-            # 🧹 Clear session
             request.session.pop('coupon_id', None)
             request.session.pop('discount', None)
 
+            if not request.user.is_authenticated:
+                request.session['guest_order_id'] = str(order.id)
+
             return JsonResponse({
                 'status': 'success',
-                'message': 'Order placed successfully. We will contact you on Messenger to confirm.',
-                'order_id': order.id
+                'message': 'Order placed successfully. We will contact you to confirm payment and delivery.',
+                'order_id': order.id,
+            })
+    except IntegrityError:
+        existing_order = Order.objects.filter(idempotency_key=idempotency_key).first()
+        if existing_order:
+            if not request.user.is_authenticated and existing_order.user is None:
+                request.session['guest_order_id'] = str(existing_order.id)
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Order already received. We will continue with the same order.',
+                'order_id': existing_order.id,
             })
 
-    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': 'Could not process your order. Please try again.'}, status=500)
+    except Exception:
+        logger.exception('Order placement failed.')
         return JsonResponse({
             'status': 'error',
-            'message': f'Error processing order: {str(e)}'
-        })
+            'message': 'Could not process your order right now. Please try again.',
+        }, status=500)
+
+def guest_track_order(request):
+    if request.user.is_authenticated:
+        return redirect('my_orders')
+
+    order = None
+    lookup_order_id = ''
+    contact_value = ''
+
+    if request.method == 'POST':
+        lookup_order_id = (request.POST.get('order_id') or '').strip()
+        contact_value = (request.POST.get('contact') or '').strip()
+
+        if not lookup_order_id or not contact_value:
+            messages.error(request, 'Enter your order ID and the email or phone number used at checkout.')
+        else:
+            try:
+                order = Order.objects.select_related(
+                    'shipping_address', 'billing_address', 'user'
+                ).prefetch_related('items__product').get(
+                    id=int(lookup_order_id),
+                    user__isnull=True,
+                )
+            except (TypeError, ValueError, Order.DoesNotExist):
+                order = None
+
+            if order is None:
+                messages.error(request, 'We could not find a guest order with those details.')
+            else:
+                normalized_contact = contact_value.lower()
+                matches_email = order.email.lower() == normalized_contact
+                matches_phone = _normalize_phone(order.phone) == _normalize_phone(contact_value)
+
+                if not (matches_email or matches_phone):
+                    order = None
+                    messages.error(request, 'We could not find a guest order with those details.')
+
+    return render(request, 'track_order.html', {
+        'order': order,
+        'show_guest_lookup': True,
+        'lookup_order_id': lookup_order_id,
+        'contact_value': contact_value,
+        'lookup_attempted': request.method == 'POST',
+    })
+
 
 @login_required
 def track_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    
-    # Security check: ensure the order belongs to the current user
+    order = get_object_or_404(
+        Order.objects.select_related('shipping_address', 'billing_address').prefetch_related('items__product'),
+        id=order_id,
+    )
+
     if order.user != request.user:
         messages.error(request, "You don't have permission to view this order.")
         return redirect('my_orders')
-        
-    return render(request, 'track_order.html', {'order': order})
+
+    return render(request, 'track_order.html', {'order': order, 'show_guest_lookup': False})
+
 
 @login_required
+@require_POST
 def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    
-    # Security check: ensure the order belongs to the current user
-    if order.user != request.user:
-        messages.error(request, "You don't have permission to cancel this order.")
-        return redirect('my_orders')
-    
-    # Only allow cancellation if order is in 'pending' status
-    if order.order_status != 'pending':
-        messages.error(request, "Only pending orders can be cancelled.")
-        return redirect('my_orders')
-    
-    # Update order status to cancelled
-    order.order_status = 'cancelled'
-    order.save()
-    
+    with transaction.atomic():
+        order = get_object_or_404(
+            Order.objects.select_for_update().prefetch_related('items__product'),
+            id=order_id,
+        )
+
+        if order.user != request.user:
+            messages.error(request, "You don't have permission to cancel this order.")
+            return redirect('my_orders')
+
+        if order.order_status != 'pending':
+            messages.error(request, "Only pending orders can be cancelled.")
+            return redirect('my_orders')
+
+        for item in order.items.all():
+            if item.product:
+                item.product.stock += item.quantity
+                item.product.save(update_fields=['stock'])
+
+        order.order_status = 'cancelled'
+        order.save(update_fields=['order_status', 'updated_at'])
+
     messages.success(request, f"Order #{order.id} has been cancelled successfully.")
     return redirect('my_orders')
 
@@ -992,13 +1294,13 @@ def build_site_context(request):
     try:
         from .models import Product, Category, SubCategory, Brand, Color, Size, Coupon, Review, OrderItem
 
-        # Recent/active products
-        products = Product.objects.filter(is_active=True).order_by("-updated_at")[:10]
+        # Recent products
+        products = Product.objects.all().order_by("-created_at")[:10]
         if products:
             parts.append("\nProducts:")
             for p in products:
                 parts.append(
-                    f"- {getattr(p, 'name', 'N/A')} (${getattr(p, 'price', 'N/A')}) "
+                    f"- {getattr(p, 'name', 'N/A')} (Taka {getattr(p, 'price', 'N/A')}) "
                     f"[Category: {getattr(p.category, 'name', 'N/A')}, "
                     f"SubCategory: {getattr(p.subcategory, 'name', 'N/A')}, "
                     f"Brand: {getattr(p.brand, 'name', 'N/A')}, "
@@ -1116,7 +1418,9 @@ def gemini_chat(request):
         )
         result = model.generate_content(user_prompt.strip())
         reply = getattr(result, "text", None) or "Sorry, I couldn't generate a response."
+        print(f"DEBUG CONTEXT: {site_context}") # Look at your terminal!
         return JsonResponse({"reply": reply})
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Gemini chat request failed.")
         return JsonResponse({"reply": f"Error: {str(e)}"}, status=500)
+

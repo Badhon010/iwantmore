@@ -194,7 +194,7 @@ class Address(models.Model):
         ('billing', 'Billing'),
     )
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses', null=True, blank=True)
     address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
     default = models.BooleanField(default=False)
     full_name = models.CharField(max_length=255)
@@ -260,6 +260,7 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    idempotency_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
 
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=254)

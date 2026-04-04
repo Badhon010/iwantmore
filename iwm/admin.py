@@ -17,12 +17,12 @@ import csv
 
 from import_export import resources
 from import_export.admin import ExportActionMixin
-from ckeditor.widgets import CKEditorWidget
 
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.offline import plot
 from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 from .models import (
     Product, Review, Tag, MoreImages, NewsletterSubscriber,
@@ -516,7 +516,7 @@ class MoreImagesAdmin(admin.ModelAdmin):
 
 class EmailForm(forms.Form):
     subject = forms.CharField(max_length=100, required=True)
-    message = forms.CharField(widget=CKEditorWidget(), required=True)
+    message = forms.CharField(widget=CKEditor5Widget(config_name='default'), required=True)
     send_to_inactive = forms.BooleanField(required=False, initial=False)
 
 

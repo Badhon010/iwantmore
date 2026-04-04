@@ -120,6 +120,7 @@
 .cancel-btn {
     background: #FF4E6A;
     color: white;
+    border: none;
 }
 
 .shop-btn {

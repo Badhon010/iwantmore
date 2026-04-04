@@ -87,14 +87,23 @@
               <p>Cart</p>
             </a>
           </div>
+          {% if user.is_authenticated %}
+            <div id="my_orders">
+              <a class="cart" href="{% url 'my_orders' %}">
+                <i class="fas fa-box"></i> 
+                <span class="item-count order-count" id="order-count">0</span>
+                <p>My Orders</p>
+              </a>
+            </div>
+            {% else %}
+            <div>
+              <a class="cart" href="{% url 'guest_track_order' %}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <p>Track Orders</p>
+              </a>
+            </div>
+          {% endif %}
 
-          <div id="my_orders">
-            <a class="cart" href="{% url 'my_orders' %}">
-              <i class="fas fa-box"></i> 
-              <span class="item-count order-count" id="order-count">0</span>
-              <p>My Orders</p>
-            </a>
-          </div>
         </nav>
         </div>
       </nav>
