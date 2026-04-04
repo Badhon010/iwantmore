@@ -1013,6 +1013,7 @@ header .nav1 a:hover {
     background-size: 120px 120px;
     opacity: 0.5;
     z-index: 0;
+    pointer-events: none;
 }
 
 .newsletter h2 {
@@ -1065,7 +1066,7 @@ header .nav1 a:hover {
 
 .newsletter-input {
     width: 100%;
-    padding: 18px 60px 18px 25px;
+    padding: 18px 25px 18px 60px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 50px;
     font-size: 1rem;

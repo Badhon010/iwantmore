@@ -1,0 +1,146 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}System Alerts | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; System Alerts
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3">System Alerts & Notifications</h1>
+            <p class="text-muted">Monitor system notifications and important alerts</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-pink">Alert Summary</h6>
+                    <div class="badge badge-danger">{{ unread_count }} Unread</div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in alerts %}
+                                <tr class="{% if not alert.is_read %}table-warning{% endif %}">
+                                    <td>{{ alert.title }}</td>
+                                    <td>
+                                        <span class="badge badge-secondary">
+                                            {% if alert.alert_type == 'low_stock' %}📦 Low Stock
+                                            {% elif alert.alert_type == 'high_orders' %}📈 High Orders
+                                            {% elif alert.alert_type == 'failed_payment' %}❌ Failed Payment
+                                            {% else %}⚙️ System{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if alert.severity == 'info' %}
+                                            <span class="badge badge-info">INFO</span>
+                                        {% elif alert.severity == 'warning' %}
+                                            <span class="badge badge-warning">WARNING</span>
+                                        {% elif alert.severity == 'critical' %}
+                                            <span class="badge badge-danger">CRITICAL</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alert.is_read %}
+                                            <span class="badge badge-success">READ</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">UNREAD</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if not alert.is_read %}
+                                        <form method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                                            <button type="submit" class="btn btn-sm btn-success">Mark Read</button>
+                                        </form>
+                                        {% endif %}
+                                        {% if alert.product %}
+                                        <a href="{% url 'admin:iwm_product_change' alert.product.id %}" class="btn btn-sm btn-primary">View Product</a>
+                                        {% elif alert.order %}
+                                        <a href="{% url 'admin:iwm_order_change' alert.order.id %}" class="btn btn-sm btn-primary">View Order</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No alerts found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-pink">Alert Types</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Info</h6>
+                                <p class="mb-0">General information and notifications</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Warning</h6>
+                                <p class="mb-0">Issues that require attention</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-danger">
+                                <h6><i class="fas fa-exclamation-circle"></i> Critical</h6>
+                                <p class="mb-0">Urgent issues that need immediate action</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-pink {
+        color: #ff6f91 !important;
+    }
+    
+    .badge-pink {
+        background-color: #ff6f91;
+        color: white;
+    }
+    
+    .table-warning {
+        background-color: #fff3cd !important;
+    }
+</style>
+{% endblock %}

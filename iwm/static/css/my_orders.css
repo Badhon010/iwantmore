@@ -122,6 +122,12 @@
     color: white;
 }
 
+.shop-btn {
+    background: var(--btn-bg);
+    color: white;
+    margin-top: 20px;
+}
+
 .tracking-status {
     display: inline-block;
     padding: 5px 10px;

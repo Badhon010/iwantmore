@@ -385,7 +385,7 @@ function validateCheckoutForm() {
     if (paymentMethod === 'bkash') {
         const bkashNumber = document.getElementById('bkash-number').value.trim();
         if (bkashNumber === '') {
-                isValid = false;
+            isValid = false;
             document.getElementById('bkash-number').classList.add('error');
         }
     } else if (paymentMethod === 'nagad') {
@@ -443,6 +443,8 @@ function showOrderPreview() {
         if (nagadNumber) {
             paymentMethodHTML += `<br>Nagad Number: ${nagadNumber}`;
         }
+    } else if (paymentMethodRadio.value === 'cash_on_delivery') {
+        paymentMethodHTML += `<br>Cash on Delivery`;
     }
     document.getElementById('preview-payment-method').innerHTML = paymentMethodHTML;
     
@@ -564,11 +566,19 @@ function submitOrder() {
     
     if (paymentMethod === 'bkash') {
         paymentDetails = {
-            number: document.getElementById('bkash-number').value
+            sender_number: document.getElementById('bkash-number').value,
+            transaction_id: document.getElementById('bkash-trx-id') ? document.getElementById('bkash-trx-id').value : ''
         };
     } else if (paymentMethod === 'nagad') {
         paymentDetails = {
-            number: document.getElementById('nagad-number').value
+            sender_number: document.getElementById('nagad-number').value,
+            transaction_id: document.getElementById('nagad-trx-id') ? document.getElementById('nagad-trx-id').value : ''
+        };
+    } else if (paymentMethod === 'cash_on_delivery') {
+        // For COD, we still collect delivery payment details
+        paymentDetails = {
+            delivery_payment_method: document.getElementById('cod-delivery-payment-method') ? document.getElementById('cod-delivery-payment-method').value : '',
+            delivery_transaction_id: document.getElementById('cod-delivery-trx-id') ? document.getElementById('cod-delivery-trx-id').value : ''
         };
     }
     

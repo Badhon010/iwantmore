@@ -1,0 +1,88 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Revenue Chart | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:analytics' %}">Analytics Dashboard</a>
+    &rsaquo; Revenue Chart
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3">30-Day Revenue Trend</h1>
+            <p class="text-muted">Detailed visualization of revenue over the past 30 days</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-pink">Revenue Trend Analysis</h6>
+                </div>
+                <div class="card-body">
+                    {{ chart|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-pink">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:analytics' %}" class="btn btn-pink btn-block">
+                                <i class="fas fa-chart-line"></i> Back to Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:iwm_order_changelist' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-receipt"></i> View Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:iwm_product_changelist' %}" class="btn btn-success btn-block">
+                                <i class="fas fa-shopping-bag"></i> View Products
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-envelope"></i> Subscribers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-pink {
+        color: #ff6f91 !important;
+    }
+    
+    .btn-pink {
+        background-color: #ff6f91;
+        border-color: #ff6f91;
+        color: white;
+    }
+    
+    .btn-pink:hover {
+        background-color: #ff5583;
+        border-color: #ff5583;
+        color: white;
+    }
+</style>
+{% endblock %}

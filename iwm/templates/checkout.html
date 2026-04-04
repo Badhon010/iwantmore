@@ -225,22 +225,17 @@
                 </label>
               </div>
               
-              <div class="payment-method">
-                <label class="radio-container">
-                  <input type="radio" name="payment_method" value="card">
-                  <span class="radio-checkmark"></span>
-                  <div class="payment-label">
-                    <i class="far fa-credit-card"></i>
-                    Credit/Debit Card
-                  </div>
-                </label>
-              </div>
+
             </div>
             
             <div class="payment-fields bkash-fields" style="display: none;">
               <div class="form-group">
                 <label for="bkash-number">bKash Number <span class="required">*</span></label>
                 <input type="text" id="bkash-number" name="bkash_number">
+              </div>
+              <div class="form-group">
+                <label for="bkash-trx-id">Transaction ID</label>
+                <input type="text" id="bkash-trx-id" name="bkash_trx_id" placeholder="Enter transaction ID (optional)">
               </div>
               <p class="payment-instructions">
                 Please make the payment to our bKash merchant number (01XXXXXXXXX) before confirming your order. 
@@ -253,17 +248,38 @@
                 <label for="nagad-number">Nagad Number <span class="required">*</span></label>
                 <input type="text" id="nagad-number" name="nagad_number">
               </div>
+              <div class="form-group">
+                <label for="nagad-trx-id">Transaction ID</label>
+                <input type="text" id="nagad-trx-id" name="nagad_trx_id" placeholder="Enter transaction ID (optional)">
+              </div>
               <p class="payment-instructions">
                 Please make the payment to our Nagad merchant number (01XXXXXXXXX) before confirming your order. 
                 Use your order ID as the reference number.
               </p>
             </div>
             
-            <div class="payment-fields card-fields" style="display: none;">
+            <div class="payment-fields cod-fields" style="display: none;">
               <p class="payment-instructions">
-                You will be redirected to our secure payment gateway to complete your payment after confirming your order.
+                For Cash on Delivery, you will pay the order amount to our delivery person.
+                Additionally, please select the delivery charge payment method below:
               </p>
+              
+              <div class="form-group">
+                <label for="cod-delivery-payment-method">Delivery Charge Payment Method</label>
+                <select id="cod-delivery-payment-method" name="cod_delivery_payment_method">
+                  <option value="">Select delivery payment method</option>
+                  <option value="bkash">bKash</option>
+                  <option value="nagad">Nagad</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="cod-delivery-trx-id">Delivery Transaction ID</label>
+                <input type="text" id="cod-delivery-trx-id" name="cod_delivery_trx_id" placeholder="Enter delivery transaction ID (if applicable)">
+              </div>
             </div>
+            
+
           </div>
           
           <!-- Additional Information Section -->
@@ -325,6 +341,12 @@
       <button id="place-order-btn" class="place-order-btn">
         <i class="fas fa-lock"></i> Place Order
       </button>
+      
+      <div class="payment-instructions manual-payment">
+        <p><strong>Important:</strong> After placing order, our team will contact you via phone or Messenger to confirm payment and delivery.</p>
+        <p>For Cash on Delivery, delivery charge must be paid to our delivery person.</p>
+        <p>For bKash/Nagad, please make payment to our merchant number and share the transaction details.</p>
+      </div>
       
       <div class="back-to-cart">
         <a href="{% url 'cart' %}">

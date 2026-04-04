@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Initialize all components
     initPriceRange();
     initFilters();
-    initNewsletter();
     initSubcategoryToggles();
     
     // Initialize URL parameters from current URL
@@ -579,39 +578,4 @@ function initSubcategoryToggles() {
             }
         });
     });
-}
-
-/**
- * Initialize newsletter subscription
- */
-function initNewsletter() {
-    const newsletterForm = document.getElementById('newsletterForm');
-    
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const emailInput = this.querySelector('input[type="email"]');
-            const email = emailInput.value.trim();
-            
-            if (email) {
-                // In a real scenario, this would submit to the server
-                // For now, just show a success message
-                emailInput.value = '';
-                
-                // Show success message
-                const toast = document.createElement('div');
-                toast.className = 'toast show';
-                toast.textContent = 'Thank you for subscribing to our newsletter!';
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.className = 'toast';
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 300);
-                }, 3000);
-        }
-    });
-}
 }

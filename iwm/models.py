@@ -247,41 +247,61 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
         ('refunded', 'Refunded'),
     )
-    
+
     PAYMENT_METHOD_CHOICES = (
         ('cash_on_delivery', 'Cash on Delivery'),
-        ('credit_card', 'Credit Card'),
         ('bkash', 'bKash'),
         ('nagad', 'Nagad'),
     )
-    
+
+    DELIVERY_PAYMENT_METHOD_CHOICES = (
+        ('bkash', 'bKash'),
+        ('nagad', 'Nagad'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=254)
     phone = models.CharField(max_length=20)
+
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='shipping_orders')
     billing_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='billing_orders')
-    
+
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+
     order_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash_on_delivery')
-    payment_status = models.BooleanField(default=False)
+
+    # Payment info (for full payment or partial)
+    sender_number = models.CharField(max_length=20, blank=True, null=True)
     transaction_id = models.CharField(max_length=255, blank=True, null=True)
-    
+    payment_status = models.BooleanField(default=False)
+
+    # Delivery charge payment (IMPORTANT for COD)
+    delivery_charge_paid = models.BooleanField(default=False)
+    delivery_payment_method = models.CharField(
+        max_length=20,
+        choices=DELIVERY_PAYMENT_METHOD_CHOICES,
+        blank=True,
+        null=True
+    )
+    delivery_transaction_id = models.CharField(max_length=255, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     notes = models.TextField(blank=True)
     tracking_number = models.CharField(max_length=100, blank=True, null=True)
     estimated_delivery = models.DateField(blank=True, null=True)
-    
+
     def __str__(self):
         return f"Order {self.id}"
-    
+
     class Meta:
         ordering = ['-created_at']
 
@@ -323,3 +343,46 @@ class Coupon(models.Model):
             self.valid_from <= now <= self.valid_to and
             (self.usage_limit == 0 or self.used_count < self.usage_limit)
         )
+
+
+class AdminAlert(models.Model):
+    """
+    Model for tracking system alerts and notifications
+    - Low stock alerts
+    - High order volume alerts
+    - Failed payment alerts
+    """
+    ALERT_TYPES = (
+        ('low_stock', 'Low Stock Alert'),
+        ('high_orders', 'High Order Volume'),
+        ('failed_payment', 'Failed Payment'),
+        ('system', 'System Alert'),
+    )
+    
+    SEVERITY_LEVELS = (
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('critical', 'Critical'),
+    )
+    
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_LEVELS, default='warning')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='alerts')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='alerts')
+    is_read = models.BooleanField(default=False)
+    read_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='read_alerts')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.get_alert_type_display()} - {self.title}"
+    
+    class Meta:
+        ordering = ['-created_at', '-severity']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['is_read']),
+            models.Index(fields=['severity']),
+        ]

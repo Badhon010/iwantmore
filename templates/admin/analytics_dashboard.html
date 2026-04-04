@@ -1,0 +1,250 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Analytics Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; Analytics Dashboard
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0" style="color: #2d3748;">Analytics Dashboard</h1>
+            <p class="text-muted mb-0">Comprehensive overview of your e-commerce performance</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
+                            <i class="fas fa-rupee-sign fa-2x text-primary" style="color: #ff758c !important;"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1">Today's Revenue</p>
+                            <h4 class="mb-0">৳{{ today_revenue|floatformat:2 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
+                            <i class="fas fa-shopping-cart fa-2x text-success" style="color: #38a169 !important;"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1">Today's Orders</p>
+                            <h4 class="mb-0">{{ today_orders }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
+                            <i class="fas fa-calendar-week fa-2x text-info" style="color: #4299e1 !important;"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1">Weekly Orders</p>
+                            <h4 class="mb-0">{{ week_orders }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
+                            <i class="fas fa-calendar-month fa-2x text-warning" style="color: #ecc94b !important;"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1">Monthly Orders</p>
+                            <h4 class="mb-0">{{ month_orders }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #2d3748;">Revenue Trend</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'admin:revenue-chart' %}" class="btn btn-primary w-100" style="background-color: #ff758c; border: none;">View Detailed Revenue Chart</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #2d3748;">Payment Status</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <canvas id="paymentChart" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #2d3748;">Top Categories</h5>
+                </div>
+                <div class="card-body">
+                    {{ category_chart|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Stats -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #2d3748;">Performance Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <p class="text-muted mb-1">Total Revenue (Month)</p>
+                                <h5 class="mb-0">৳{{ month_revenue|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <p class="text-muted mb-1">Total Revenue (Week)</p>
+                                <h5 class="mb-0">৳{{ week_revenue|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <p class="text-muted mb-1">Conversion Rate</p>
+                                <h5 class="mb-0">3.2%</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <p class="text-muted mb-1">Avg Order Value</p>
+                                <h5 class="mb-0">৳{{ avg_order_value|floatformat:2|default:"0.00" }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #2d3748;">Performance Indicators</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>New Products</span>
+                            <span>24%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 24%" aria-valuenow="24" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>New Customers</span>
+                            <span>60%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Newsletter Subscriptions</span>
+                            <span>84%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 84%" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Return Visitors</span>
+                            <span>34%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Payment status chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('paymentChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Pending'],
+                datasets: [{
+                    data: [parseInt('{{ paid_orders }}'), parseInt('{{ pending_orders }}')],
+                    backgroundColor: [
+                        'rgba(56, 161, 105, 0.7)',
+                        'rgba(236, 201, 75, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(56, 161, 105, 1)',
+                        'rgba(236, 201, 75, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

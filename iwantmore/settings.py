@@ -49,12 +49,17 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',  # Must be before django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ckeditor',
+    'ckeditor_uploader',
+    'import_export',  # For CSV/Excel exports
+    'auditlog',  # For audit logging
     'iwm',
     'django.contrib.sites',
     'allauth',
@@ -147,6 +152,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 LOGIN_URL = '/login/'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -222,24 +228,201 @@ SOCIALACCOUNT_PROVIDERS['facebook'].setdefault('SCOPE', ['email', 'public_profil
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ========================
+# JAZZMIN ADMIN THEME CONFIGURATION
+# ========================
+JAZZMIN_SETTINGS = {
+    "site_title": "I Want More Admin",
+    "site_header": "I Want More",
+    "site_brand": "IWM Dashboard",
+    "site_logo": "/imgs/iwm.png",
+    "welcome_sign": "Welcome to I Want More Admin Dashboard",
+    "copyright": "I Want More © 2026",
+    "search_model": "iwm.Product",
+    
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    
+    # Top navbar color
+    "topmenu_links": [
+        {"name": "Home", "url": "/", "permissions": ["auth.view_user"]},
+        {"name": "Products", "url": "/admin/iwm/product/", "permissions": ["iwm.view_product"]},
+        {"name": "Orders", "url": "/admin/iwm/order/", "permissions": ["iwm.view_order"]},
+    ],
+    
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "iwm.Product": "fas fa-shopping-bag",
+        "iwm.Category": "fas fa-list",
+        "iwm.Order": "fas fa-receipt",
+        "iwm.NewsletterSubscriber": "fas fa-envelope",
+        "iwm.Review": "fas fa-star",
+    },
+    
+    "default_icon_parent": "fas fa-chevron-right",
+    "default_icon_children": "fas fa-arrow-right",
+    
+    "theme": "lux",  # Premium light theme with professional look
+    "dark_mode_theme": "darkly",
+    
+    "show_ui_builder": False,
+    
+    "navigation": [
+        {
+            "title": "Dashboard",
+            "icon": "fas fa-home",
+            "children": [],
+        },
+        {
+            "title": "E-Commerce",
+            "icon": "fas fa-shopping-cart",
+            "children": [
+                {
+                    "name": "Products",
+                    "url": "admin:iwm_product_changelist",
+                    "icon": "fas fa-shopping-bag",
+                    "permissions": ["iwm.view_product"]
+                },
+                {
+                    "name": "Categories",
+                    "url": "admin:iwm_category_changelist",
+                    "icon": "fas fa-list",
+                    "permissions": ["iwm.view_category"]
+                },
+                {
+                    "name": "Orders",
+                    "url": "admin:iwm_order_changelist",
+                    "icon": "fas fa-receipt",
+                    "permissions": ["iwm.view_order"]
+                },
+                {
+                    "name": "Coupons",
+                    "url": "admin:iwm_coupon_changelist",
+                    "icon": "fas fa-ticket-alt",
+                    "permissions": ["iwm.view_coupon"]
+                },
+            ],
+        },
+        {
+            "title": "Marketing",
+            "icon": "fas fa-bullhorn",
+            "children": [
+                {
+                    "name": "Newsletter",
+                    "url": "admin:iwm_newslettersubscriber_changelist",
+                    "icon": "fas fa-envelope",
+                    "permissions": ["iwm.view_newslettersubscriber"]
+                },
+                {
+                    "name": "Reviews",
+                    "url": "admin:iwm_review_changelist",
+                    "icon": "fas fa-star",
+                    "permissions": ["iwm.view_review"]
+                },
+            ],
+        },
+        {
+            "title": "User Management",
+            "icon": "fas fa-users",
+            "children": [
+                {
+                    "name": "Users",
+                    "url": "admin:auth_user_changelist",
+                    "icon": "fas fa-user",
+                    "permissions": ["auth.view_user"]
+                },
+                {
+                    "name": "Addresses",
+                    "url": "admin:iwm_address_changelist",
+                    "icon": "fas fa-map-marker-alt",
+                    "permissions": ["iwm.view_address"]
+                },
+            ],
+        },
+    ],
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small": False,
+    "footer_small": False,
+    "body_small": False,
+    "brand_small": False,
+    "brand_colour": "#ff6f91",  # IWM Pink brand color
+    "accent": "accent-primary",
+    "navbar": "navbar-light",  # Light navbar
+    "sidebar": "sidebar-light-primary",  # Light sidebar
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "lux",
+    "dark_mode": False,  # Light mode by default
+    "dark_mode_force": False,
+}
 
 # ========================
-# SSLCOMMERZ Configuration
+# CKEDITOR CONFIGURATION
 # ========================
+CKEDITOR_UPLOAD_PATH = "ckeditor_uploads/"
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
-# Sandbox credentials (for testing)
-SSLCOMMERZ_STORE_ID = "testbox"
-SSLCOMMERZ_STORE_PASSWD = "qwerty"
+CKEDITOR_CONFIGS = {
+    'default': {
+        'skin': 'moono-lisa',
+        'toolbar_Basic': [
+            ['Source', '-', 'Bold', 'Italic']
+        ],
+        'toolbar_YourCustomToolbarConfig': [
+            {'name': 'document', 'items': ['Source', '-', 'Save', 'NewPage', 'Preview', '-', 'Templates']},
+            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
+            {'name': 'forms', 'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton', 'HiddenField']},
+            '/',
+            {'name': 'basicstyles', 'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph', 'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language']},
+            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
+            {'name': 'insert', 'items': ['Image', 'Flash', 'Table', '-', 'SpecialChar', 'PageBreak', 'Iframe']},
+            '/',
+            {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
+        ],
+        'toolbar': 'YourCustomToolbarConfig',
+        'height': 291,
+        'width': '100%',
+        'filebrowserWindowHeight': 725,
+        'filebrowserWindowWidth': 940,
+        'toolbarCanCollapse': True,
+        'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
+        'tabSpaces': 4,
+        'extraPlugins': ','.join([
+            'uploadimage',
+            'div',
+            'autolink',
+            'autoembed',
+            'embedsemantic',
+            'autogrow',
+            'widget',
+            'lineutils',
+            'clipboard',
+            'dialog',
+            'dialogui',
+            'elementspath'
+        ]),
+    }
+}
 
-# Gateway URLs
-if DEBUG:  # sandbox mode
-    SSLCOMMERZ_API_URL = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
-    SSLCOMMERZ_VALIDATION_URL = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
-else:  # production mode
-    SSLCOMMERZ_API_URL = "https://securepay.sslcommerz.com/gwprocess/v4/api.php"
-    SSLCOMMERZ_VALIDATION_URL = "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
+# ========================
+# AUDIT LOG CONFIGURATION
+# ========================
+AUDITLOG_INCLUDE_TRACKING_MODELS = ('iwm.Product', 'iwm.Order', 'iwm.NewsletterSubscriber', 'iwm.Coupon')
 
-# Your site callback URLs
-SSLCOMMERZ_SUCCESS_URL = "http://127.0.0.1:8000/sslcommerz/success/"
-SSLCOMMERZ_FAIL_URL = "http://127.0.0.1:8000/sslcommerz/fail/"
-SSLCOMMERZ_CANCEL_URL = "http://127.0.0.1:8000/sslcommerz/cancel/"
+# ========================
+# EXPORT CONFIGURATION
+# ========================
+IMPORT_EXPORT_USE_TRANSACTIONS = True
+IMPORT_EXPORT_FORMATS = ['xlsx', 'csv', 'json']  # Supported export formats

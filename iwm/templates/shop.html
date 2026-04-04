@@ -333,15 +333,6 @@ today!{% endblock dis %}
   </div>
 
   <!-- Newsletter Section -->
-  <div class="newsletter-section">
-    <div class="newsletter-content">
-      <h3>Subscribe to Our Newsletter</h3>
-      <p>Get the latest updates on new products and special promotions</p>
-      <form class="newsletter-form" id="newsletterForm">
-        <input type="email" placeholder="Your email address" required>
-        <button type="submit">Subscribe</button>
-      </form>
-    </div>
-  </div>
+  {% include "newsletter.html"%}
 </div>
 {% endblock content %}

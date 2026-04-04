@@ -22,8 +22,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 import time
 from django.utils import timezone
-import urllib.request
-import urllib.parse
 import google.generativeai as genai
 import os
 import traceback
@@ -602,17 +600,6 @@ from django.db import transaction
 
 
 def checkout(request):
-    """Create an Order from the session cart and redirect to a success/confirmation page.
-
-    Expects `request.session['cart']` to be a list of items with keys:
-      - id (product id)
-      - name
-      - price
-      - quantity
-      - image (optional)
-
-    Also looks for optional `request.session['shipping_cost']` and `request.session['coupon_id']`.
-    """
     if request.method != 'POST':
         return render(request, 'checkout.html')
 
@@ -621,7 +608,7 @@ def checkout(request):
         messages.error(request, 'Your cart is empty.')
         return redirect('cart')
 
-    # Simple form fields (adapt if your checkout form uses different names)
+    # Form data
     full_name = request.POST.get('full_name', '').strip()
     email = request.POST.get('email', '').strip()
     phone = request.POST.get('phone', '').strip()
@@ -632,25 +619,22 @@ def checkout(request):
     postal_code = request.POST.get('postal_code', '').strip()
     country = request.POST.get('country', 'Bangladesh').strip()
     payment_method = request.POST.get('payment_method', 'cash_on_delivery').strip()
+
+    # 🆕 Manual payment fields
+    sender_number = request.POST.get('sender_number', '').strip()
+    trx_id = request.POST.get('trx_id', '').strip()
+
     shipping_cost = float(request.session.get('shipping_cost', 0))
 
-    # Compute totals from cart
-    subtotal = 0
-    for item in cart:
-        qty = int(item.get('quantity', 1))
-        price = float(item.get('price', 0))
-        subtotal += qty * price
-
+    # Calculate total
+    subtotal = sum(int(i.get('quantity', 1)) * float(i.get('price', 0)) for i in cart)
     total = subtotal + shipping_cost
 
-    # Create order atomically
     try:
         with transaction.atomic():
-            # create or reuse addresses - simple Address creation here
             shipping_address = Address.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 address_type='shipping',
-                default=False,
                 full_name=full_name,
                 phone=phone,
                 address_line1=address_line1,
@@ -673,67 +657,23 @@ def checkout(request):
                 shipping_cost=shipping_cost,
                 discount_amount=0,
                 order_status='pending',
+                payment_method=payment_method,
+                payment_status=False,  # unpaid by default
+                transaction_id=trx_id,
             )
 
-            # If payment method requires external gateway (bkash or nagad), initiate SSLCOMMERZ
-            if payment_method in ['bkash', 'nagad']:
-                # create a transaction id and save it on order
-                gateway_tran_id = f"ORDER{order.id}-{int(time.time())}"
-                order.transaction_id = gateway_tran_id
-                order.payment_method = payment_method
-                order.save(update_fields=['transaction_id', 'payment_method'])
+            # 🆕 Save sender number (if you added field in model)
+            if hasattr(order, 'sender_number'):
+                order.sender_number = sender_number
+                order.save(update_fields=['sender_number'])
 
-                # Prepare payload for SSLCOMMERZ sandbox
-                store_id = getattr(settings, 'SSLCOMMERZ_STORE_ID', 'testbox')
-                store_pass = getattr(settings, 'SSLCOMMERZ_STORE_PASSWD', 'qwerty')
-                success_url = request.build_absolute_uri(reverse('sslcommerz_success'))
-                fail_url = request.build_absolute_uri(reverse('sslcommerz_fail'))
-                cancel_url = request.build_absolute_uri(reverse('sslcommerz_cancel'))
-
-                payload = {
-                    'store_id': store_id,
-                    'store_passwd': store_pass,
-                    'total_amount': str(total),
-                    'currency': 'BDT',
-                    'tran_id': gateway_tran_id,
-                    'success_url': success_url,
-                    'fail_url': fail_url,
-                    'cancel_url': cancel_url,
-                    'emi_option': 0,
-                    'cus_name': full_name,
-                    'cus_email': email,
-                    'cus_phone': phone,
-                    'cus_add1': address_line1,
-                    'cus_city': city,
-                    'cus_country': country,
-                    'ship_method': 'NO',
-                }
-
-                try:
-                    data = urllib.parse.urlencode(payload).encode()
-                    req = urllib.request.Request('https://sandbox.sslcommerz.com/gwprocess/v4/api.php', data=data)
-                    with urllib.request.urlopen(req, timeout=15) as resp:
-                        resp_body = resp.read().decode()
-                        resp_json = json.loads(resp_body)
-                        gateway_url = resp_json.get('GatewayPageURL') or resp_json.get('redirect_url')
-                        if gateway_url:
-                            return redirect(gateway_url)
-                        else:
-                            messages.error(request, 'Payment gateway error, please try another method.')
-                            return redirect('checkout')
-                except Exception as e:
-                    messages.error(request, f'Payment initiation failed: {str(e)}')
-                    return redirect('checkout')
-
-            # Create order items and update stock
+            # Create order items
             for entry in cart:
                 product = None
-                product_id = entry.get('id')
                 try:
-                    if product_id:
-                        product = Product.objects.select_for_update().get(id=product_id)
-                except Product.DoesNotExist:
-                    product = None
+                    product = Product.objects.select_for_update().get(id=entry.get('id'))
+                except:
+                    pass
 
                 qty = int(entry.get('quantity', 1))
                 price = float(entry.get('price', 0))
@@ -741,32 +681,24 @@ def checkout(request):
                 OrderItem.objects.create(
                     order=order,
                     product=product,
-                    product_name=entry.get('name', '')[:255],
+                    product_name=entry.get('name', ''),
                     product_price=price,
                     quantity=qty,
                 )
 
-                # decrement product stock if product exists
                 if product:
                     product.stock = max(0, product.stock - qty)
                     product.save(update_fields=['stock'])
 
-            # Clear cart and related session data
-            if 'cart' in request.session:
-                del request.session['cart']
-            if 'shipping_cost' in request.session:
-                del request.session['shipping_cost']
-            if 'coupon_id' in request.session:
-                del request.session['coupon_id']
+            # Clear session
+            request.session.pop('cart', None)
+            request.session.pop('shipping_cost', None)
+            request.session.pop('coupon_id', None)
 
-            # If this was a guest checkout, store the order id in session so the guest can view it
             if not request.user.is_authenticated:
                 request.session['guest_order_id'] = str(order.id)
 
-            # Optionally send confirmation email here (omitted for brevity)
-
-            # Redirect to confirmation page with order id
-            return redirect(reverse('order_confirmation') + f'?order_id={order.id}')
+            return redirect(f"{reverse('order_confirmation')}?order_id={order.id}")
 
     except Exception as e:
         messages.error(request, f'Error placing order: {str(e)}')
@@ -812,66 +744,6 @@ def order_confirmation(request):
 
     return render(request, 'order_confirmation.html', {'order': order, 'items': items})
 
-
-@require_POST
-def sslcommerz_success(request):
-    # SSLCOMMERZ will post back transaction details
-    post = request.POST
-    tran_id = post.get('tran_id')
-    val_id = post.get('val_id')
-    status = post.get('status')
-
-    # Find order by our stored transaction id
-    try:
-        order = Order.objects.get(transaction_id=tran_id)
-        # Update payment status if success
-        if status and status.lower() in ('valid', 'success', 'completed'):
-            order.payment_status = True
-            order.transaction_id = val_id or tran_id
-            order.order_status = 'processing'
-            order.save(update_fields=['payment_status', 'transaction_id', 'order_status'])
-            # Clear guest_order_id since order completed
-            if 'guest_order_id' in request.session:
-                try:
-                    del request.session['guest_order_id']
-                except Exception:
-                    pass
-            return redirect(reverse('order_confirmation') + f'?order_id={order.id}')
-    except Order.DoesNotExist:
-        pass
-
-    messages.error(request, 'Payment verification failed.')
-    return redirect('checkout')
-
-
-@require_POST
-def sslcommerz_fail(request):
-    # Payment failed - find order and mark as cancelled or failed
-    post = request.POST
-    tran_id = post.get('tran_id')
-    try:
-        order = Order.objects.get(transaction_id=tran_id)
-        order.order_status = 'cancelled'
-        order.save(update_fields=['order_status'])
-    except Order.DoesNotExist:
-        pass
-    messages.error(request, 'Payment failed or was declined.')
-    return redirect('checkout')
-
-
-@require_POST
-def sslcommerz_cancel(request):
-    post = request.POST
-    tran_id = post.get('tran_id')
-    try:
-        order = Order.objects.get(transaction_id=tran_id)
-        order.order_status = 'cancelled'
-        order.save(update_fields=['order_status'])
-    except Order.DoesNotExist:
-        pass
-    messages.warning(request, 'Payment was cancelled.')
-    return redirect('checkout')
-
 def apply_coupon(request):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         code = request.POST.get('coupon_code')
@@ -904,44 +776,51 @@ def apply_coupon(request):
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
+@require_POST
 def place_order(request):
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        data = json.loads(request.body)
-        
-        # Extract order data
-        personal_info = data.get('personal_info', {})
-        shipping_address_data = data.get('shipping_address', {})
-        billing_address_data = data.get('billing_address', {})
-        payment_method = data.get('payment_method', '')
-        payment_details = data.get('payment_details', {})
-        items = data.get('items', [])
-        additional_notes = data.get('additional_notes', '')
-        totals = data.get('totals', {})
-        
-        # Verify stock availability
-        for item in items:
-            product_id = item.get('id')
-            quantity = item.get('quantity', 1)
-            
-            try:
-                product = Product.objects.get(id=product_id)
-                if product.stock < quantity:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': f'Not enough stock for {product.name}. Available: {product.stock}'
-                    })
-            except Product.DoesNotExist:
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'})
+
+    # Extract data
+    personal_info = data.get('personal_info', {})
+    shipping_address_data = data.get('shipping_address', {})
+    billing_address_data = data.get('billing_address', {})
+    payment_method = data.get('payment_method', 'cash_on_delivery')
+    payment_details = data.get('payment_details', {})
+    items = data.get('items', [])
+    additional_notes = data.get('additional_notes', '')
+    totals = data.get('totals', {})
+
+    if not items:
+        return JsonResponse({'status': 'error', 'message': 'Cart is empty'})
+
+    # 🔍 Stock validation
+    for item in items:
+        try:
+            product = Product.objects.get(id=item.get('id'))
+            if product.stock < int(item.get('quantity', 1)):
                 return JsonResponse({
                     'status': 'error',
-                    'message': f'Product with ID {product_id} does not exist'
+                    'message': f'Not enough stock for {product.name}'
                 })
-        
-        try:
-            # Create shipping address
+        except Product.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Product not found'
+            })
+
+    try:
+        with transaction.atomic():
+
+            # ✅ Create shipping address
             shipping_address = Address.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 address_type='shipping',
-                default=False,
                 full_name=shipping_address_data.get('full_name', personal_info.get('full_name', '')),
                 phone=personal_info.get('phone', ''),
                 address_line1=shipping_address_data.get('address_line1', ''),
@@ -951,15 +830,14 @@ def place_order(request):
                 state=shipping_address_data.get('state', ''),
                 country=shipping_address_data.get('country', 'Bangladesh')
             )
-            
-            # Create billing address if different from shipping
-            if data.get('same_billing_address', False):
+
+            # ✅ Billing address
+            if data.get('same_billing_address', True):
                 billing_address = shipping_address
             else:
                 billing_address = Address.objects.create(
                     user=request.user if request.user.is_authenticated else None,
                     address_type='billing',
-                    default=False,
                     full_name=billing_address_data.get('full_name', personal_info.get('full_name', '')),
                     phone=personal_info.get('phone', ''),
                     address_line1=billing_address_data.get('address_line1', ''),
@@ -969,23 +847,14 @@ def place_order(request):
                     state=billing_address_data.get('state', ''),
                     country=billing_address_data.get('country', 'Bangladesh')
                 )
-            
-            # Get or create coupon if applied
-            coupon = None
-            coupon_id = request.session.get('coupon_id')
-            if coupon_id:
-                try:
-                    coupon = Coupon.objects.get(id=coupon_id)
-                except Coupon.DoesNotExist:
-                    pass
-            
-            # Calculate pricing info
-            total_price = totals.get('total', 0)
-            original_price = totals.get('subtotal', 0)
-            shipping_cost = totals.get('shipping', 0)
-            discount_amount = totals.get('discount', 0)
-            
-            # Create order
+
+            # 💰 Pricing
+            total_price = float(totals.get('total', 0))
+            original_price = float(totals.get('subtotal', 0))
+            shipping_cost = float(totals.get('shipping', 0))
+            discount_amount = float(totals.get('discount', 0))
+
+            # ✅ Create order (ALL payments pending)
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 full_name=personal_info.get('full_name', ''),
@@ -999,54 +868,67 @@ def place_order(request):
                 discount_amount=discount_amount,
                 order_status='pending',
                 payment_method=payment_method,
-                payment_status=False,
-                transaction_id=payment_details.get('transaction_id', '') if payment_details else '',
+                payment_status=False,  # ❗ ALWAYS False initially
                 notes=additional_notes
             )
-            
-            # Create order items and update stock
+
+            # 🧾 Manual Payment Logic (FIXED)
+            order.sender_number = ''
+            order.transaction_id = ''
+            order.delivery_charge_paid = False
+            order.delivery_payment_method = None
+            order.delivery_transaction_id = ''
+
+            if payment_method == 'cash_on_delivery':
+                # User will pay delivery charge later via bKash/Nagad
+                order.delivery_payment_method = payment_details.get('delivery_payment_method', '')
+                order.delivery_transaction_id = payment_details.get('delivery_transaction_id', '')
+
+            elif payment_method in ['bkash', 'nagad']:
+                # User may provide details but still NOT confirmed
+                order.sender_number = payment_details.get('sender_number', '')
+                order.transaction_id = payment_details.get('transaction_id', '')
+
+            order.save()
+
+            # 📦 Create order items + update stock
             for item in items:
                 product = None
-                if item.get('id'):
-                    try:
-                        product = Product.objects.get(id=item.get('id'))
-                    except Product.DoesNotExist:
-                        pass
-                        
+                try:
+                    product = Product.objects.select_for_update().get(id=item.get('id'))
+                except Product.DoesNotExist:
+                    pass
+
+                quantity = int(item.get('quantity', 1))
+                price = float(item.get('price', 0))
+
                 OrderItem.objects.create(
                     order=order,
                     product=product,
                     product_name=item.get('name', ''),
-                    product_price=item.get('price', 0),
-                    quantity=item.get('quantity', 1)
+                    product_price=price,
+                    quantity=quantity
                 )
-                
-                # Update product stock
+
                 if product:
-                    product.update_stock(-item.get('quantity', 1))
-            
-            # Clear coupon from session
-            if 'coupon_id' in request.session:
-                del request.session['coupon_id']
-            if 'discount' in request.session:
-                del request.session['discount']
-            
-            # Send order confirmation email
-            # This would be implemented here or called as a method on the order
-            
+                    product.stock = max(0, product.stock - quantity)
+                    product.save(update_fields=['stock'])
+
+            # 🧹 Clear session
+            request.session.pop('coupon_id', None)
+            request.session.pop('discount', None)
+
             return JsonResponse({
                 'status': 'success',
-                'message': 'Order placed successfully',
+                'message': 'Order placed successfully. We will contact you on Messenger to confirm.',
                 'order_id': order.id
             })
-            
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'Error processing order: {str(e)}'
-            })
-    
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Error processing order: {str(e)}'
+        })
 
 @login_required
 def track_order(request, order_id):

@@ -1,0 +1,94 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Send Newsletter | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}">Newsletter Subscribers</a>
+    &rsaquo; Send Email
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3">Send Newsletter Email</h1>
+            <p class="text-muted">Send email to selected subscribers</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-pink">Email Details</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.media }}
+                        <div class="form-group">
+                            <label for="{{ form.subject.id_for_label }}">Subject:</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                                <div class="text-danger">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.message.id_for_label }}">Message:</label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="text-danger">{{ form.message.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="{{ form.send_to_inactive.name }}" id="{{ form.send_to_inactive.id_for_label }}">
+                            <label class="form-check-label" for="{{ form.send_to_inactive.id_for_label }}">
+                                Send to inactive subscribers as well
+                            </label>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6>Selected Subscribers:</h6>
+                            <ul>
+                                {% for subscriber in subscribers %}
+                                    <li>{{ subscriber.email }}</li>
+                                {% endfor %}
+                            </ul>
+                            <p><strong>Total: {{ subscribers.count }} subscribers</strong></p>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-pink">
+                            <i class="fas fa-paper-plane"></i> Send Email
+                        </button>
+                        <a href="../" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-pink {
+        color: #ff6f91 !important;
+    }
+    
+    .btn-pink {
+        background-color: #ff6f91;
+        border-color: #ff6f91;
+        color: white;
+    }
+    
+    .btn-pink:hover {
+        background-color: #ff5583;
+        border-color: #ff5583;
+        color: white;
+    }
+</style>
+{% endblock %}

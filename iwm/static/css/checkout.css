@@ -259,6 +259,25 @@ textarea {
   margin-top: 10px;
 }
 
+.payment-instructions.manual-payment {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.payment-instructions.manual-payment p {
+  margin: 5px 0;
+  color: #856404;
+}
+
+.payment-instructions.manual-payment strong {
+  color: #7c6d0a;
+}
+
 .coupon-section {
   background-color: white;
   border-radius: 8px;

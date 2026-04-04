@@ -18,8 +18,17 @@
   
   <div class="confirmation-content">
     <div class="confirmation-message">
-      <p>Your order has been placed successfully and is now being processed. A confirmation email has been sent to your registered email address.</p>
-      <p>You can track your order status in your account dashboard.</p>
+      <p>Your order has been placed successfully and is now pending. Our team will contact you shortly via phone or Messenger to confirm payment and delivery details.</p>
+      
+      <div class="manual-payment-info">
+        <h3>Next Steps:</h3>
+        <ul>
+          <li>Our customer service team will contact you within 24 hours</li>
+          <li>We will confirm payment details and delivery schedule</li>
+          <li>For bKash/Nagad orders: Please keep your transaction ID ready</li>
+          <li>For Cash on Delivery: Prepare payment for our delivery person</li>
+        </ul>
+      </div>
     </div>
     
     <div class="order-details">
@@ -39,17 +48,33 @@
       </div>
       
       <div class="detail-section">
-        <h3>Payment Method</h3>
+        <h3>Payment Information</h3>
         <div class="detail-content">
-          <p>
-            {% if order.payment_method == 'cod' %}
+          <p><strong>Method:</strong> 
+            {% if order.payment_method == 'cash_on_delivery' %}
               Cash on Delivery
             {% elif order.payment_method == 'bkash' %}
               bKash
             {% elif order.payment_method == 'nagad' %}
               Nagad
             {% else %}
-              Credit/Debit Card
+              {{ order.payment_method }}
+            {% endif %}
+          </p>
+          
+          {% if order.sender_number %}
+          <p><strong>Sender Number:</strong> {{ order.sender_number }}</p>
+          {% endif %}
+          
+          {% if order.transaction_id %}
+          <p><strong>Transaction ID:</strong> {{ order.transaction_id }}</p>
+          {% endif %}
+          
+          <p><strong>Status:</strong> 
+            {% if order.payment_status %}
+              <span class="status-badge paid">Paid</span>
+            {% else %}
+              <span class="status-badge pending">Pending Confirmation</span>
             {% endif %}
           </p>
         </div>
@@ -93,6 +118,16 @@
     </div>
     
     <div class="next-steps">
+      <div class="contact-info">
+        <h3>Need Help?</h3>
+        <p>Contact us via:</p>
+        <ul>
+          <li>WhatsApp: +880-1XXX-XXXXXX</li>
+          <li>Messenger: facebook.com/iwantmore.bd</li>
+          <li>Phone: 16XXX (available 9AM-9PM)</li>
+        </ul>
+      </div>
+      
       <div class="action-buttons">
         <a href="{% url 'shop' %}" class="btn primary-btn">Continue Shopping</a>
         {% if user.is_authenticated %}
@@ -117,4 +152,4 @@
     }
   });
 </script>
-{% endblock %} 
+{% endblock %}

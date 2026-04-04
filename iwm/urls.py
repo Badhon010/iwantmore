@@ -54,9 +54,6 @@ urlpatterns = [
     path('my-orders/', views.my_orders, name='my_orders'),
     path('track-order/<int:order_id>/', views.track_order, name='track_order'),
     path('cancel-order/<int:order_id>/', views.cancel_order, name='cancel_order'),
-    path('sslcommerz/success/', views.sslcommerz_success, name='sslcommerz_success'),
-    path('sslcommerz/fail/', views.sslcommerz_fail, name='sslcommerz_fail'),
-    path('sslcommerz/cancel/', views.sslcommerz_cancel, name='sslcommerz_cancel'),
     path('api/order-count/', views.order_count, name='order_count'),
     path("api/chat/", views.gemini_chat, name="gemini_chat") # New endpoint for Gemini AI chat
 ]

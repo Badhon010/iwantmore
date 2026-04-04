@@ -1,0 +1,16 @@
+<div class="newsletter">
+    <h2>Stay Connected</h2>
+    <p>Subscribe to our newsletter for exclusive offers, new arrivals, and behind-the-scenes content delivered straight to your inbox.</p>
+    <form class="newsletter-form" action="{% url 'subscribe_newsletter' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="source" value="about_page">
+        <div class="newsletter-input-group">
+            <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
+            <i class="far fa-envelope newsletter-input-icon"></i>
+        </div>
+        <button type="submit" class="newsletter-btn">Subscribe <i class="fas fa-paper-plane"></i></button>
+    </form>
+    <div class="newsletter-privacy">
+        By subscribing, you agree to our <a href="{% url 'faq' %}">Privacy Policy</a>. We respect your privacy and will never share your information.
+    </div>
+</div>
