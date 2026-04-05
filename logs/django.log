@@ -17,200 +17,200 @@ INFO 2026-04-04 18:20:33,035 django.utils.autoreload Watching for file changes w
 INFO 2026-04-05 01:11:11,467 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 01:14:18,130 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 01:14:39,663 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 01:14:39,668 django.server code 400, message Bad request version ('\x14\x94o\x8bÿ¸ò$\x90!')
+INFO 2026-04-05 01:14:39,668 django.server code 400, message Bad request version ('\x14\x94o\x8bï¿½ï¿½ï¿½$\x90!')
 ERROR 2026-04-05 01:14:39,674 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:14:39,687 django.server code 400, message Bad request version ('Ò\x7fÆî\x94ñT\x13Zzi')
+INFO 2026-04-05 01:14:39,687 django.server code 400, message Bad request version ('ï¿½\x7fï¿½ï¿½\x94ï¿½T\x13Zzi')
 ERROR 2026-04-05 01:14:39,688 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:14:41,677 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03ZáäÜi')
+INFO 2026-04-05 01:14:41,677 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03Zï¿½ï¿½ï¿½i')
 ERROR 2026-04-05 01:14:41,678 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:14:41,679 django.server code 400, message Bad request version ('Ñ\x80YRK\x88+e\x9dB6²hs')
+INFO 2026-04-05 01:14:41,679 django.server code 400, message Bad request version ('ï¿½\x80YRK\x88+e\x9dB6ï¿½hs')
 ERROR 2026-04-05 01:14:41,681 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:14:41,688 django.server code 400, message Bad request syntax ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03³Ëõ(Zé')
-INFO 2026-04-05 01:14:41,690 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S::\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00')
+INFO 2026-04-05 01:14:41,688 django.server code 400, message Bad request syntax ('\x16\x03\x01\x07\x00\x01\x00\x06ï¿½\x03\x03ï¿½ï¿½ï¿½(Zï¿½')
+INFO 2026-04-05 01:14:41,690 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S::\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00')
 ERROR 2026-04-05 01:14:41,691 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-04-05 01:14:41,693 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:15:48,258 django.server code 400, message Bad request version ('\x02ËK\x96îbâsE³F\x01ìß\x95\x05©½«é')
+INFO 2026-04-05 01:15:48,258 django.server code 400, message Bad request version ('\x02ï¿½K\x96ï¿½bï¿½sEï¿½F\x01ï¿½ï¿½\x95\x05ï¿½ï¿½ï¿½ï¿½')
 ERROR 2026-04-05 01:15:48,259 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:15:48,259 django.server code 400, message Bad request version ('£\x19\x18')
+INFO 2026-04-05 01:15:48,259 django.server code 400, message Bad request version ('ï¿½\x19\x18')
 ERROR 2026-04-05 01:15:48,260 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:15:48,263 django.server code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x9a\x9a\x00\x00\x00')
+INFO 2026-04-05 01:15:48,263 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x9a\x9a\x00\x00\x00')
 ERROR 2026-04-05 01:15:48,264 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:15:48,264 django.server code 400, message Bad request version (',¹ÞÉ¶m\x0e\x9c7Á\x01\x97\x018%')
+INFO 2026-04-05 01:15:48,264 django.server code 400, message Bad request version (',ï¿½ï¿½É¶m\x0e\x9c7ï¿½\x01\x97\x018%')
 ERROR 2026-04-05 01:15:48,265 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 01:18:46,893 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
 INFO 2026-04-05 01:20:33,268 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 01:20:49,303 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00')
 ERROR 2026-04-05 01:20:49,304 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 01:20:49,309 django.server code 400, message Bad request version ('Ü\x06\x16ÑøÅ\x89Ub*\x8c\x11óEq\x17\x04¨&¨¯¿°\x89f')
+INFO 2026-04-05 01:20:49,309 django.server code 400, message Bad request version ('ï¿½\x06\x16ï¿½ï¿½ï¿½\x89Ub*\x8c\x11ï¿½Eq\x17\x04ï¿½&ï¿½ï¿½ï¿½ï¿½\x89f')
 ERROR 2026-04-05 01:20:49,310 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 10:56:48,754 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 10:57:15,743 django.server code 400, message Bad request version ('\x04ÂPw{ãp·oøì°Ú\x18k\x115:ÁÝ«*~4Eë.nþ\x17&D\x00')
+INFO 2026-04-05 10:57:15,743 django.server code 400, message Bad request version ('\x04ï¿½Pw{ï¿½pï¿½oï¿½ï¿½ï¿½\x18k\x115:ï¿½Ý«*~4Eï¿½.nï¿½\x17&D\x00')
 ERROR 2026-04-05 10:57:15,744 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 10:57:15,750 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x17\x00\x00\x00')
 ERROR 2026-04-05 10:57:15,750 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 10:57:17,673 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93')
+INFO 2026-04-05 10:57:17,673 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93')
 ERROR 2026-04-05 10:57:17,673 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 10:57:17,675 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03Ëá¨Û!â\\JkûA¼ú¨\x0e1ìµ')
+INFO 2026-04-05 10:57:17,675 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03ï¿½ï¿½ï¿½!ï¿½\\Jkï¿½Aï¿½ï¿½ï¿½\x0e1ï¿½')
 ERROR 2026-04-05 10:57:17,675 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 10:57:17,676 django.server code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063JJ\x00\x00\x00')
+INFO 2026-04-05 10:57:17,676 django.server code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063JJ\x00\x00\x00')
 ERROR 2026-04-05 10:57:17,677 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 10:57:17,678 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x12\x00\x00\x00+\x00\x07\x06JJ\x03\x04\x03\x03\x00-\x00\x02\x01\x01\x00')
 ERROR 2026-04-05 10:57:17,678 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 10:58:49,478 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 10:59:21,773 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 10:59:21,800 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03óÕ\x88Ä<\x98¡Ö{Fj\xad2Ú4')
+INFO 2026-04-05 10:59:21,800 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03ï¿½ï¿½\x88ï¿½<\x98ï¿½ï¿½{Fj\xad2ï¿½4')
 ERROR 2026-04-05 10:59:21,801 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 10:59:21,808 django.server code 400, message Bad request version ('\x00\x8a¿\x83£FºÑ\x02')
+INFO 2026-04-05 10:59:21,808 django.server code 400, message Bad request version ('\x00\x8aï¿½\x83ï¿½Fï¿½ï¿½\x02')
 ERROR 2026-04-05 10:59:21,809 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:00:53,614 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 11:01:32,751 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 11:01:32,763 django.server code 400, message Bad request version ("CüÆ£Ï\x04;L7[¯Ùô{ML9ÙK0\x82õØwÕ}@\x86\\\x94ß\x86\x00(\x13\x02\x13\x01À,À+À0À/À$À#À(À'À")
+INFO 2026-04-05 11:01:32,763 django.server code 400, message Bad request version ("Cï¿½Æ£ï¿½\x04;L7[ï¿½ï¿½ï¿½{ML9ï¿½K0\x82ï¿½ï¿½wï¿½}@\x86\\\x94ï¿½\x86\x00(\x13\x02\x13\x01ï¿½,ï¿½+ï¿½0ï¿½/ï¿½$ï¿½#ï¿½(ï¿½'ï¿½")
 ERROR 2026-04-05 11:01:32,764 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:01:32,775 django.server code 400, message Bad request version ("-Ä¬Yß\x00(\x13\x02\x13\x01À,À+À0À/À$À#À(À'À")
+INFO 2026-04-05 11:01:32,775 django.server code 400, message Bad request version ("-Ä¬Yï¿½\x00(\x13\x02\x13\x01ï¿½,ï¿½+ï¿½0ï¿½/ï¿½$ï¿½#ï¿½(ï¿½'ï¿½")
 ERROR 2026-04-05 11:01:32,776 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:01:39,743 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 11:01:39,749 django.server code 400, message Bad request version ('´}òjÌìâéÕ%î\x01µ\x91×\x15')
+INFO 2026-04-05 11:01:39,749 django.server code 400, message Bad request version ('ï¿½}ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½%ï¿½\x01ï¿½\x91ï¿½\x15')
 ERROR 2026-04-05 11:01:39,750 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:01:39,757 django.server code 400, message Bad request version ('(\x93Á\x86ã\x9f¦\x98awu\x1b')
+INFO 2026-04-05 11:01:39,757 django.server code 400, message Bad request version ('(\x93ï¿½\x86ï¿½\x9fï¿½\x98awu\x1b')
 ERROR 2026-04-05 11:01:39,757 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:03:26,350 django.server "GET / HTTP/1.1" 301 0
 INFO 2026-04-05 11:03:26,375 django.server code 400, message Bad request version ('\x00\x02\x01\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
 ERROR 2026-04-05 11:03:26,375 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:26,378 django.server code 400, message Bad request version ('¦#\x9a[5m!¨5K°\xad¶&1\x93@Ü\x8f»')
+INFO 2026-04-05 11:03:26,378 django.server code 400, message Bad request version ('ï¿½#\x9a[5m!ï¿½5Kï¿½\xadï¿½&1\x93@ï¿½\x8fï¿½')
 ERROR 2026-04-05 11:03:26,378 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,091 django.server code 400, message Bad request version ('R\x12¨CºzçÇÏ¹IÉº\x03>Û\x95mJ1ðÜ2£\x87M±!ò³¦Çð¨eø9ÝÃúØYyÔQ\x92Ï\x98æà7\x81ú¡\x9cP\x91Uë\x17\x8a\x8aMõ@ðd\x00Ü\x11OþÛRÕ\x16B\x91M8·æi\x96ÿf\x8f:È»v\x83JpêZìÓ¦U\x92ÕÂ\x07Ò-')
+INFO 2026-04-05 11:03:29,091 django.server code 400, message Bad request version ('R\x12ï¿½Cï¿½zï¿½ï¿½Ï¹IÉº\x03>ï¿½\x95mJ1ï¿½ï¿½2ï¿½\x87Mï¿½!ï¿½ï¿½ï¿½eï¿½9ï¿½ï¿½ï¿½ï¿½Yyï¿½Q\x92ï¿½\x98ï¿½ï¿½7\x81ï¿½ï¿½\x9cP\x91Uï¿½\x17\x8a\x8aMï¿½@ï¿½d\x00ï¿½\x11Oï¿½ï¿½Rï¿½\x16B\x91M8ï¿½ï¿½i\x96ï¿½f\x8f:È»v\x83Jpï¿½Zï¿½Ó¦U\x92ï¿½ï¿½\x07ï¿½-')
 ERROR 2026-04-05 11:03:29,092 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:03:29,092 django.server code 400, message Bad request version ('-CJ')
 ERROR 2026-04-05 11:03:29,094 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:03:29,098 django.server code 400, message Bad request version ('lHKF\x14')
 ERROR 2026-04-05 11:03:29,099 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,100 django.server code 400, message Bad request version ('ÚÚ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06s::\x00\x00\x00\x12\x00\x00\x00+\x00\x07\x06zz\x03\x04\x03\x03\x00')
+INFO 2026-04-05 11:03:29,100 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06s::\x00\x00\x00\x12\x00\x00\x00+\x00\x07\x06zz\x03\x04\x03\x03\x00')
 ERROR 2026-04-05 11:03:29,102 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,114 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03a')
+INFO 2026-04-05 11:03:29,114 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03a')
 ERROR 2026-04-05 11:03:29,114 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,119 django.server code 400, message Bad request version ('´³¼\x91%ÚÜxÍÉ\x8b¤\x10\x98[+\x18')
+INFO 2026-04-05 11:03:29,119 django.server code 400, message Bad request version ('ï¿½ï¿½ï¿½\x91%ï¿½ï¿½xï¿½ï¿½\x8bï¿½\x10\x98[+\x18')
 ERROR 2026-04-05 11:03:29,120 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,884 django.server code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ZZ\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00+\x00\x07\x06**\x03\x04\x03\x03\x00\x17\x00\x00\x00-\x00\x02\x01\x01\x00\x1b\x00\x03\x02\x00\x02\x00')
-INFO 2026-04-05 11:03:29,885 django.server code 400, message Bad request version ('ºº\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93jj\x00\x00ÿ\x01\x00\x01\x00\x00#\x00\x00\x00')
+INFO 2026-04-05 11:03:29,884 django.server code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ZZ\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00+\x00\x07\x06**\x03\x04\x03\x03\x00\x17\x00\x00\x00-\x00\x02\x01\x01\x00\x1b\x00\x03\x02\x00\x02\x00')
+INFO 2026-04-05 11:03:29,885 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93jj\x00\x00ï¿½\x01\x00\x01\x00\x00#\x00\x00\x00')
 ERROR 2026-04-05 11:03:29,886 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-04-05 11:03:29,887 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,890 django.server code 400, message Bad request version ('\x1a\x1a\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063**\x00\x00\x00+\x00\x07\x06ºº\x03\x04\x03\x03\x00\x12\x00\x00\x00')
+INFO 2026-04-05 11:03:29,890 django.server code 400, message Bad request version ('\x1a\x1a\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063**\x00\x00\x00+\x00\x07\x06ï¿½ï¿½\x03\x04\x03\x03\x00\x12\x00\x00\x00')
 ERROR 2026-04-05 11:03:29,891 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:03:29,891 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06À\x01\x00\x06¼\x03\x03\x11&¦{â\x909]G·Ün2HÎÊiJ_²\x06öVÝ')
+INFO 2026-04-05 11:03:29,891 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03\x11&ï¿½{ï¿½\x909]Gï¿½ï¿½n2Hï¿½ï¿½iJ_ï¿½\x06ï¿½Vï¿½')
 ERROR 2026-04-05 11:03:29,892 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 11:04:40,075 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 11:05:05,231 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 11:05:05,247 django.server code 400, message Bad request version ('\x89\x01y\x18¾yô!>')
+INFO 2026-04-05 11:05:05,247 django.server code 400, message Bad request version ('\x89\x01y\x18ï¿½yï¿½!>')
 ERROR 2026-04-05 11:05:05,247 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 11:05:05,253 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063')
+INFO 2026-04-05 11:05:05,253 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063')
 ERROR 2026-04-05 11:05:05,254 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:21,479 django.server code 400, message Bad request version ('zz\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+INFO 2026-04-05 12:08:21,479 django.server code 400, message Bad request version ('zz\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
 ERROR 2026-04-05 12:08:21,480 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:21,491 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03ìïinÜ|Í£\x95\x8aë\x94Ù\x1bÂ\x92X£Uá8Iô')
+INFO 2026-04-05 12:08:21,491 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03ï¿½ï¿½inï¿½|Í£\x95\x8aï¿½\x94ï¿½\x1bï¿½\x92Xï¿½Uï¿½8Iï¿½')
 ERROR 2026-04-05 12:08:21,510 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:35,750 django.server "GET / HTTP/1.1" 301 0
-INFO 2026-04-05 12:08:35,771 django.server code 400, message Bad request version ('\x00\x02\x01\x00ÿ\x01\x00\x01\x00DÍ\x00\x05\x00\x03\x02h2\x00')
+INFO 2026-04-05 12:08:35,771 django.server code 400, message Bad request version ('\x00\x02\x01\x00ï¿½\x01\x00\x01\x00Dï¿½\x00\x05\x00\x03\x02h2\x00')
 ERROR 2026-04-05 12:08:35,772 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:35,776 django.server code 400, message Bad request version ('\x15K¢Ø\x19ñâceKzê\x12då')
+INFO 2026-04-05 12:08:35,776 django.server code 400, message Bad request version ('\x15Kï¿½ï¿½\x19ï¿½ï¿½ceKzï¿½\x12dï¿½')
 ERROR 2026-04-05 12:08:35,776 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:46,367 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+INFO 2026-04-05 12:08:46,367 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
 ERROR 2026-04-05 12:08:46,367 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:46,369 django.server code 400, message Bad request version ("b\x0erX\x88\x9a\\_$aà'\x94Ì(ÚË\x04\x80\x80Þ")
+INFO 2026-04-05 12:08:46,369 django.server code 400, message Bad request version ("b\x0erX\x88\x9a\\_$aï¿½'\x94ï¿½(ï¿½ï¿½\x04\x80\x80ï¿½")
 ERROR 2026-04-05 12:08:46,370 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,958 django.server code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
+INFO 2026-04-05 12:08:48,958 django.server code 400, message Bad request version ('jj\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S')
 ERROR 2026-04-05 12:08:48,958 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,961 django.server code 400, message Bad request version ('©Æë_\x10MN')
+INFO 2026-04-05 12:08:48,961 django.server code 400, message Bad request version ('ï¿½ï¿½ï¿½_\x10MN')
 ERROR 2026-04-05 12:08:48,962 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,985 django.server code 400, message Bad request version ('¯@,\x9cf·\x0f}:Ý\x81\x04öÁ¯Ë!þ|')
+INFO 2026-04-05 12:08:48,985 django.server code 400, message Bad request version ('ï¿½@,\x9cfï¿½\x0f}:ï¿½\x81\x04ï¿½ï¿½ï¿½ï¿½!ï¿½|')
 ERROR 2026-04-05 12:08:48,985 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:48,988 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
 ERROR 2026-04-05 12:08:48,989 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,995 django.server code 400, message Bad request version ('½|¼£0\x9c#²Ç\x8f\x92ù\x83[\x92\x07ú')
+INFO 2026-04-05 12:08:48,995 django.server code 400, message Bad request version ('ï¿½|ï¿½ï¿½0\x9c#ï¿½ï¿½\x8f\x92ï¿½\x83[\x92\x07ï¿½')
 ERROR 2026-04-05 12:08:48,996 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,996 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sÚÚ\x00\x00\x00')
+INFO 2026-04-05 12:08:48,996 django.server code 400, message Bad request version ('**\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sï¿½ï¿½\x00\x00\x00')
 ERROR 2026-04-05 12:08:48,997 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:48,999 django.server code 400, message Bad request version ('\xadÕle4pB\x19q`këdÇt¼}^\x10GÑ*\x11¯\x029é\x84HuÞ.f\x8cÁ\x87\x80|+')
+INFO 2026-04-05 12:08:48,999 django.server code 400, message Bad request version ('\xadï¿½le4pB\x19q`kï¿½dï¿½tï¿½}^\x10Gï¿½*\x11ï¿½\x029ï¿½\x84Huï¿½.f\x8cï¿½\x87\x80|+')
 ERROR 2026-04-05 12:08:49,000 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,000 django.server code 400, message Bad request version ('µ4ãq$Ô(!v')
+INFO 2026-04-05 12:08:49,000 django.server code 400, message Bad request version ('ï¿½4ï¿½q$ï¿½(!v')
 ERROR 2026-04-05 12:08:49,001 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:49,727 django.server code 400, message Bad request version ('\x00\x02\x01\x00\x00-\x00\x02\x01\x01\x00\x1b\x00\x03\x02\x00\x02\x00#\x00\x00\x00')
 ERROR 2026-04-05 12:08:49,727 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:49,729 django.server code 400, message Bad request version ('Xw')
 ERROR 2026-04-05 12:08:49,730 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,744 django.server code 400, message Bad request version ('aÔXª\x03\x92Ëz¦Uêê9à\x1a9ÓôR')
+INFO 2026-04-05 12:08:49,744 django.server code 400, message Bad request version ('aï¿½Xï¿½\x03\x92ï¿½zï¿½Uï¿½ï¿½9ï¿½\x1a9ï¿½ï¿½R')
 ERROR 2026-04-05 12:08:49,745 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,747 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03@8x\x94')
+INFO 2026-04-05 12:08:49,747 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x07\x00\x01\x00\x06ï¿½\x03\x03@8x\x94')
 ERROR 2026-04-05 12:08:49,748 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,756 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x17\x00\x00ÿ\x01\x00\x01\x00\x00')
-INFO 2026-04-05 12:08:49,757 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03Ñuë')
+INFO 2026-04-05 12:08:49,756 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x17\x00\x00ï¿½\x01\x00\x01\x00\x00')
+INFO 2026-04-05 12:08:49,757 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03ï¿½uï¿½')
 ERROR 2026-04-05 12:08:49,757 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-04-05 12:08:49,757 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,760 django.server code 400, message Bad request version ('úú\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ºº\x00\x00\x00\x17\x00\x00\x00')
-INFO 2026-04-05 12:08:49,761 django.server code 400, message Bad request version ('\x95D÷Ñ\x95þG\x81÷@\x10ª\x94Áþ$Ã\x07´2Ds4h\x86\x11\x02ÒY"\x05(Yö9\'²\x08«\x93ÂÃ){\x7fø\x06\x19Æª4')
+INFO 2026-04-05 12:08:49,760 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063ï¿½ï¿½\x00\x00\x00\x17\x00\x00\x00')
+INFO 2026-04-05 12:08:49,761 django.server code 400, message Bad request version ('\x95Dï¿½ï¿½\x95ï¿½G\x81ï¿½@\x10ï¿½\x94ï¿½ï¿½$ï¿½\x07ï¿½2Ds4h\x86\x11\x02ï¿½Y"\x05(Yï¿½9\'ï¿½\x08ï¿½\x93ï¿½ï¿½){\x7fï¿½\x06\x19Æª4')
 ERROR 2026-04-05 12:08:49,761 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-04-05 12:08:49,762 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,884 django.server code 400, message Bad request version ('Ï')
+INFO 2026-04-05 12:08:49,884 django.server code 400, message Bad request version ('ï¿½')
 ERROR 2026-04-05 12:08:49,884 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:49,886 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x17\x00\x00\x00#\x00\x00\x00')
 ERROR 2026-04-05 12:08:49,886 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,903 django.server code 400, message Bad request version ('©ú§')
+INFO 2026-04-05 12:08:49,903 django.server code 400, message Bad request version ('ï¿½ï¿½ï¿½')
 ERROR 2026-04-05 12:08:49,903 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,906 django.server code 400, message Bad request version ('ÃÞÇ\x95Ïü')
+INFO 2026-04-05 12:08:49,906 django.server code 400, message Bad request version ('ï¿½ï¿½ï¿½\x95ï¿½ï¿½')
 ERROR 2026-04-05 12:08:49,907 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:49,916 django.server code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
 ERROR 2026-04-05 12:08:49,917 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,917 django.server code 400, message Bad request version ('::\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x1a\x1a\x00\x00\x00#\x00\x00\x00')
+INFO 2026-04-05 12:08:49,917 django.server code 400, message Bad request version ('::\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x1a\x1a\x00\x00\x00#\x00\x00\x00')
 ERROR 2026-04-05 12:08:49,917 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:49,920 django.server code 400, message Bad request version ('´¨Uð5N\x83µ\x84o\x17%?Î÷4\x0f¤:\x81}\x07bÜÛ')
+INFO 2026-04-05 12:08:49,920 django.server code 400, message Bad request version ('ï¿½ï¿½Uï¿½5N\x83ï¿½\x84o\x17%?ï¿½ï¿½4\x0fï¿½:\x81}\x07bï¿½ï¿½')
 ERROR 2026-04-05 12:08:49,921 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:49,921 django.server code 400, message Bad request version ('\x00\x02\x01\x00\x00')
 ERROR 2026-04-05 12:08:49,922 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,006 django.server code 400, message Bad request version ('ªª\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93ZZ\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00+\x00\x07\x06JJ\x03\x04\x03\x03\x00-\x00\x02\x01\x01\x00')
+INFO 2026-04-05 12:08:50,006 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93ZZ\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00+\x00\x07\x06JJ\x03\x04\x03\x03\x00-\x00\x02\x01\x01\x00')
 ERROR 2026-04-05 12:08:50,006 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:50,008 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00')
 ERROR 2026-04-05 12:08:50,009 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,025 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x003\x04ï\x04í')
+INFO 2026-04-05 12:08:50,025 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x003\x04ï¿½\x04ï¿½')
 ERROR 2026-04-05 12:08:50,026 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,029 django.server code 400, message Bad request version ('\x03À\x0fø\x07{\x03AÔf^ÂB§<\x19T\x18÷|\x0f(µ¦{ZÕö/©lÉ,\x01\x91ª\x8cÄ§j@\x98\x11?5\x80\x93\x08Xªââ}6\x8c%\x86A²')
+INFO 2026-04-05 12:08:50,029 django.server code 400, message Bad request version ('\x03ï¿½\x0fï¿½\x07{\x03Aï¿½f^ï¿½Bï¿½<\x19T\x18ï¿½|\x0f(ï¿½ï¿½{Zï¿½ï¿½/ï¿½lï¿½,\x01\x91ï¿½\x8cÄ§j@\x98\x11?5\x80\x93\x08Xï¿½ï¿½ï¿½}6\x8c%\x86Aï¿½')
 ERROR 2026-04-05 12:08:50,030 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,036 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03/3')
+INFO 2026-04-05 12:08:50,036 django.server code 400, message Bad request syntax ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03/3')
 ERROR 2026-04-05 12:08:50,037 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,038 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00\x1b\x00\x03\x02\x00\x02\x003\x04ï\x04íªª\x00\x01\x00\x11ì\x04ÀZ0Y')
+INFO 2026-04-05 12:08:50,038 django.server code 400, message Bad request version ('\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00\x1b\x00\x03\x02\x00\x02\x003\x04ï¿½\x04ï¿½ï¿½ï¿½\x00\x01\x00\x11ï¿½\x04ï¿½Z0Y')
 ERROR 2026-04-05 12:08:50,038 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,040 django.server code 400, message Bad request version ('\x11ÌÇÒB_\x9c!¦¶Åi`+)Ö9')
+INFO 2026-04-05 12:08:50,040 django.server code 400, message Bad request version ('\x11ï¿½ï¿½ï¿½B_\x9c!ï¿½ï¿½ï¿½i`+)ï¿½9')
 ERROR 2026-04-05 12:08:50,040 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,042 django.server code 400, message Bad request version ('Z#@cÅÀ')
+INFO 2026-04-05 12:08:50,042 django.server code 400, message Bad request version ('Z#@cï¿½ï¿½')
 ERROR 2026-04-05 12:08:50,044 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:50,232 django.server code 400, message Bad request version ('\x00\x02\x01\x00\x00#\x00\x00\x00\x17\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00')
 ERROR 2026-04-05 12:08:50,233 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,240 django.server code 400, message Bad request version ('.îó\x18@¹Îi×mû523¯\x89')
+INFO 2026-04-05 12:08:50,240 django.server code 400, message Bad request version ('.ï¿½ï¿½\x18@ï¿½ï¿½iï¿½mï¿½523ï¿½\x89')
 ERROR 2026-04-05 12:08:50,241 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,298 django.server code 400, message Bad request version ('wÌo')
+INFO 2026-04-05 12:08:50,298 django.server code 400, message Bad request version ('wï¿½o')
 ERROR 2026-04-05 12:08:50,302 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,302 django.server code 400, message Bad request version ('ªª\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x1a\x1a\x00\x00\x00')
+INFO 2026-04-05 12:08:50,302 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06S\x1a\x1a\x00\x00\x00')
 ERROR 2026-04-05 12:08:50,304 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,310 django.server code 400, message Bad request version ('GÐÁ\x07Ú')
+INFO 2026-04-05 12:08:50,310 django.server code 400, message Bad request version ('Gï¿½ï¿½\x07ï¿½')
 ERROR 2026-04-05 12:08:50,314 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:50,315 django.server code 400, message Bad request version ('ªª\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06Sêê\x00\x00\x00-\x00\x02\x01\x01ÿ\x01\x00\x01\x00\x00+\x00\x07\x06JJ\x03\x04\x03\x03\x00\x17\x00\x00\x00')
+INFO 2026-04-05 12:08:50,315 django.server code 400, message Bad request version ('ï¿½ï¿½\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06Sï¿½ï¿½\x00\x00\x00-\x00\x02\x01\x01ï¿½\x01\x00\x01\x00\x00+\x00\x07\x06JJ\x03\x04\x03\x03\x00\x17\x00\x00\x00')
 ERROR 2026-04-05 12:08:50,316 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:51,283 django.server code 400, message Bad request version ('¾\x00')
+INFO 2026-04-05 12:08:51,283 django.server code 400, message Bad request version ('ï¿½\x00')
 ERROR 2026-04-05 12:08:51,284 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:51,286 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
 ERROR 2026-04-05 12:08:51,286 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:51,302 django.server code 400, message Bad request version ('\x00\x02\x01\x00\x00\x12\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00#\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00')
 ERROR 2026-04-05 12:08:51,303 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:51,305 django.server code 400, message Bad request version ('TwX»þû\x01\xadL\x87d\x05ãT\x83\xadúË\x00Ã=zÆi\x10\x01Âò«\x9f\x9cu\x00')
+INFO 2026-04-05 12:08:51,305 django.server code 400, message Bad request version ('TwXï¿½ï¿½ï¿½\x01\xadL\x87d\x05ï¿½T\x83\xadï¿½ï¿½\x00ï¿½=zï¿½i\x10\x01ï¿½ï¿½\x9f\x9cu\x00')
 ERROR 2026-04-05 12:08:51,305 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:51,315 django.server code 400, message Bad request version ('¾jÚsi²\xadè÷u4ªi9KÑ\x13uÇ\x88{Ð')
+INFO 2026-04-05 12:08:51,315 django.server code 400, message Bad request version ('ï¿½jï¿½siï¿½\xadï¿½ï¿½u4ï¿½i9Kï¿½\x13uï¿½\x88{ï¿½')
 ERROR 2026-04-05 12:08:51,315 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:51,316 django.server code 400, message Bad request version ('\x9dXÉ\x89\x06Ô^zßû\x99ßl[?½ÊºøÌ|à\x8cÉ8¶×3«ÂÀ\x14UU\x87Xè\x00\x1b\x00\x03\x02\x00\x02\x00+\x00\x07\x06')
+INFO 2026-04-05 12:08:51,316 django.server code 400, message Bad request version ('\x9dXï¿½\x89\x06ï¿½^zï¿½ï¿½\x99ï¿½l[?ï¿½Êºï¿½ï¿½|ï¿½\x8cï¿½8ï¿½ï¿½3ï¿½ï¿½ï¿½\x14UU\x87Xï¿½\x00\x1b\x00\x03\x02\x00\x02\x00+\x00\x07\x06')
 ERROR 2026-04-05 12:08:51,317 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:08:51,321 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
 ERROR 2026-04-05 12:08:51,322 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:08:51,323 django.server code 400, message Bad request syntax ('\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03\x97Ø\x14(y\x8bÂ\xad`ç\x9bV\x9cÍ{:çâ\x8dµ\x061[7b³}×')
+INFO 2026-04-05 12:08:51,323 django.server code 400, message Bad request syntax ('\x16\x03\x01\x07\x00\x01\x00\x06ï¿½\x03\x03\x97ï¿½\x14(y\x8bï¿½\xad`ï¿½\x9bV\x9cï¿½{:ï¿½ï¿½\x8dï¿½\x061[7bï¿½}ï¿½')
 ERROR 2026-04-05 12:08:51,324 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:18:56,086 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 12:19:14,380 django.server code 400, message Bad request version ('¬ëù9\x80#~%O\x9a¡`Lgß\x19·\x04§ÈºV×ºéÚ²%WU\x90R\x00\x90µ)û')
+INFO 2026-04-05 12:19:14,380 django.server code 400, message Bad request version ('ï¿½ï¿½ï¿½9\x80#~%O\x9aï¿½`Lgï¿½\x19ï¿½\x04ï¿½ÈºV×ºï¿½Ú²%WU\x90R\x00\x90ï¿½)ï¿½')
 ERROR 2026-04-05 12:19:14,381 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:19:14,383 django.server code 400, message Bad request version ('G\x86^\x00')
 ERROR 2026-04-05 12:19:14,384 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
@@ -218,20 +218,20 @@ INFO 2026-04-05 12:21:31,568 django.utils.autoreload C:\Users\MD Badhon Khan\Des
 INFO 2026-04-05 12:21:34,996 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 12:21:52,906 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
 INFO 2026-04-05 12:21:56,877 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 12:22:10,607 django.server code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063')
+INFO 2026-04-05 12:22:10,607 django.server code 400, message Bad request version ('ZZ\x13\x01\x13\x02\x13\x03ï¿½+ï¿½/ï¿½,ï¿½0Ì©Ì¨ï¿½\x13ï¿½\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063')
 ERROR 2026-04-05 12:22:10,609 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:22:10,611 django.server code 400, message Bad request version ('é')
+INFO 2026-04-05 12:22:10,611 django.server code 400, message Bad request version ('ï¿½')
 ERROR 2026-04-05 12:22:10,611 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:24:36,009 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
 INFO 2026-04-05 12:24:39,512 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 12:24:53,738 django.server code 400, message Bad request version ('v\x14¸ÇT¡ÎÈ')
+INFO 2026-04-05 12:24:53,738 django.server code 400, message Bad request version ('v\x14ï¿½ï¿½Tï¿½ï¿½ï¿½')
 ERROR 2026-04-05 12:24:53,739 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:24:53,742 django.server code 400, message Bad request version ('ð¼w/')
+INFO 2026-04-05 12:24:53,742 django.server code 400, message Bad request version ('ï¿½w/')
 ERROR 2026-04-05 12:24:53,742 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:31:47,688 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 12:32:00,417 django.server code 400, message Bad request version ('²d³ßÙ(l¤\x807*\x067(ÂXÂ\x01$\x86jÞè\x97\x07ú\x94½')
+INFO 2026-04-05 12:32:00,417 django.server code 400, message Bad request version ('ï¿½dï¿½ï¿½ï¿½(lï¿½\x807*\x067(ï¿½Xï¿½\x01$\x86jï¿½ï¿½\x97\x07ï¿½\x94ï¿½')
 ERROR 2026-04-05 12:32:00,418 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
-INFO 2026-04-05 12:32:00,420 django.server code 400, message Bad request version ("W'\x98Ô\x08\x99ÕÀp\x13\x89!Q\x17&ÕZü'>m´³xS}§")
+INFO 2026-04-05 12:32:00,420 django.server code 400, message Bad request version ("W'\x98ï¿½\x08\x99ï¿½ï¿½p\x13\x89!Q\x17&ï¿½Zï¿½'>mï¿½ï¿½xS}ï¿½")
 ERROR 2026-04-05 12:32:00,420 django.server You're accessing the development server over HTTPS, but it only supports HTTP.
 INFO 2026-04-05 12:38:05,525 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
 INFO 2026-04-05 12:38:09,372 django.utils.autoreload Watching for file changes with StatReloader
@@ -260,7 +260,7 @@ INFO 2026-04-05 12:58:31,521 django.server "GET /home/ HTTP/1.1" 200 21605
 INFO 2026-04-05 12:59:32,507 django.server "HEAD / HTTP/1.1" 302 0
 INFO 2026-04-05 12:59:32,590 django.server "HEAD /home/ HTTP/1.1" 200 0
 INFO 2026-04-05 13:01:45,563 django.utils.autoreload Watching for file changes with StatReloader
-INFO 2026-04-05 13:02:18,890 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03ÕÉPQÔ\x13Âá1\x8a\x8b\x11OALb\x9f\x91ö_¿S\x98ü,Wà-4v¨+')
+INFO 2026-04-05 13:02:18,890 django.server code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06ï¿½\x01\x00\x06ï¿½\x03\x03ï¿½ï¿½PQï¿½\x13ï¿½ï¿½1\x8a\x8b\x11OALb\x9f\x91ï¿½_ï¿½S\x98ï¿½,Wï¿½-4vï¿½+')
 INFO 2026-04-05 13:03:10,802 django.utils.autoreload Watching for file changes with StatReloader
 INFO 2026-04-05 13:03:52,377 django.server "GET / HTTP/1.1" 302 0
 INFO 2026-04-05 13:03:52,563 django.server "GET /home/ HTTP/1.1" 200 21605
@@ -4011,3 +4011,931 @@ INFO 2026-04-06 00:02:18,322 django.server "GET /admin/iwm/orderitem/ HTTP/1.1" 
 INFO 2026-04-06 00:02:18,403 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
 INFO 2026-04-06 00:02:34,820 django.server "GET /admin/iwm/order/ HTTP/1.1" 200 393496
 INFO 2026-04-06 00:02:34,887 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-04-06 00:13:22,000 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-04-06 00:13:22,098 django.server "GET /home/ HTTP/1.1" 200 21749
+INFO 2026-04-06 00:13:22,586 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:13:24,101 django.server "GET /home/ HTTP/1.1" 200 21749
+INFO 2026-04-06 00:13:24,187 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:13:24,194 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+WARNING 2026-04-06 00:13:24,226 django.server "GET /static/css/index.css HTTP/1.1" 404 1853
+INFO 2026-04-06 00:13:24,227 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:13:24,229 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:13:24,229 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:13:24,231 django.server "GET /media/category_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:13:24,231 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+WARNING 2026-04-06 00:13:24,269 django.server "GET /static/js/index.js HTTP/1.1" 404 1847
+INFO 2026-04-06 00:13:24,277 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:13:24,279 django.server "GET /media/category_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:13:24,283 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:13:24,290 django.server "GET /media/brands/Flux_Dev_Create_a_flat_vector_illustrativestyle_lettermark_log_2.jpg HTTP/1.1" 200 185241
+INFO 2026-04-06 00:13:24,304 django.server "GET /media/brands/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:13:24,335 django.server "GET /media/brands/Nova.png HTTP/1.1" 200 1180806
+INFO 2026-04-06 00:13:24,362 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:13:24,367 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:13:24,368 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:13:24,566 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:13:24,756 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+ERROR 2026-04-06 00:27:03,981 django.request Internal Server Error: /shop/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 111, in shop
+    return render(request, 'shop.html', {
+        'products': paginated_products,
+    ...<5 lines>...
+        'brands': Brand.objects.all(),
+    })
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 260: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+ERROR 2026-04-06 00:27:04,008 django.server "GET /shop/ HTTP/1.1" 500 298273
+WARNING 2026-04-06 00:27:04,842 django.request Not Found: /favicon.ico
+WARNING 2026-04-06 00:27:04,843 django.server "GET /favicon.ico HTTP/1.1" 404 12045
+ERROR 2026-04-06 00:27:08,413 django.request Internal Server Error: /home/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 104, in home
+    return render(request, 'home.html', context)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 146: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+ERROR 2026-04-06 00:27:08,427 django.server "GET /home/ HTTP/1.1" 500 280861
+ERROR 2026-04-06 00:28:26,806 django.request Internal Server Error: /home/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 104, in home
+    return render(request, 'home.html', context)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 146: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+ERROR 2026-04-06 00:28:26,820 django.server "GET /home/ HTTP/1.1" 500 280861
+ERROR 2026-04-06 00:29:56,484 django.request Internal Server Error: /home/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 104, in home
+    return render(request, 'home.html', context)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 146: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+ERROR 2026-04-06 00:29:56,499 django.server "GET /home/ HTTP/1.1" 500 280861
+INFO 2026-04-06 00:32:04,512 django.server "GET /admin/ HTTP/1.1" 200 62816
+INFO 2026-04-06 00:32:04,546 django.server "GET /static/unfold/fonts/inter/styles.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,549 django.server "GET /static/unfold/fonts/material-symbols/styles.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,551 django.server "GET /static/unfold/css/styles.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,647 django.server "GET /static/unfold/js/chart/chart.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,651 django.server "GET /static/unfold/css/simplebar/simplebar.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,663 django.server "GET /static/unfold/js/simplebar/simplebar.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,667 django.server "GET /static/unfold/js/app.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,674 django.server "GET /static/unfold/js/htmx/htmx.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,706 django.server "GET /static/unfold/js/alpine/alpine.persist.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,708 django.server "GET /static/unfold/js/alpine/alpine.resize.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,708 django.server "GET /static/unfold/js/alpine/alpine.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,713 django.server "GET /static/unfold/js/alpine/alpine.anchor.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,713 django.server "GET /static/unfold/js/alpine/alpine.sort.js HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,857 django.server "GET /static/unfold/fonts/inter/Inter-SemiBold.woff2 HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,857 django.server "GET /static/unfold/fonts/material-symbols/Material-Symbols-Outlined.woff2 HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:04,857 django.server "GET /static/unfold/fonts/inter/Inter-Regular.woff2 HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:21,873 django.server "GET /product/new/ HTTP/1.1" 200 16350
+INFO 2026-04-06 00:32:21,936 django.server "GET /media/product_images/5.png HTTP/1.1" 304 0
+INFO 2026-04-06 00:32:22,139 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:01,249 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 00:36:01,402 django.server "GET /static/css/home.css HTTP/1.1" 200 16655
+INFO 2026-04-06 00:36:01,411 django.server "GET /static/js/home.js HTTP/1.1" 200 4253
+INFO 2026-04-06 00:36:01,700 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:03,534 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:36:03,902 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:04,925 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 00:36:05,223 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:18,448 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:36:18,602 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:22,130 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 00:36:22,274 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:26,897 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:36:27,036 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:36:31,976 django.server "GET /product/chess-board/ HTTP/1.1" 200 20302
+INFO 2026-04-06 00:36:32,258 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:09,329 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:40:09,422 django.server "GET /media/product_images/5.png HTTP/1.1" 304 0
+INFO 2026-04-06 00:40:09,640 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:10,458 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 00:40:10,654 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:11,903 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:40:12,115 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:15,347 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:40:15,517 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:32,838 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:40:32,990 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:36,957 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 00:40:37,078 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:45,087 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:40:45,214 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:40:50,638 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:40:50,796 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+WARNING 2026-04-06 00:41:27,374 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:41:27,375 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:42:27,879 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+WARNING 2026-04-06 00:42:28,043 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:42:28,047 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:42:28,132 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:42:30,599 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+WARNING 2026-04-06 00:42:30,724 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:42:30,728 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:42:30,751 django.server "GET /static/css/product.css HTTP/1.1" 200 11853
+INFO 2026-04-06 00:42:30,753 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:42:30,760 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:42:30,765 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:42:30,773 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:42:30,893 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:42:30,894 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:42:30,895 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:42:30,900 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:42:30,922 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:42:30,922 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:42:30,926 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:42:30,927 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:42:30,930 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:42:31,172 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:42:31,235 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:42:32,919 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:42:46,705 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+WARNING 2026-04-06 00:42:46,765 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:42:46,767 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:44:23,710 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:44:23,869 django.server "GET /static/css/product.css HTTP/1.1" 200 10005
+INFO 2026-04-06 00:44:23,994 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:44:26,009 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:44:26,146 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:44:26,153 django.server "GET /static/css/product.css HTTP/1.1" 200 10005
+INFO 2026-04-06 00:44:26,154 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:44:26,154 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:44:26,160 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:44:26,164 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:44:26,187 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:44:26,187 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:44:26,195 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:44:26,201 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:44:26,209 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:44:26,247 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:44:26,411 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:44:26,420 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:44:26,492 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:44:26,551 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:44:26,630 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:45:14,807 django.server "GET /static/css/product.css HTTP/1.1" 200 9894
+WARNING 2026-04-06 00:45:14,862 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:45:14,863 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:45:51,960 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:45:52,108 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:45:52,203 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:45:55,710 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:45:55,954 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:02,887 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:46:02,962 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:46:03,001 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:13,503 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:46:13,619 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:46:13,736 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:14,805 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:46:15,004 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:24,194 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:46:24,238 django.server "GET /static/css/product.css HTTP/1.1" 200 11853
+INFO 2026-04-06 00:46:24,268 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:26,209 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:46:26,363 django.server "GET /static/css/product.css HTTP/1.1" 200 11853
+INFO 2026-04-06 00:46:26,367 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:46:26,368 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:46:26,381 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:46:26,381 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:46:26,386 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:46:26,390 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:46:26,416 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:46:26,417 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:46:26,418 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:46:26,419 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:46:26,499 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:46:26,552 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:46:26,563 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:46:26,666 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:46:26,731 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:46:27,217 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:47:40,472 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:47:40,550 django.server "GET /static/css/product.css HTTP/1.1" 200 12221
+INFO 2026-04-06 00:47:40,723 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:42,446 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:47:42,609 django.server "GET /static/css/product.css HTTP/1.1" 200 12221
+INFO 2026-04-06 00:47:42,612 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:47:42,614 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:47:42,614 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:47:42,631 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:47:42,636 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:47:42,640 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:47:42,659 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:47:42,660 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:47:42,664 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:47:42,664 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:47:42,706 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:47:42,782 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:47:42,785 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:47:42,876 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:47:42,935 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:43,230 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:47:45,145 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:47:45,221 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:47:45,231 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:47:45,232 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:47:45,235 django.server "GET /static/css/product.css HTTP/1.1" 200 12221
+INFO 2026-04-06 00:47:45,239 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:47:45,248 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:47:45,261 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:47:45,266 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:47:45,270 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:47:45,270 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:47:45,279 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:47:45,328 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:47:45,374 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:47:45,387 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:47:45,412 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:47:45,413 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:45,671 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:47:46,152 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:47:46,200 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:47:46,226 django.server "GET /static/css/product.css HTTP/1.1" 200 12221
+INFO 2026-04-06 00:47:46,227 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:47:46,232 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:47:46,234 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:47:46,237 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:47:46,253 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:47:46,256 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:47:46,259 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:47:46,260 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:47:46,262 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:47:46,333 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:47:46,366 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:47:46,369 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:47:46,417 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:47:46,418 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:46,725 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:47:47,921 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:47:48,099 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:52,747 django.server "GET /product/circle/ HTTP/1.1" 200 21109
+INFO 2026-04-06 00:47:52,868 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:47:52,924 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:56,614 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:47:56,759 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:47:58,724 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:47:58,787 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:47:58,848 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:02,046 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 00:48:02,190 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:07,865 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:48:07,928 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:48:07,994 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:38,976 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:48:39,046 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:48:39,129 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:39,873 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:48:40,082 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:40,588 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:48:40,715 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:48:40,742 django.server "GET /static/css/product.css HTTP/1.1" 200 12221
+INFO 2026-04-06 00:48:40,743 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:48:40,745 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:48:40,748 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9751
+INFO 2026-04-06 00:48:40,758 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:48:40,764 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:48:40,777 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:48:40,780 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:48:40,781 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:48:40,782 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:48:40,837 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:48:40,870 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:48:40,874 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:48:40,898 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:48:40,900 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:48:41,278 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:49:05,043 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+WARNING 2026-04-06 00:49:05,137 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:49:05,139 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:50:11,824 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:50:12,025 django.server "GET /static/css/product.css HTTP/1.1" 200 11852
+WARNING 2026-04-06 00:50:12,053 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:50:12,056 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:50:12,299 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:50:31,700 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+WARNING 2026-04-06 00:50:31,773 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:50:31,774 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:52:39,300 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:52:39,424 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:52:39,625 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:52:40,961 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:52:41,126 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:52:41,128 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:52:41,129 django.server "GET /static/css/product.css HTTP/1.1" 200 11852
+INFO 2026-04-06 00:52:41,131 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:52:41,151 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:52:41,155 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:52:41,162 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:52:41,181 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:52:41,182 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:52:41,184 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:52:41,190 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:52:41,231 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:52:41,312 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:52:41,323 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:52:41,326 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:52:41,328 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:52:41,743 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:52:42,553 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:52:42,704 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:52:42,706 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:52:42,712 django.server "GET /static/css/product.css HTTP/1.1" 200 11852
+INFO 2026-04-06 00:52:42,714 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:52:42,729 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:52:42,742 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:52:42,763 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:52:42,774 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:52:42,781 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:52:42,784 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:52:42,791 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:52:42,901 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:52:42,914 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:52:42,952 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:52:42,981 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:52:42,987 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:52:43,301 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:53:00,329 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:53:00,329 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+WARNING 2026-04-06 00:53:00,384 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:53:00,385 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+WARNING 2026-04-06 00:53:37,068 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:53:37,069 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:54:21,542 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 00:54:21,624 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:54:21,625 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:54:22,053 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:22,211 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:22,365 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:56:22,367 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:22,568 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:24,686 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:24,794 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:24,849 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:24,854 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:24,856 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:24,861 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:24,862 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:24,871 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:24,876 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:24,885 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:24,887 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:24,889 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:24,931 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:56:24,987 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:56:24,989 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:56:24,996 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:56:25,024 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:25,464 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:56:26,334 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:26,400 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:26,410 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:26,414 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:26,416 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:26,418 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:26,444 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:26,448 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:26,452 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:26,458 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:26,477 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:26,478 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:26,546 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:26,588 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:56:26,594 django.server - Broken pipe from ('127.0.0.1', 49840)
+INFO 2026-04-06 00:56:26,596 django.server - Broken pipe from ('127.0.0.1', 58369)
+INFO 2026-04-06 00:56:26,667 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:26,672 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:26,674 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:26,685 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:26,689 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:26,697 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:26,710 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:26,711 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:26,719 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:26,726 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:26,729 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:26,758 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:26,831 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:56:26,866 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:56:26,870 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:56:26,887 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:26,897 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:26,900 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:56:27,114 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:27,127 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:27,129 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:27,146 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:27,155 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:27,156 django.server - Broken pipe from ('127.0.0.1', 58196)
+INFO 2026-04-06 00:56:27,160 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:27,174 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:27,175 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:27,185 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:27,202 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:27,206 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:27,237 django.server - Broken pipe from ('127.0.0.1', 56452)
+INFO 2026-04-06 00:56:27,272 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:56:27,314 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:27,319 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:56:27,321 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:56:27,362 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:27,387 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:56:27,466 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:27,468 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:27,471 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:27,490 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:27,502 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:27,519 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:27,536 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:27,539 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:27,540 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:27,552 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:56:27,563 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:27,563 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:27,572 django.server - Broken pipe from ('127.0.0.1', 60993)
+INFO 2026-04-06 00:56:27,632 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 00:56:27,639 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 00:56:27,639 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 00:56:27,639 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 00:56:27,642 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 00:56:27,662 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 00:56:27,690 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 00:56:27,691 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 00:56:27,691 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 00:56:27,695 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 00:56:27,698 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 00:56:27,758 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 00:56:27,827 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 00:56:27,831 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 00:56:27,838 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 00:56:27,853 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 00:56:28,134 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 00:56:55,357 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:56:55,358 django.server "GET /static/css/product.css HTTP/1.1" 200 11852
+WARNING 2026-04-06 00:56:55,405 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:56:55,407 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 00:58:13,120 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 00:58:13,198 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:58:13,201 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 00:58:13,411 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+WARNING 2026-04-06 00:58:18,311 django.request Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2026-04-06 00:58:18,313 django.server "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 12156
+INFO 2026-04-06 01:02:10,925 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 01:02:10,969 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:02:10,969 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 01:02:11,017 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:02:12,712 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 01:02:12,753 django.server "GET /static/css/product.css HTTP/1.1" 200 11866
+INFO 2026-04-06 01:02:12,756 django.server "GET /static/css/base.css HTTP/1.1" 200 22107
+INFO 2026-04-06 01:02:12,757 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-04-06 01:02:12,760 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9763
+INFO 2026-04-06 01:02:12,761 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-04-06 01:02:12,762 django.server "GET /static/js/product.js HTTP/1.1" 200 5702
+INFO 2026-04-06 01:02:12,768 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-04-06 01:02:12,770 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_4Fg8rGw.jpg HTTP/1.1" 200 295574
+INFO 2026-04-06 01:02:12,776 django.server "GET /static/js/main.js HTTP/1.1" 200 13281
+INFO 2026-04-06 01:02:12,777 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 13961
+INFO 2026-04-06 01:02:12,777 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 200 34570
+INFO 2026-04-06 01:02:12,798 django.server "GET /media/product_images/5.png HTTP/1.1" 200 2393304
+INFO 2026-04-06 01:02:12,906 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-04-06 01:02:12,910 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-04-06 01:02:12,920 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-04-06 01:02:12,928 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:02:13,029 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-04-06 01:03:22,111 django.server "GET /product/new/ HTTP/1.1" 200 21464
+INFO 2026-04-06 01:03:22,153 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9827
+INFO 2026-04-06 01:03:22,153 django.server "GET /static/css/product.css HTTP/1.1" 200 11852
+INFO 2026-04-06 01:03:22,180 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:03:32,500 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 01:03:32,537 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:32,585 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:03:35,514 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 01:03:35,559 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:35,622 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:03:38,411 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 01:03:38,438 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:38,451 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:03:40,792 django.server "GET /product/chess-board/ HTTP/1.1" 200 20421
+INFO 2026-04-06 01:03:40,828 django.server "GET /static/css/product.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:40,831 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:40,863 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:03:54,165 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 01:03:54,198 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:03:54,234 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+ERROR 2026-04-06 01:03:55,610 django.request Internal Server Error: /services/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 151, in services
+    return render(request, 'services.html')
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 523, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 586, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Unclosed tag on line 5: 'block'. Looking for one of: endblock.
+ERROR 2026-04-06 01:03:55,622 django.server "GET /services/ HTTP/1.1" 500 194071
+WARNING 2026-04-06 01:03:55,926 django.request Not Found: /favicon.ico
+WARNING 2026-04-06 01:03:55,926 django.server "GET /favicon.ico HTTP/1.1" 404 12045
+INFO 2026-04-06 01:04:58,629 django.server "GET /services/ HTTP/1.1" 200 21074
+INFO 2026-04-06 01:04:58,689 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:09,241 django.server "GET /services/ HTTP/1.1" 200 21074
+INFO 2026-04-06 01:05:09,302 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:10,500 django.server "GET /about/ HTTP/1.1" 200 17923
+INFO 2026-04-06 01:05:10,532 django.server "GET /static/css/about.css HTTP/1.1" 200 15339
+INFO 2026-04-06 01:05:10,583 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:12,743 django.server "GET /contact/ HTTP/1.1" 200 12970
+INFO 2026-04-06 01:05:12,803 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+ERROR 2026-04-06 01:05:14,310 django.request Internal Server Error: /faq/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py", line 590, in faq
+    return render(request, 'faq.html')
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 523, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 586, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Unclosed tag on line 6: 'block'. Looking for one of: endblock.
+ERROR 2026-04-06 01:05:14,332 django.server "GET /faq/ HTTP/1.1" 500 191444
+INFO 2026-04-06 01:05:39,133 django.server "GET /faq/ HTTP/1.1" 200 30298
+INFO 2026-04-06 01:05:39,206 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:45,225 django.server "GET /profile/ HTTP/1.1" 200 10445
+INFO 2026-04-06 01:05:45,265 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:47,383 django.server "GET /wishlist/ HTTP/1.1" 200 12112
+INFO 2026-04-06 01:05:47,413 django.server "GET /static/css/wishlist.css HTTP/1.1" 200 3670
+INFO 2026-04-06 01:05:47,426 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:48,709 django.server "GET /cart/ HTTP/1.1" 200 14709
+INFO 2026-04-06 01:05:48,743 django.server "GET /static/css/cart.css HTTP/1.1" 200 4408
+INFO 2026-04-06 01:05:48,758 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:05:50,456 django.server "GET /my-orders/ HTTP/1.1" 200 29653
+INFO 2026-04-06 01:05:50,506 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:06:34,510 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
+INFO 2026-04-06 01:06:34,545 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwantmore\settings.py changed, reloading.
+INFO 2026-04-06 01:06:37,328 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-04-06 01:06:37,329 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-04-06 01:06:54,083 django.server "GET /my-orders/ HTTP/1.1" 200 29653
+INFO 2026-04-06 01:06:54,168 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:06:55,993 django.server "GET /home/ HTTP/1.1" 200 20691
+INFO 2026-04-06 01:06:56,030 django.server "GET /static/css/item_cart.css HTTP/1.1" 304 0
+INFO 2026-04-06 01:06:56,114 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:07:10,549 django.server "GET /shop/ HTTP/1.1" 200 28597
+INFO 2026-04-06 01:07:10,598 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-04-06 01:07:14,012 django.server "GET /about/ HTTP/1.1" 200 17923
+INFO 2026-04-06 01:07:14,058 django.server "GET /api/order-count/ HTTP/1.1" 200 12

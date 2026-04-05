@@ -1,0 +1,82 @@
+<div class="product-item" data-id="{{ product.id }}" data-category="{{ product.category.slug }}"
+    data-subcategory="{{ product.subcategory.slug }}"
+    data-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}"
+    data-stock="{{ product.stock }}" data-featured="{% if product.is_featured %}true{% else %}false{% endif %}"
+    data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}"
+    data-date="{{ product.created_at|date:'U' }}"
+    data-color="{% if product.color %}{{ product.color.name }}{% else %}none{% endif %}"
+    data-size="{% if product.size %}{{ product.size.name }}{% else %}none{% endif %}"
+    data-brand="{% if product.brand %}{{ product.brand.name }}{% else %}none{% endif %}">
+    <div class="product-image-container">
+        {% if product.discount_price %}
+        <span class="product-badge sale">Sale</span>
+        {% endif %}
+        {% if product.is_popular %}
+        <span class="product-badge hot">Hot</span>
+        {% endif %}
+        {% if product.is_featured and product.feature_reason %}
+        <span class="featured">{{ product.feature_reason }}</span>
+        {% elif product.is_featured %}
+        <span class="featured">FEATURED</span>
+        {% endif %}
+
+        <div class="product-image-wrapper">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+        </div>
+
+        <div class="quick-actions">
+            <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
+            <a class="quick-action-btn" title="Quick view"
+                href="{% url 'product_detail' slug=product.slug %}"><i class="fas fa-eye"></i></a>
+        </div>
+    </div>
+
+    <div class="product-info">
+
+
+        {% if product.category %}<span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} • {{ product.subcategory.name }}{% endif %}</span></span>{% endif %}
+        <h3 class="product-name">
+            <span class="name">{{ product.name }}</span>
+        </h3>
+        <div class="rating-price">
+            <!-- Display rating stars -->
+            <div class="product-rating">
+                {% for i in product.full_stars %}
+                <span class="star"><i class="fas fa-star"></i></span>
+                {% endfor %}
+
+                {% if product.half %}
+                <span class="star half"><i class="fas fa-star-half-alt"></i></span>
+                {% endif %}
+
+                {% for i in product.empty_stars %}
+                <span class="star"><i class="far fa-star"></i></span>
+                {% endfor %}
+
+                <span class="review-count">({{ product.review_count }} reviews)</span>
+            </div>
+
+            <div class="product-price">
+                {% if product.discount_price %}
+                <span class="original-price">৳{{ product.price }}</span>
+                <span class="current-price">৳{{ product.discount_price }}</span>
+                <span class="discount-tag">-{{ product.discount_percentage|floatformat:0 }}%</span>
+                {% else %}
+                <span class="current-price">৳{{ product.price }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if product.stock > 0 %}
+        <div class="product-actions">
+            <a href="{% url 'product_detail' slug=product.slug %}" class="add-to-cart"><i
+                    class="fas fa-shopping-cart"></i> Buy Now</a>
+        </div>
+        {% else %}
+        <div class="product-actions">
+            <span class="out-of-stock-label">Out of Stock</span>
+            <a href="{% url 'product_detail' slug=product.slug %}" class="view-details">View Details</a>
+        </div>
+        {% endif %}
+    </div>
+</div>

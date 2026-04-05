@@ -8,7 +8,7 @@ today!{% endblock dis %}
 {% block key %}online shop, fashion, accessories, buy products, I Want More{% endblock key %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}">
-<link rel="stylesheet" href="{% static "css/item_cart.css" %}">
+<link rel="stylesheet" href="{% static 'css/item_cart.css' %}">
 <script src="{% static 'js/shop.js' %}" defer></script>
 <script src="{% static 'js/item_cart.js' %}" defer></script>
 {% endblock head %}
@@ -36,7 +36,8 @@ today!{% endblock dis %}
         <!-- Search -->
         <div class="search-bar-container">
           <form method="GET" action="{% url 'search' %}" class="search-bar">
-            <input type="search" name="q" id="searchInput" placeholder="Search products, categories, tags..." value="{{ query }}" autocomplete="off">
+            <input type="search" name="q" id="searchInput" placeholder="Search products, categories, tags..."
+              value="{{ query }}" autocomplete="off">
             <button type="submit" class="search-icon"><i class="fas fa-search"></i></button>
           </form>
         </div>
@@ -51,47 +52,50 @@ today!{% endblock dis %}
               <span class="checkbox-label">All Categories</span>
             </label>
             <div>
-            {% for category in categories %}
-            <div class="category-item">
-              <div class="category">
-              <span class="checkbox-label">{{ category.name }}</span>
-              <span class="toggle-subcategory"><i class="fas fa-chevron-down"></i></span>
+              {% for category in categories %}
+              <div class="category-item">
+                <div class="category">
+                  <span class="checkbox-label">{{ category.name }}</span>
+                  <span class="toggle-subcategory"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="subcategory-wrapper">
+                  <label class="checkbox-container subcategory-item">
+                    <input type="checkbox" value="{{ category.slug }}" class="category-checkbox"
+                      data-category="{{ category.slug }}">
+                    <span class="checkbox-checkmark"></span>
+                    <span class="checkbox-label">All {{ category.name }}</span>
+                  </label>
+                  {% for subcategory in category.subcategories.all %}
+                  <label class="checkbox-container subcategory-item">
+                    <input type="checkbox" value="{{ subcategory.slug }}" class="category-checkbox subcategory-checkbox"
+                      data-category="{{ subcategory.slug }}" data-parent="{{ category.slug }}">
+                    <span class="checkbox-checkmark"></span>
+                    <span class="checkbox-label">{{ subcategory.name }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
               </div>
-              <div class="subcategory-wrapper">
-                <label class="checkbox-container subcategory-item">
-                  <input type="checkbox" value="{{ category.slug }}" class="category-checkbox" data-category="{{ category.slug }}">
-                  <span class="checkbox-checkmark"></span>
-                  <span class="checkbox-label">All {{ category.name }}</span>
-                </label>
-                {% for subcategory in category.subcategories.all %}
-                <label class="checkbox-container subcategory-item">
-                  <input type="checkbox" value="{{ subcategory.slug }}" class="category-checkbox subcategory-checkbox" data-category="{{ subcategory.slug }}" data-parent="{{ category.slug }}">
-                  <span class="checkbox-checkmark"></span>
-                  <span class="checkbox-label">{{ subcategory.name }}</span>
-                </label>
-                {% endfor %}
-              </div>
+              {% endfor %}
             </div>
-            {% endfor %}
-          </div>
           </div>
         </div>
         <!-- Price Range -->
         <div class="filter-section">
           <h4 class="filter-title">Price Range</h4>
-          
+
           <div class="filter-group price-range">
             <div class="dual-range-container">
               <div class="price-slider-values">
                 <span class="price-min-value">৳0</span>
                 <span class="price-max-value">৳10000</span>
               </div>
-              
+
               <div class="price-slider-track">
                 <div class="slider-track"></div>
                 <div class="slider-range"></div>
                 <input type="range" min="0" max="10000" value="0" class="price-slider min-slider" id="priceSliderMin">
-                <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider" id="priceSliderMax">
+                <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider"
+                  id="priceSliderMax">
               </div>
               <div class="price-inputs-wrapper">
                 <div class="price-input-container">
@@ -99,7 +103,7 @@ today!{% endblock dis %}
                   <span class="price-currency">৳</span>
                   <input type="number" id="priceMin" name="min_price" placeholder="0" min="0" max="10000">
                 </div>
-                
+
                 <div class="price-input-container">
                   <label class="price-label">Max Price</label>
                   <span class="price-currency">৳</span>
@@ -114,38 +118,38 @@ today!{% endblock dis %}
         <div class="filter-section">
           <h4 class="filter-title">Attributes</h4>
           <div class="filter-group">
-              <!-- Color Filter (Radio Buttons with Circles) -->
-              <div class="filter-item color-filter">
-                  <h4>Color</h4>
-                  <div class="color-options">
-                      {% for color in colors %}
-                      <label>
-                          <input type="radio" name="color" value="{{ color.name }}" class="color-option">
-                          <div class="color-circle" style="background-color: {{ color.name }};"></div>
-                      </label>
-                      {% endfor %}
-                  </div>
+            <!-- Color Filter (Radio Buttons with Circles) -->
+            <div class="filter-item color-filter">
+              <h4>Color</h4>
+              <div class="color-options">
+                {% for color in colors %}
+                <label>
+                  <input type="radio" name="color" value="{{ color.name }}" class="color-option">
+                  <div class="color-circle" style="background-color: {{ color.name }};"></div>
+                </label>
+                {% endfor %}
               </div>
-      
-              <!-- Size Filter (Select Option) -->
-              <div class="filter-item size-filter">
-                  <h4>Size</h4>
-                  <select name="size" class="filter-sort">
-                      <option value="all">All</option>
-                      {% for size in sizes %}<option value="{{ size.name }}">{{ size.name }}</option>{% endfor %}
-                  </select>
-              </div>
-      
-              <!-- Brand Filter (Select Option) -->
-              <div class="filter-item brand-filter">
-                  <h4>Brand</h4>
-                  <select name="brand" class="filter-sort">
-                    <option value="all">All</option>
-                    {% for brand in brands %}<option value="{{ brand.name }}">{{ brand.name }}</option>{% endfor %}
-                  </select>
-              </div>
+            </div>
+
+            <!-- Size Filter (Select Option) -->
+            <div class="filter-item size-filter">
+              <h4>Size</h4>
+              <select name="size" class="filter-sort">
+                <option value="all">All</option>
+                {% for size in sizes %}<option value="{{ size.name }}">{{ size.name }}</option>{% endfor %}
+              </select>
+            </div>
+
+            <!-- Brand Filter (Select Option) -->
+            <div class="filter-item brand-filter">
+              <h4>Brand</h4>
+              <select name="brand" class="filter-sort">
+                <option value="all">All</option>
+                {% for brand in brands %}<option value="{{ brand.name }}">{{ brand.name }}</option>{% endfor %}
+              </select>
+            </div>
           </div>
-      </div>      
+        </div>
 
         <!-- Sort Options -->
         <div class="filter-section">
@@ -216,89 +220,7 @@ today!{% endblock dis %}
       <!-- Product Grid -->
       <div class="product-grid" id="productGrid">
         {% for product in products %}
-        <div class="product-item" 
-          data-id="{{ product.id }}"
-          data-category="{{ product.category.slug }}" 
-          data-subcategory="{{ product.subcategory.slug }}" 
-          data-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}" 
-          data-stock="{{ product.stock }}" 
-          data-featured="{% if product.is_featured %}true{% else %}false{% endif %}" 
-          data-discounted="{% if product.discount_price %}true{% else %}false{% endif %}"
-          data-date="{{ product.created_at|date:'U' }}"
-          data-color="{% if product.color %}{{ product.color.name }}{% else %}none{% endif %}"
-          data-size="{% if product.size %}{{ product.size.name }}{% else %}none{% endif %}"
-          data-brand="{% if product.brand %}{{ product.brand.name }}{% else %}none{% endif %}">
-          <div class="product-image-container">
-            {% if product.discount_price %}
-            <span class="product-badge sale">Sale</span>
-            {% endif %}
-            {% if product.is_popular %}
-            <span class="product-badge hot">Hot</span>
-            {% endif %}
-            {% if product.is_featured and product.feature_reason %}
-            <span class="featured">{{ product.feature_reason }}</span>
-            {% elif product.is_featured %}
-            <span class="featured">FEATURED</span>
-            {% endif %}
-
-            <div class="product-image-wrapper">
-              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-            </div>
-
-            <div class="quick-actions">
-              <span class="quick-action-btn" title="Add to wishlist"><i class="fas fa-heart"></i></span>
-              <a class="quick-action-btn" title="Quick view" href="{% url 'product_detail' slug=product.slug %}"><i class="fas fa-eye"></i></a>
-            </div>
-          </div>
-
-          <div class="product-info">
-            
-
-            {% if product.category %}<span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} • {{ product.subcategory.name }}{% endif %}</span></span>{% endif %}
-            <h3 class="product-name">
-              <span class="name">{{ product.name }}</span> 
-            </h3>
-            <div class="rating-price">
-              <!-- Display rating stars -->
-              <div class="product-rating">
-                {% for i in product.full_stars %}
-                <span class="star"><i class="fas fa-star"></i></span>
-                {% endfor %}
-
-                {% if product.half %}
-                <span class="star half"><i class="fas fa-star-half-alt"></i></span>
-                {% endif %}
-
-                {% for i in product.empty_stars %}
-                <span class="star"><i class="far fa-star"></i></span>
-                {% endfor %}
-
-                <span class="review-count">({{ product.review_count }} reviews)</span>
-              </div>
-
-              <div class="product-price">
-                {% if product.discount_price %}
-                <span class="original-price">৳{{ product.price }}</span>
-                <span class="current-price">৳{{ product.discount_price }}</span>
-                <span class="discount-tag">-{{ product.discount_percentage|floatformat:0 }}%</span>
-                {% else %}
-                <span class="current-price">৳{{ product.price }}</span>
-                {% endif %}
-              </div>
-            </div>
-
-            {% if product.stock > 0 %}
-            <div class="product-actions">
-              <a href="{% url 'product_detail' slug=product.slug %}" class="add-to-cart"><i class="fas fa-shopping-cart"></i> Buy Now</a>
-            </div>
-            {% else %}
-            <div class="product-actions">
-              <span class="out-of-stock-label">Out of Stock</span>
-              <a href="{% url 'product_detail' slug=product.slug %}" class="view-details">View Details</a>
-            </div>
-            {% endif %}
-          </div>
-        </div>
+        {% include "components/item_cart.html" with product=product %}
         {% empty %}
         <div class="no-products">
           <i class="fas fa-shopping-bag"></i>
@@ -313,7 +235,8 @@ today!{% endblock dis %}
       {% if products.has_other_pages %}
       <div class="pagination">
         {% if products.has_previous %}
-        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.previous_page_number }}" class="page-nav"><i class="fas fa-chevron-left"></i></a>
+        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.previous_page_number }}"
+          class="page-nav"><i class="fas fa-chevron-left"></i></a>
         {% endif %}
 
         {% for i in products.paginator.page_range %}
@@ -325,7 +248,8 @@ today!{% endblock dis %}
         {% endfor %}
 
         {% if products.has_next %}
-        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.next_page_number }}" class="page-nav"><i class="fas fa-chevron-right"></i></a>
+        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.next_page_number }}"
+          class="page-nav"><i class="fas fa-chevron-right"></i></a>
         {% endif %}
       </div>
       {% endif %}
@@ -333,6 +257,6 @@ today!{% endblock dis %}
   </div>
 
   <!-- Newsletter Section -->
-  {% include "newsletter.html"%}
+  {% include "components/newsletter.html"%}
 </div>
 {% endblock content %}

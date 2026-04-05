@@ -240,7 +240,7 @@
 }
 
 .product-name {
-    margin-bottom:12px;
+    margin-bottom: 12px;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-color);
@@ -272,7 +272,7 @@
     display: inline-flex;
     align-items: center;
     gap: 1px;
-}   
+}
 
 .star {
     color: #FFD700;
@@ -322,10 +322,13 @@
     box-shadow: 0 2px 8px rgba(255, 111, 145, .2)
 }
 
-.product-actions {
+.product-item .product-actions {
     display: flex;
     gap: 10px;
-    align-items: center
+    align-items: center;
+    background: none;
+    padding: 0;
+    border-radius: 0;
 }
 
 .add-to-cart {

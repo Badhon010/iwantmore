@@ -3,6 +3,8 @@
 {% block title %}{{ product.name }} - I Want More{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/product.css' %}">
+    <link rel="stylesheet" href="{% static 'css/item_cart.css' %}">
+    <script src="{% static 'js/item_cart.js' %}" defer></script>
 {% endblock head %}
 {% block content %}
 <section class="product-detail">
@@ -224,25 +226,7 @@
         <h2>You May Also Like</h2>
         <div class="products-grid">
             {% for related in related_products %}
-            <a href="{% url 'product_detail' slug=related.slug %}" class="product-card">
-                <div class="card-image">
-                    {% if related.discount_price %}
-                        <span class="badge-sale">-{{ related.discount_percentage|floatformat:0 }}%</span>
-                    {% endif %}
-                    <img src="{{ related.image.url }}" alt="{{ related.name }}">
-                </div>
-                <div class="card-content">
-                    <h3>{{ related.name|truncatewords:5 }}</h3>
-                    <div class="card-price">
-                        {% if related.discount_price %}
-                            <span class="price-current">৳{{ related.discount_price }}</span>
-                            <span class="price-old">৳{{ related.price }}</span>
-                        {% else %}
-                            <span class="price-current">৳{{ related.price }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </a>
+            {% include "components/item_cart.html" with product=related %}
             {% endfor %}
         </div>
     </div>
