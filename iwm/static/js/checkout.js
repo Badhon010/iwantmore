@@ -282,6 +282,7 @@ function validateCheckoutForm() {
     const fullName = document.getElementById('full-name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
+    const accessPin = document.getElementById('order-access-pin').value.trim();
 
     if (fullName === '') {
         isValid = false;
@@ -296,6 +297,11 @@ function validateCheckoutForm() {
     if (phone === '') {
         isValid = false;
         document.getElementById('phone').classList.add('error');
+    }
+
+    if (!/^\d{4,8}$/.test(accessPin)) {
+        isValid = false;
+        document.getElementById('order-access-pin').classList.add('error');
     }
 
     const shippingAddressLine1 = document.getElementById('shipping-address-line1').value.trim();
@@ -495,6 +501,7 @@ function submitOrder() {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value
     };
+    const accessPin = document.getElementById('order-access-pin').value.trim();
 
     const shippingAddress = {
         full_name: personalInfo.full_name,
@@ -553,7 +560,8 @@ function submitOrder() {
         payment_details: paymentDetails,
         items: getCartItemsPayload(),
         additional_notes: additionalNotes,
-        idempotency_key: getCheckoutIdempotencyKey()
+        idempotency_key: getCheckoutIdempotencyKey(),
+        access_pin: accessPin
     };
 
     document.getElementById('confirm-order-btn').disabled = true;

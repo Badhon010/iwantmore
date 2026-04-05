@@ -19,6 +19,7 @@
   <div class="confirmation-content">
     <div class="confirmation-message">
       <p>Your order has been placed successfully and is now pending. Our team will contact you shortly via phone or Messenger to confirm payment and delivery details.</p>
+      <p>Use your email or phone number together with your order PIN on My Orders if you want to see this order later without signing in.</p>
       
       <div class="manual-payment-info">
         <h3>Next Steps:</h3>
@@ -71,10 +72,18 @@
           {% endif %}
           
           <p><strong>Status:</strong> 
-            {% if order.payment_status %}
+            {% if order.payment_state == 'paid' %}
               <span class="status-badge paid">Paid</span>
+            {% elif order.payment_state == 'partially_paid' %}
+              <span class="status-badge pending">Partially Paid</span>
+            {% elif order.payment_state == 'payment_submitted' %}
+              <span class="status-badge pending">Payment Submitted</span>
+            {% elif order.payment_state == 'failed' %}
+              <span class="status-badge pending">Payment Failed</span>
+            {% elif order.payment_state == 'refunded' %}
+              <span class="status-badge pending">Refunded</span>
             {% else %}
-              <span class="status-badge pending">Pending Confirmation</span>
+              <span class="status-badge pending">Awaiting Payment</span>
             {% endif %}
           </p>
         </div>
@@ -130,9 +139,7 @@
       
       <div class="action-buttons">
         <a href="{% url 'shop' %}" class="btn primary-btn">Continue Shopping</a>
-        {% if user.is_authenticated %}
         <a href="{% url "my_orders" %}" class="btn secondary-btn">View My Orders</a>
-        {% endif %}
       </div>
     </div>
   </div>

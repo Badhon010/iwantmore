@@ -1,253 +1,236 @@
 {% extends "admin/index.html" %}
-{% load static %}
+{% load i18n %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <!-- Main Dashboard Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0" style="color: #2d3748;">Dashboard</h1>
-            <p class="text-muted mb-0">Welcome to the I Want More Admin Dashboard</p>
-        </div>
-    </div>
+<style>
+    .iwm-dashboard { font-family: inherit; }
+    .iwm-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+    .iwm-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .iwm-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 1024px) { .iwm-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) {
+        .iwm-grid-4 { grid-template-columns: 1fr; }
+        .iwm-grid-2 { grid-template-columns: 1fr; }
+    }
+    .iwm-card {
+        background: var(--color-white, #fff);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        transition: box-shadow 0.2s;
+    }
+    .dark .iwm-card {
+        background: var(--color-gray-900, #111827);
+        border-color: var(--border-color, #374151);
+    }
+    .iwm-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .iwm-stat { display: flex; align-items: center; gap: 1rem; }
+    .iwm-stat-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 0.75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem; flex-shrink: 0;
+    }
+    .iwm-stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.15rem; }
+    .dark .iwm-stat-label { color: #9ca3af; }
+    .iwm-stat-value { font-size: 1.35rem; font-weight: 700; color: #111827; }
+    .dark .iwm-stat-value { color: #f3f4f6; }
+    .iwm-section-title {
+        font-size: 1rem; font-weight: 600; color: #374151;
+        margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dark .iwm-section-title { color: #e5e7eb; }
+    .iwm-alert-item {
+        padding: 0.75rem 1rem;
+        border-left: 3px solid #e5e7eb;
+        border-radius: 0 0.5rem 0.5rem 0;
+        background: #f9fafb;
+        margin-bottom: 0.5rem;
+        transition: background 0.15s;
+    }
+    .dark .iwm-alert-item { background: #1f2937; }
+    .iwm-alert-item:hover { background: #f3f4f6; }
+    .dark .iwm-alert-item:hover { background: #374151; }
+    .iwm-alert-critical { border-left-color: #ef4444; }
+    .iwm-alert-warning { border-left-color: #f59e0b; }
+    .iwm-alert-info { border-left-color: #3b82f6; }
+    .iwm-alert-title { font-size: 0.85rem; font-weight: 600; color: #1f2937; }
+    .dark .iwm-alert-title { color: #f3f4f6; }
+    .iwm-alert-msg { font-size: 0.78rem; color: #6b7280; margin-top: 0.15rem; }
+    .dark .iwm-alert-msg { color: #9ca3af; }
+    .iwm-alert-meta { font-size: 0.7rem; color: #9ca3af; margin-top: 0.25rem; }
+    .iwm-btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600;
+        text-decoration: none; color: #fff;
+        transition: opacity 0.2s, transform 0.15s;
+        border: none; cursor: pointer; width: 100%;
+        justify-content: center;
+    }
+    .iwm-btn:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+    .iwm-badge {
+        display: inline-flex; align-items: center; gap: 0.25rem;
+        padding: 0.15rem 0.5rem; border-radius: 9999px;
+        font-size: 0.7rem; font-weight: 600;
+    }
+</style>
 
-    <!-- Stats Cards Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-rupee-sign fa-2x text-primary" style="color: #ff758c !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Today's Revenue</p>
-                            <h4 class="mb-0">৳{{ today_revenue|floatformat:2 }}</h4>
-                        </div>
-                    </div>
+<div class="iwm-dashboard">
+    <!-- Stats Row 1: Key Metrics -->
+    <div class="iwm-grid iwm-grid-4">
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #fef2f2; color: #ef4444;">
+                    <span class="material-symbols-outlined">payments</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Today's Revenue</div>
+                    <div class="iwm-stat-value">৳{{ today_revenue|floatformat:2 }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-shopping-cart fa-2x text-success" style="color: #38a169 !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Today's Orders</p>
-                            <h4 class="mb-0">{{ today_orders }}</h4>
-                        </div>
-                    </div>
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #f0fdf4; color: #22c55e;">
+                    <span class="material-symbols-outlined">shopping_cart</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Today's Orders</div>
+                    <div class="iwm-stat-value">{{ today_orders }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-boxes fa-2x text-info" style="color: #4299e1 !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Total Products</p>
-                            <h4 class="mb-0">{{ total_products }}</h4>
-                        </div>
-                    </div>
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #eff6ff; color: #3b82f6;">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Total Products</div>
+                    <div class="iwm-stat-value">{{ total_products }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-users fa-2x text-warning" style="color: #ecc94b !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Active Subscribers</p>
-                            <h4 class="mb-0">{{ active_subscribers }}</h4>
-                        </div>
-                    </div>
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #fefce8; color: #eab308;">
+                    <span class="material-symbols-outlined">group</span>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Stats Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-exclamation-triangle fa-2x text-danger" style="color: #e53e3e !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Out of Stock</p>
-                            <h4 class="mb-0">{{ out_of_stock }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-exclamation-circle fa-2x text-warning" style="color: #ecc94b !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Low Stock</p>
-                            <h4 class="mb-0">{{ low_stock }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-chart-line fa-2x text-primary" style="color: #4a6fc5 !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Total Revenue</p>
-                            <h4 class="mb-0">৳{{ total_revenue|floatformat:2 }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-light rounded p-3 me-3">
-                            <i class="fas fa-envelope-open-text fa-2x text-secondary" style="color: #718096 !important;"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted mb-1">Total Subscribers</p>
-                            <h4 class="mb-0">{{ total_subscribers }}</h4>
-                        </div>
-                    </div>
+                <div>
+                    <div class="iwm-stat-label">Active Subscribers</div>
+                    <div class="iwm-stat-value">{{ active_subscribers }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Alerts and Quick Actions Section -->
-    <div class="row g-4">
+    <!-- Stats Row 2: Inventory & Revenue -->
+    <div class="iwm-grid iwm-grid-4">
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #fef2f2; color: #dc2626;">
+                    <span class="material-symbols-outlined">error</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Out of Stock</div>
+                    <div class="iwm-stat-value">{{ out_of_stock }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #fffbeb; color: #f59e0b;">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Low Stock</div>
+                    <div class="iwm-stat-value">{{ low_stock }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #f0f9ff; color: #0ea5e9;">
+                    <span class="material-symbols-outlined">trending_up</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Total Revenue</div>
+                    <div class="iwm-stat-value">৳{{ total_revenue|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #faf5ff; color: #a855f7;">
+                    <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Total Subscribers</div>
+                    <div class="iwm-stat-value">{{ total_subscribers }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts & Quick Actions -->
+    <div class="iwm-grid iwm-grid-2">
         {% if recent_alerts %}
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" style="color: #2d3748;">Recent Alerts</h5>
-                        <a href="{% url 'admin:alerts' %}" class="btn btn-sm" style="background-color: #ff758c; color: white; border: none;">View All</a>
-                    </div>
+        <div class="iwm-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div class="iwm-section-title" style="margin-bottom: 0;">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">notifications_active</span>
+                    Recent Alerts
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for alert in recent_alerts %}
-                        <div class="list-group-item border-start-0 border-end-0 border-top-0 {% if alert.severity == 'critical' %}border-danger border-start{% elif alert.severity == 'warning' %}border-warning border-start{% else %}border-info border-start{% endif %}">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ alert.title }}</h6>
-                                <small class="text-muted">{{ alert.created_at|date:"M d, Y H:i" }}</small>
-                            </div>
-                            <p class="mb-1 text-muted">{{ alert.message }}</p>
-                            <small>
-                                {% if alert.alert_type == 'low_stock' %}<i class="fas fa-box-open text-warning"></i> Low Stock
-                                {% elif alert.alert_type == 'high_orders' %}<i class="fas fa-chart-line text-info"></i> High Orders
-                                {% elif alert.alert_type == 'failed_payment' %}<i class="fas fa-times-circle text-danger"></i> Failed Payment
-                                {% else %}<i class="fas fa-cog text-secondary"></i> System{% endif %}
-                            </small>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+                <a href="{% url 'admin:alerts' %}" class="iwm-badge" style="background: #fef2f2; color: #ef4444; text-decoration: none;">
+                    {{ unread_alerts }} unread
+                </a>
             </div>
+            {% for alert in recent_alerts %}
+            <div class="iwm-alert-item {% if alert.severity == 'critical' %}iwm-alert-critical{% elif alert.severity == 'warning' %}iwm-alert-warning{% else %}iwm-alert-info{% endif %}">
+                <div class="iwm-alert-title">
+                    {% if alert.alert_type == 'low_stock' %}📦{% elif alert.alert_type == 'high_orders' %}📈{% elif alert.alert_type == 'failed_payment' %}❌{% else %}⚙️{% endif %}
+                    {{ alert.title }}
+                </div>
+                <div class="iwm-alert-msg">{{ alert.message }}</div>
+                <div class="iwm-alert-meta">{{ alert.created_at|date:"M d, Y H:i" }}</div>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
 
-        <div class="{% if recent_alerts %}col-lg-6{% else %}col-12{% endif %}">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h5 class="mb-0" style="color: #2d3748;">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <a href="{% url 'admin:iwm_product_changelist' %}" class="btn btn-lg w-100" style="background-color: #ff758c; color: white; border: none; border-radius: 10px; padding: 12px;">
-                                <i class="fas fa-shopping-bag me-2"></i>Manage Products
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{% url 'admin:iwm_order_changelist' %}" class="btn btn-lg w-100" style="background-color: #4a6fc5; color: white; border: none; border-radius: 10px; padding: 12px;">
-                                <i class="fas fa-receipt me-2"></i>Manage Orders
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{% url 'admin:analytics' %}" class="btn btn-lg w-100" style="background-color: #38a169; color: white; border: none; border-radius: 10px; padding: 12px;">
-                                <i class="fas fa-chart-bar me-2"></i>Analytics
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{% url 'admin:alerts' %}" class="btn btn-lg w-100" style="background-color: #ecc94b; color: #333; border: none; border-radius: 10px; padding: 12px;">
-                                <i class="fas fa-bell me-2"></i>Alerts ({{ unread_alerts }})
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <div class="iwm-card">
+            <div class="iwm-section-title">
+                <span class="material-symbols-outlined" style="font-size: 1.2rem;">bolt</span>
+                Quick Actions
             </div>
-        </div>
-    </div>
-
-    <!-- Additional Information -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-4">
-                    <h5 class="card-title mb-3" style="color: #2d3748;">I Want More Admin Dashboard</h5>
-                    <p class="card-text text-muted">
-                        Welcome to your customized admin panel with beautiful design and comprehensive analytics.
-                        Manage your e-commerce store efficiently with intuitive tools and real-time insights.
-                    </p>
-                </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">shopping_bag</span>
+                    Products
+                </a>
+                <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">receipt_long</span>
+                    Orders
+                </a>
+                <a href="{% url 'admin:analytics' %}" class="iwm-btn" style="background: linear-gradient(135deg, #38a169, #48bb78);">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">analytics</span>
+                    Analytics
+                </a>
+                <a href="{% url 'admin:alerts' %}" class="iwm-btn" style="background: linear-gradient(135deg, #eab308, #f59e0b); color: #1f2937;">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">notifications</span>
+                    Alerts ({{ unread_alerts }})
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .border-start {
-        border-left: 4px solid !important;
-    }
-    
-    .border-danger.border-start {
-        border-left-color: #e53e3e !important;
-    }
-    
-    .border-warning.border-start {
-        border-left-color: #ecc94b !important;
-    }
-    
-    .border-info.border-start {
-        border-left-color: #4299e1 !important;
-    }
-    
-    .list-group-item {
-        border-left: 0 !important;
-        border-right: 0 !important;
-    }
-</style>
+{{ block.super }}
 {% endblock %}

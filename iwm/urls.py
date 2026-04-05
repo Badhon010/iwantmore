@@ -53,7 +53,6 @@ urlpatterns = [
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
     path('place-order/', views.place_order, name='place_order'),
     path('my-orders/', views.my_orders, name='my_orders'),
-    path('track-order/', views.guest_track_order, name='guest_track_order'),
     path('track-order/<int:order_id>/', views.track_order, name='track_order'),
     path('cancel-order/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('api/order-count/', views.order_count, name='order_count'),

@@ -269,17 +269,6 @@
     background-color: #c82333;
 }
 
-.track-btn {
-    background: #28A745;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.track-btn:hover{
-    background: #1d7b33;
-}
-
 .no-order {
     text-align: center;
     padding: 30px;

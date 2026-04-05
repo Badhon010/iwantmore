@@ -206,7 +206,7 @@ today!{% endblock dis %}
       <!-- Active Filters Display -->
       <div class="active-filters-wrapper">
         <div class="active-filters-header">
-          <h3 class="results-count">Showing <span id="productCount">{{ products.count }}</span> products</h3>
+          <h3 class="results-count">Showing <span id="productCount">{{ pagination_total_count }}</span> products</h3>
         </div>
         <div class="active-filters" id="activeFilters">
           <!-- Active filters will be inserted here by JavaScript -->
@@ -273,7 +273,7 @@ today!{% endblock dis %}
                 <span class="star"><i class="far fa-star"></i></span>
                 {% endfor %}
 
-                <span class="review-count">({{ product.reviews.count }} reviews)</span>
+                <span class="review-count">({{ product.review_count }} reviews)</span>
               </div>
 
               <div class="product-price">
@@ -313,19 +313,19 @@ today!{% endblock dis %}
       {% if products.has_other_pages %}
       <div class="pagination">
         {% if products.has_previous %}
-        <a href="?page={{ products.previous_page_number }}" class="page-nav"><i class="fas fa-chevron-left"></i></a>
+        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.previous_page_number }}" class="page-nav"><i class="fas fa-chevron-left"></i></a>
         {% endif %}
 
         {% for i in products.paginator.page_range %}
         {% if products.number == i %}
         <span class="current">{{ i }}</span>
         {% else %}
-        <a href="?page={{ i }}">{{ i }}</a>
+        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ i }}">{{ i }}</a>
         {% endif %}
         {% endfor %}
 
         {% if products.has_next %}
-        <a href="?page={{ products.next_page_number }}" class="page-nav"><i class="fas fa-chevron-right"></i></a>
+        <a href="?{% if pagination_query %}{{ pagination_query }}&amp;{% endif %}page={{ products.next_page_number }}" class="page-nav"><i class="fas fa-chevron-right"></i></a>
         {% endif %}
       </div>
       {% endif %}

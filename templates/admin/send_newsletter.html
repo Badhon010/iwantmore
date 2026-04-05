@@ -1,94 +1,150 @@
 {% extends "admin/base_site.html" %}
-{% load static %}
+{% load i18n %}
 
 {% block title %}Send Newsletter | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-    <a href="{% url 'admin:index' %}">Home</a>
-    &rsaquo; <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}">Newsletter Subscribers</a>
-    &rsaquo; Send Email
+<div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5rem; padding: 0 0.25rem;">
+    <a href="{% url 'admin:index' %}" style="color: #6b7280; text-decoration: none;">Home</a>
+    <span class="material-symbols-outlined" style="font-size: 1rem;">chevron_right</span>
+    <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" style="color: #6b7280; text-decoration: none;">Newsletter Subscribers</a>
+    <span class="material-symbols-outlined" style="font-size: 1rem;">chevron_right</span>
+    <span style="color: #374151; font-weight: 500;">Send Email</span>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3">Send Newsletter Email</h1>
-            <p class="text-muted">Send email to selected subscribers</p>
-        </div>
+<style>
+    .nl-wrap { font-family: inherit; }
+    .nl-card {
+        background: #fff; border: 1px solid #e5e7eb;
+        border-radius: 0.75rem; padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .dark .nl-card { background: #111827; border-color: #374151; }
+    .nl-title {
+        font-size: 1rem; font-weight: 600; color: #374151;
+        margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dark .nl-title { color: #e5e7eb; }
+    .nl-field { margin-bottom: 1.25rem; }
+    .nl-label {
+        display: block; font-size: 0.8rem; font-weight: 600;
+        color: #374151; margin-bottom: 0.4rem;
+    }
+    .dark .nl-label { color: #d1d5db; }
+    .nl-input {
+        width: 100%; padding: 0.6rem 0.75rem;
+        border: 1px solid #d1d5db; border-radius: 0.5rem;
+        font-size: 0.85rem; background: #fff; color: #111827;
+        transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .dark .nl-input { background: #1f2937; border-color: #4b5563; color: #f3f4f6; }
+    .nl-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+    .nl-checkbox-wrap {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+    .nl-checkbox {
+        width: 1rem; height: 1rem; accent-color: #3b82f6;
+    }
+    .nl-checkbox-label { font-size: 0.85rem; color: #6b7280; }
+    .dark .nl-checkbox-label { color: #9ca3af; }
+    .nl-info {
+        background: #eff6ff; border: 1px solid #bfdbfe;
+        border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.25rem;
+    }
+    .dark .nl-info { background: #1e3a5f; border-color: #1e40af; }
+    .nl-info-title { font-size: 0.85rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem; }
+    .dark .nl-info-title { color: #60a5fa; }
+    .nl-info ul { margin: 0; padding-left: 1.25rem; }
+    .nl-info li { font-size: 0.8rem; color: #374151; padding: 0.15rem 0; }
+    .dark .nl-info li { color: #d1d5db; }
+    .nl-info-count { font-size: 0.85rem; font-weight: 600; color: #1e40af; margin-top: 0.5rem; }
+    .dark .nl-info-count { color: #60a5fa; }
+    .nl-btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.65rem 1.25rem; border-radius: 0.5rem;
+        font-size: 0.85rem; font-weight: 600; text-decoration: none;
+        color: #fff; border: none; cursor: pointer; transition: opacity 0.2s;
+    }
+    .nl-btn:hover { opacity: 0.9; color: #fff; }
+    .nl-btn-secondary {
+        background: #f3f4f6; color: #374151; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.65rem 1.25rem; border-radius: 0.5rem;
+        font-size: 0.85rem; font-weight: 600; border: 1px solid #d1d5db;
+        transition: background 0.2s;
+    }
+    .dark .nl-btn-secondary { background: #374151; color: #d1d5db; border-color: #4b5563; }
+    .nl-btn-secondary:hover { background: #e5e7eb; color: #374151; }
+    .nl-error { color: #dc2626; font-size: 0.78rem; margin-top: 0.25rem; }
+</style>
+
+<div class="nl-wrap">
+    <div style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">Send Newsletter Email</h1>
+        <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.25rem;">Send email to selected subscribers</p>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-pink">Email Details</h6>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.media }}
-                        <div class="form-group">
-                            <label for="{{ form.subject.id_for_label }}">Subject:</label>
-                            {{ form.subject }}
-                            {% if form.subject.errors %}
-                                <div class="text-danger">{{ form.subject.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="{{ form.message.id_for_label }}">Message:</label>
-                            {{ form.message }}
-                            {% if form.message.errors %}
-                                <div class="text-danger">{{ form.message.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="{{ form.send_to_inactive.name }}" id="{{ form.send_to_inactive.id_for_label }}">
-                            <label class="form-check-label" for="{{ form.send_to_inactive.id_for_label }}">
-                                Send to inactive subscribers as well
-                            </label>
-                        </div>
-                        
-                        <div class="alert alert-info">
-                            <h6>Selected Subscribers:</h6>
-                            <ul>
-                                {% for subscriber in subscribers %}
-                                    <li>{{ subscriber.email }}</li>
-                                {% endfor %}
-                            </ul>
-                            <p><strong>Total: {{ subscribers.count }} subscribers</strong></p>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-pink">
-                            <i class="fas fa-paper-plane"></i> Send Email
-                        </button>
-                        <a href="../" class="btn btn-secondary">Cancel</a>
-                    </form>
-                </div>
-            </div>
+    <div class="nl-card">
+        <div class="nl-title">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">edit_note</span>
+            Email Details
         </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.media }}
+
+            <div class="nl-field">
+                <label for="{{ form.subject.id_for_label }}" class="nl-label">Subject</label>
+                <input type="text" name="{{ form.subject.name }}" id="{{ form.subject.id_for_label }}"
+                       value="{{ form.subject.value|default_if_none:'' }}"
+                       class="nl-input" placeholder="Enter email subject..."
+                       maxlength="100" required>
+                {% if form.subject.errors %}
+                    <div class="nl-error">{{ form.subject.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="nl-field">
+                <label for="{{ form.message.id_for_label }}" class="nl-label">Message</label>
+                {{ form.message }}
+                {% if form.message.errors %}
+                    <div class="nl-error">{{ form.message.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="nl-checkbox-wrap">
+                <input type="checkbox" name="{{ form.send_to_inactive.name }}"
+                       id="{{ form.send_to_inactive.id_for_label }}" class="nl-checkbox">
+                <label for="{{ form.send_to_inactive.id_for_label }}" class="nl-checkbox-label">
+                    Send to inactive subscribers as well
+                </label>
+            </div>
+
+            <div class="nl-info">
+                <div class="nl-info-title">
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">people</span>
+                    Selected Subscribers
+                </div>
+                <ul>
+                    {% for subscriber in subscribers %}
+                        <li>{{ subscriber.email }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="nl-info-count">Total: {{ subscribers.count }} subscribers</div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button type="submit" class="nl-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">send</span>
+                    Send Email
+                </button>
+                <a href="../" class="nl-btn-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
-
-<style>
-    .text-pink {
-        color: #ff6f91 !important;
-    }
-    
-    .btn-pink {
-        background-color: #ff6f91;
-        border-color: #ff6f91;
-        color: white;
-    }
-    
-    .btn-pink:hover {
-        background-color: #ff5583;
-        border-color: #ff5583;
-        color: white;
-    }
-</style>
 {% endblock %}

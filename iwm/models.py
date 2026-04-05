@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.urls import reverse
 import json
@@ -254,6 +255,15 @@ class Order(models.Model):
         ('nagad', 'Nagad'),
     )
 
+    PAYMENT_STATE_CHOICES = (
+        ('awaiting_payment', 'Awaiting Payment'),
+        ('payment_submitted', 'Payment Submitted'),
+        ('partially_paid', 'Partially Paid'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    )
+
     DELIVERY_PAYMENT_METHOD_CHOICES = (
         ('bkash', 'bKash'),
         ('nagad', 'Nagad'),
@@ -261,6 +271,7 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     idempotency_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    access_pin_hash = models.CharField(max_length=255, blank=True, default='')
 
     full_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=254)
@@ -281,7 +292,7 @@ class Order(models.Model):
     # Payment info (for full payment or partial)
     sender_number = models.CharField(max_length=20, blank=True, null=True)
     transaction_id = models.CharField(max_length=255, blank=True, null=True)
-    payment_status = models.BooleanField(default=False)
+    payment_state = models.CharField(max_length=30, choices=PAYMENT_STATE_CHOICES, default='awaiting_payment')
 
     # Delivery charge payment (IMPORTANT for COD)
     delivery_charge_paid = models.BooleanField(default=False)
@@ -300,11 +311,32 @@ class Order(models.Model):
     tracking_number = models.CharField(max_length=100, blank=True, null=True)
     estimated_delivery = models.DateField(blank=True, null=True)
 
+    def set_access_pin(self, raw_pin):
+        self.access_pin_hash = make_password(raw_pin)
+
+    def check_access_pin(self, raw_pin):
+        if not self.access_pin_hash or not raw_pin:
+            return False
+        return check_password(raw_pin, self.access_pin_hash)
+
+    @property
+    def payment_status(self):
+        return self.payment_state in {'paid', 'partially_paid'}
+
+    @property
+    def requires_payment_follow_up(self):
+        return self.payment_state in {'awaiting_payment', 'payment_submitted'}
+
     def __str__(self):
         return f"Order {self.id}"
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['order_status', 'created_at']),
+            models.Index(fields=['payment_state', 'created_at']),
+        ]
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

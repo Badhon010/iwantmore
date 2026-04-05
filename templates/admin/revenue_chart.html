@@ -1,88 +1,83 @@
 {% extends "admin/base_site.html" %}
-{% load static %}
+{% load i18n %}
 
 {% block title %}Revenue Chart | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-    <a href="{% url 'admin:index' %}">Home</a>
-    &rsaquo; <a href="{% url 'admin:analytics' %}">Analytics Dashboard</a>
-    &rsaquo; Revenue Chart
+<div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5rem; padding: 0 0.25rem;">
+    <a href="{% url 'admin:index' %}" style="color: #6b7280; text-decoration: none;">Home</a>
+    <span class="material-symbols-outlined" style="font-size: 1rem;">chevron_right</span>
+    <a href="{% url 'admin:analytics' %}" style="color: #6b7280; text-decoration: none;">Analytics</a>
+    <span class="material-symbols-outlined" style="font-size: 1rem;">chevron_right</span>
+    <span style="color: #374151; font-weight: 500;">Revenue Chart</span>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3">30-Day Revenue Trend</h1>
-            <p class="text-muted">Detailed visualization of revenue over the past 30 days</p>
-        </div>
+<style>
+    .rc-wrap { font-family: inherit; }
+    .rc-card {
+        background: #fff; border: 1px solid #e5e7eb;
+        border-radius: 0.75rem; padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .dark .rc-card { background: #111827; border-color: #374151; }
+    .rc-title {
+        font-size: 1rem; font-weight: 600; color: #374151;
+        margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dark .rc-title { color: #e5e7eb; }
+    .rc-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+        padding: 0.6rem 1rem; border-radius: 0.5rem;
+        font-size: 0.85rem; font-weight: 600; text-decoration: none;
+        color: #fff; transition: opacity 0.2s; border: none; cursor: pointer;
+    }
+    .rc-btn:hover { opacity: 0.9; color: #fff; }
+    .rc-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+    @media (max-width: 768px) { .rc-actions { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .rc-actions { grid-template-columns: 1fr; } }
+</style>
+
+<div class="rc-wrap">
+    <div style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">30-Day Revenue Trend</h1>
+        <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.25rem;">Detailed visualization of revenue over the past 30 days</p>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-pink">Revenue Trend Analysis</h6>
-                </div>
-                <div class="card-body">
-                    {{ chart|safe }}
-                </div>
-            </div>
+    <!-- Chart -->
+    <div class="rc-card">
+        <div class="rc-title">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">show_chart</span>
+            Revenue Trend Analysis
         </div>
+        <div>{{ chart|safe }}</div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-pink">Quick Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'admin:analytics' %}" class="btn btn-pink btn-block">
-                                <i class="fas fa-chart-line"></i> Back to Analytics
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'admin:iwm_order_changelist' %}" class="btn btn-primary btn-block">
-                                <i class="fas fa-receipt"></i> View Orders
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'admin:iwm_product_changelist' %}" class="btn btn-success btn-block">
-                                <i class="fas fa-shopping-bag"></i> View Products
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" class="btn btn-info btn-block">
-                                <i class="fas fa-envelope"></i> Subscribers
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Quick Actions -->
+    <div class="rc-card">
+        <div class="rc-title">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">bolt</span>
+            Quick Actions
+        </div>
+        <div class="rc-actions">
+            <a href="{% url 'admin:analytics' %}" class="rc-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">analytics</span>
+                Back to Analytics
+            </a>
+            <a href="{% url 'admin:iwm_order_changelist' %}" class="rc-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">receipt_long</span>
+                View Orders
+            </a>
+            <a href="{% url 'admin:iwm_product_changelist' %}" class="rc-btn" style="background: linear-gradient(135deg, #38a169, #48bb78);">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span>
+                View Products
+            </a>
+            <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" class="rc-btn" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">mail</span>
+                Subscribers
+            </a>
         </div>
     </div>
 </div>
-
-<style>
-    .text-pink {
-        color: #ff6f91 !important;
-    }
-    
-    .btn-pink {
-        background-color: #ff6f91;
-        border-color: #ff6f91;
-        color: white;
-    }
-    
-    .btn-pink:hover {
-        background-color: #ff5583;
-        border-color: #ff5583;
-        color: white;
-    }
-</style>
 {% endblock %}

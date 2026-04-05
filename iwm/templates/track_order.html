@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Track Order - I Want More{% endblock %}
+{% block title %}Order Details - I Want More{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/track_order.css' %}">
 {% endblock %}
@@ -8,31 +8,6 @@
 {% block content %}
 <div class="track-order-container">
     <h2>Track Your Order</h2>
-
-    {% if show_guest_lookup %}
-        <div class="order-details" style="margin-bottom: 24px;">
-            <div class="tracking-header">
-                <h3>Guest Order Lookup</h3>
-                <p>Enter your order ID and the email or phone number you used at checkout.</p>
-            </div>
-            <form method="post" class="checkout-form">
-                {% csrf_token %}
-                <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
-                    <div style="flex: 1 1 220px;">
-                        <label for="guest-order-id">Order ID</label>
-                        <input id="guest-order-id" type="text" name="order_id" value="{{ lookup_order_id }}" required>
-                    </div>
-                    <div style="flex: 1 1 260px;">
-                        <label for="guest-contact">Email or Phone</label>
-                        <input id="guest-contact" type="text" name="contact" value="{{ contact_value }}" required>
-                    </div>
-                </div>
-                <div class="order-actions" style="margin-top: 16px;">
-                    <button type="submit" class="btn track-btn">Track Order</button>
-                </div>
-            </form>
-        </div>
-    {% endif %}
 
     {% if order %}
         <div class="order-details">
@@ -141,11 +116,7 @@
             </div>
             
             <div class="order-actions">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
-                {% else %}
-                    <a href="{% url 'guest_track_order' %}" class="btn back-btn">Track Another Order</a>
-                {% endif %}
+                <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
                 {% if user.is_authenticated and order.order_status == 'pending' %}
                     <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
                         {% csrf_token %}
@@ -154,14 +125,10 @@
                 {% endif %}
             </div>
         </div>
-    {% elif not show_guest_lookup or lookup_attempted %}
+    {% else %}
         <div class="no-order">
             <p>Order not found or you don't have permission to view this order.</p>
-            {% if user.is_authenticated %}
-                <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
-            {% else %}
-                <a href="{% url 'guest_track_order' %}" class="btn back-btn">Try Again</a>
-            {% endif %}
+            <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
         </div>
     {% endif %}
 </div>

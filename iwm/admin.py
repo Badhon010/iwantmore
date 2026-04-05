@@ -2,6 +2,10 @@ from django.urls.resolvers import URLPattern, URLResolver
 from typing import Any
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
+# Delayed imports to avoid circular dependency
+# from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
+# from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group, User
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.urls import path, reverse
@@ -23,12 +27,19 @@ import plotly.express as px
 from plotly.offline import plot
 from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
 from django_ckeditor_5.widgets import CKEditor5Widget
+import logging
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.sites import UnfoldAdminSite
 
 from .models import (
     Product, Review, Tag, MoreImages, NewsletterSubscriber,
     Category, SubCategory, FeatureReason, Order, OrderItem,
     Address, Coupon, Color, Size, Brand, AdminAlert
 )
+
+CAPTURED_PAYMENT_STATES = ['paid', 'partially_paid']
+FOLLOW_UP_PAYMENT_STATES = ['awaiting_payment', 'payment_submitted']
+logger = logging.getLogger(__name__)
 
 
 # ========================
@@ -44,7 +55,7 @@ class ProductResource(resources.ModelResource):
 class OrderResource(resources.ModelResource):
     class Meta:
         model = Order
-        fields = ('id', 'full_name', 'email', 'phone', 'total_price', 'payment_status', 'order_status', 'created_at')
+        fields = ('id', 'full_name', 'email', 'phone', 'total_price', 'payment_state', 'order_status', 'created_at')
 
 
 class NewsletterSubscriberResource(resources.ModelResource):
@@ -95,7 +106,7 @@ def check_and_create_alerts():
     # Failed payments (pending > 24 hours)
     threshold = timezone.now() - timedelta(hours=24)
     failed_payments = Order.objects.filter(
-        payment_status=False,
+        payment_state__in=FOLLOW_UP_PAYMENT_STATES,
         order_status__in=['pending', 'processing'],
         created_at__lt=threshold
     )
@@ -118,7 +129,7 @@ def check_and_create_alerts():
 # CUSTOM ADMIN SITE WITH CHARTS
 # ========================
 
-class IWMAdminSite(admin.AdminSite):
+class IWMAdminSite(UnfoldAdminSite):
     site_header = "I Want More Admin"
     site_title = "I Want More Admin Panel"
     index_title = "Dashboard"
@@ -141,7 +152,7 @@ class IWMAdminSite(admin.AdminSite):
             date = timezone.now().date() - timedelta(days=i)
             revenue = Order.objects.filter(
                 created_at__date=date,
-                payment_status=True
+                payment_state__in=CAPTURED_PAYMENT_STATES
             ).aggregate(Sum('total_price'))['total_price__sum'] or 0
             daily_data.append({'date': str(date), 'revenue': float(revenue)})
         
@@ -167,10 +178,11 @@ class IWMAdminSite(admin.AdminSite):
         
         chart_html = plot(fig, output_type='div', include_plotlyjs='cdn')
         
-        return TemplateResponse(request, 'admin/revenue_chart.html', {
+        context = {**self.each_context(request),
             'chart': chart_html,
             'title': 'Revenue Trend Chart'
-        })
+        }
+        return TemplateResponse(request, 'admin/revenue_chart.html', context)
     
     def analytics_view(self, request):
         """Comprehensive analytics dashboard"""
@@ -185,14 +197,21 @@ class IWMAdminSite(admin.AdminSite):
         week_orders = Order.objects.filter(created_at__date__gte=week_ago)
         month_orders = Order.objects.filter(created_at__date__gte=month_ago)
         
-        today_revenue = today_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        week_revenue = week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        month_revenue = month_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+        today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        week_revenue = week_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        month_revenue = month_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
         
         # Payment statistics
-        paid_orders = Order.objects.filter(payment_status=True, created_at__date__gte=month_ago)
-        pending_orders = Order.objects.filter(payment_status=False, created_at__date__gte=month_ago)
-        
+        paid_orders = month_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES)
+        pending_orders = month_orders.filter(payment_state__in=FOLLOW_UP_PAYMENT_STATES)
+        payment_state_counts = [
+            {
+                'label': label,
+                'count': month_orders.filter(payment_state=state).count(),
+            }
+            for state, label in Order.PAYMENT_STATE_CHOICES
+        ]
+
         # Create category pie chart
         category_data = OrderItem.objects.values('product__category__name').annotate(
             count=Count('id')
@@ -209,11 +228,20 @@ class IWMAdminSite(admin.AdminSite):
         
         # Calculate average order value
         avg_order_value = 0
-        if week_orders.count() > 0:
-            total_week_revenue = week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-            avg_order_value = total_week_revenue / week_orders.count()
+        paid_week_orders = week_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES)
+        if paid_week_orders.count() > 0:
+            total_week_revenue = paid_week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
+            avg_order_value = total_week_revenue / paid_week_orders.count()
+
+        repeat_customers = month_orders.exclude(email='').values('email').annotate(order_count=Count('id')).filter(order_count__gt=1).count()
+        total_customers = month_orders.exclude(email='').values('email').distinct().count()
+        delivered_orders = month_orders.filter(order_status='delivered').count()
+        cancelled_orders = month_orders.filter(order_status='cancelled').count()
+        top_products = OrderItem.objects.filter(order__created_at__date__gte=month_ago).values('product_name').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('-total_quantity')[:5]
         
-        context = {
+        context = {**self.each_context(request),
             'today_orders': today_orders.count(),
             'week_orders': week_orders.count(),
             'month_orders': month_orders.count(),
@@ -222,8 +250,15 @@ class IWMAdminSite(admin.AdminSite):
             'month_revenue': month_revenue,
             'paid_orders': paid_orders.count(),
             'pending_orders': pending_orders.count(),
+            'payment_state_labels': json.dumps([item['label'] for item in payment_state_counts]),
+            'payment_state_values': json.dumps([item['count'] for item in payment_state_counts]),
             'category_chart': category_chart,
             'avg_order_value': avg_order_value,
+            'repeat_customers': repeat_customers,
+            'total_customers': total_customers,
+            'delivered_orders': delivered_orders,
+            'cancelled_orders': cancelled_orders,
+            'top_products': top_products,
             'title': 'Advanced Analytics Dashboard'
         }
         
@@ -245,7 +280,7 @@ class IWMAdminSite(admin.AdminSite):
                 alert.read_by = request.user
                 alert.save()
         
-        context = {
+        context = {**self.each_context(request),
             'alerts': alerts[:50],
             'unread_count': unread_count,
             'title': 'System Alerts & Notifications'
@@ -263,8 +298,8 @@ class IWMAdminSite(admin.AdminSite):
         
         # Core statistics
         today_orders = Order.objects.filter(created_at__date=today)
-        today_revenue = today_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        total_revenue = Order.objects.aggregate(Sum('total_price'))['total_price__sum'] or 0
+        today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        total_revenue = Order.objects.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
         
         total_products = Product.objects.count()
         out_of_stock = Product.objects.filter(stock=0).count()
@@ -294,16 +329,23 @@ class IWMAdminSite(admin.AdminSite):
 
 
 # ========================
+# INSTANTIATE CUSTOM ADMIN SITE FIRST
+# ========================
+
+# Instantiate the custom admin site for use in urls.py
+admin_site = IWMAdminSite(name='iwm_admin')
+
+
+# ========================
 # CATEGORY ADMIN
 # ========================
 
-class SubCategoryInline(admin.TabularInline):
+class SubCategoryInline(TabularInline):
     model = SubCategory
     extra = 1
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ('name', 'slug', 'subcategories_count')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [SubCategoryInline]
@@ -314,16 +356,14 @@ class CategoryAdmin(admin.ModelAdmin):
     subcategories_count.short_description = "Subcategories"
 
 
-@admin.register(SubCategory)
-class SubCategoryAdmin(admin.ModelAdmin):
+class SubCategoryAdmin(ModelAdmin):
     list_display = ('name','category', 'slug')
     list_filter = ('category',)
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'category__name')
 
 
-@admin.register(FeatureReason)
-class FeatureReasonAdmin(admin.ModelAdmin):
+class FeatureReasonAdmin(ModelAdmin):
     list_display = ('Reason',)
 
 
@@ -331,7 +371,7 @@ class FeatureReasonAdmin(admin.ModelAdmin):
 # PRODUCT ADMIN (WITH EXPORTS)
 # ========================
 
-class MoreImagesInline(admin.TabularInline):
+class MoreImagesInline(TabularInline):
     model = MoreImages
     extra = 1
     fields = ('image', 'image_preview')
@@ -344,8 +384,7 @@ class MoreImagesInline(admin.TabularInline):
     image_preview.short_description = "Preview"
 
 
-@admin.register(Product)
-class ProductAdmin(ExportActionMixin, admin.ModelAdmin):
+class ProductAdmin(ExportActionMixin, ModelAdmin):
     resource_class = ProductResource
     
     list_display = ('product_name_with_image', 'get_price_display', 'stock_status', 'subcategory', 'is_featured', 'get_colors', 'created_at')
@@ -420,7 +459,7 @@ class ProductAdmin(ExportActionMixin, admin.ModelAdmin):
     image_preview.short_description = "Preview"
     
     def discount_percentage_display(self, obj):
-        return format_html('<strong>{:.1f}%</strong>', obj.discount_percentage) if obj.discount_percentage > 0 else "-"
+        return format_html('<strong>{}</strong>', f"{float(obj.discount_percentage):.1f}%") if getattr(obj, "discount_percentage", 0) and obj.discount_percentage > 0 else "-"
     discount_percentage_display.short_description = "Discount %"
     
     def save_model(self, request, obj, form, change):
@@ -429,8 +468,7 @@ class ProductAdmin(ExportActionMixin, admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
+class ReviewAdmin(ModelAdmin):
     list_display = ('product', 'user', 'get_rating_display', 'created_at')
     list_filter = ('rating', 'created_at', 'product')
     search_fields = ('product__name', 'user__username', 'comment')
@@ -445,8 +483,7 @@ class ReviewAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
 
-@admin.register(Color)
-class ColorAdmin(admin.ModelAdmin):
+class ColorAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
     
@@ -456,8 +493,7 @@ class ColorAdmin(admin.ModelAdmin):
     products_count.short_description = "Products"
 
 
-@admin.register(Size)
-class SizeAdmin(admin.ModelAdmin):
+class SizeAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
     
@@ -467,8 +503,7 @@ class SizeAdmin(admin.ModelAdmin):
     products_count.short_description = "Products"
 
 
-@admin.register(Brand)
-class BrandAdmin(admin.ModelAdmin):
+class BrandAdmin(ModelAdmin):
     list_display = ('name', 'brand_logo', 'products_count')
     search_fields = ('name',)
     readonly_fields = ('brand_logo',)
@@ -485,8 +520,7 @@ class BrandAdmin(admin.ModelAdmin):
     products_count.short_description = "Products"
 
 
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
     
@@ -496,8 +530,7 @@ class TagAdmin(admin.ModelAdmin):
     products_count.short_description = "Products"
 
 
-@admin.register(MoreImages)
-class MoreImagesAdmin(admin.ModelAdmin):
+class MoreImagesAdmin(ModelAdmin):
     list_display = ('product', 'image_preview')
     list_filter = ('product',)
     search_fields = ('product__name',)
@@ -520,8 +553,7 @@ class EmailForm(forms.Form):
     send_to_inactive = forms.BooleanField(required=False, initial=False)
 
 
-@admin.register(NewsletterSubscriber)
-class NewsletterSubscriberAdmin(ExportActionMixin, admin.ModelAdmin):
+class NewsletterSubscriberAdmin(ExportActionMixin, ModelAdmin):
     resource_class = NewsletterSubscriberResource
     
     list_display = ('email', 'subscribed_at', 'is_active_badge', 'source')
@@ -613,12 +645,17 @@ class NewsletterSubscriberAdmin(ExportActionMixin, admin.ModelAdmin):
                         del request.session['selected_subscribers']
                     
                     return HttpResponseRedirect("../")
-                except Exception as e:
-                    self.message_user(request, f"Error: {str(e)}", level='ERROR')
+                except Exception:
+                    logger.exception('Newsletter bulk send failed for %s recipients.', len(recipient_list))
+                    self.message_user(
+                        request,
+                        "Could not send the newsletter right now. Check the logs and email configuration.",
+                        level='ERROR',
+                    )
         else:
             form = EmailForm()
         
-        context = {
+        context = {**self.admin_site.each_context(request),
             'form': form,
             'subscribers': subscribers,
             'opts': self.model._meta,
@@ -634,7 +671,7 @@ class NewsletterSubscriberAdmin(ExportActionMixin, admin.ModelAdmin):
 # ORDER ADMIN (WITH EXPORTS & AUDIT)
 # ========================
 
-class OrderItemInline(admin.TabularInline):
+class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
     readonly_fields = ['product', 'product_name', 'product_price', 'quantity']
@@ -644,16 +681,26 @@ class OrderItemInline(admin.TabularInline):
         return False
 
 
-@admin.register(Order)
-class OrderAdmin(ExportActionMixin, admin.ModelAdmin):
+class OrderAdmin(ExportActionMixin, ModelAdmin):
     resource_class = OrderResource
     inlines = [OrderItemInline]
-
+    actions = [
+        'mark_payment_submitted',
+        'mark_partially_paid',
+        'mark_paid',
+        'mark_failed',
+        'mark_refunded',
+        'mark_processing',
+        'mark_shipped',
+        'mark_delivered',
+        'mark_delivery_charge_paid',
+    ]
     list_display = ['order_id', 'get_customer_name', 'get_total_display', 'get_status_badge', 'get_payment_badge', 'created_at']
-    list_filter = ['order_status', 'payment_status', 'payment_method', 'created_at']
+    list_filter = ['order_status', 'payment_state', 'payment_method', 'created_at']
     search_fields = ['id', 'user__username', 'full_name', 'email', 'phone']
     readonly_fields = ['user', 'full_name', 'email', 'phone', 'original_price', 'shipping_cost', 
                       'discount_amount', 'total_price', 'created_at', 'updated_at']
+    list_select_related = ['user', 'shipping_address', 'billing_address']
     date_hierarchy = 'created_at'
 
     fieldsets = [
@@ -664,7 +711,7 @@ class OrderAdmin(ExportActionMixin, admin.ModelAdmin):
             'fields': ['shipping_address', 'billing_address']
         }),
         ('Payment Information', {
-            'fields': ['payment_method', 'payment_status', 'transaction_id', 'sender_number']
+            'fields': ['payment_method', 'payment_state', 'transaction_id', 'sender_number']
         }),
         ('Manual Payment Workflow (NEW)', {
             'fields': ['delivery_charge_paid', 'delivery_payment_method', 'delivery_transaction_id'],
@@ -680,6 +727,9 @@ class OrderAdmin(ExportActionMixin, admin.ModelAdmin):
             'fields': ['notes']
         }),
     ]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'shipping_address', 'billing_address')
 
     def order_id(self, obj):
         return format_html('<strong>#{}</strong>', obj.id)
@@ -719,11 +769,76 @@ class OrderAdmin(ExportActionMixin, admin.ModelAdmin):
         )
     get_status_badge.short_description = "Status"
 
-    def get_payment_badge(self, obj):
-        if obj.payment_status:
+    def _legacy_simple_payment_badge(self, obj):
+        if obj.payment_state == 'paid':
             return format_html('<span style="background-color: #d4edda; color: #155724; padding: 5px 10px; border-radius: 3px; font-weight: bold;">✅ Paid</span>')
         return format_html('<span style="background-color: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 3px; font-weight: bold;">⏳ Pending</span>')
+    _legacy_simple_payment_badge.short_description = "Payment"
+
+    def get_payment_badge(self, obj):
+        colors = {
+            'awaiting_payment': ('#fff3cd', '#856404', 'Awaiting Payment'),
+            'payment_submitted': ('#cfe2ff', '#084298', 'Submitted'),
+            'partially_paid': ('#d1ecf1', '#055160', 'Partial'),
+            'paid': ('#d4edda', '#155724', 'Paid'),
+            'failed': ('#f8d7da', '#721c24', 'Failed'),
+            'refunded': ('#f5c6cb', '#721c24', 'Refunded'),
+        }
+        background, color, label = colors.get(
+            obj.payment_state,
+            ('#e2e3e5', '#383d41', obj.get_payment_state_display()),
+        )
+        return format_html(
+            '<span style="background-color: {}; color: {}; padding: 5px 10px; border-radius: 3px; font-weight: bold;">{}</span>',
+            background,
+            color,
+            label,
+        )
     get_payment_badge.short_description = "Payment"
+
+    def _bulk_update(self, request, queryset, **updates):
+        updated = queryset.update(**updates)
+        self.message_user(request, f'{updated} orders updated.')
+
+    def mark_payment_submitted(self, request, queryset):
+        self._bulk_update(request, queryset, payment_state='payment_submitted')
+    mark_payment_submitted.short_description = "Mark selected orders as payment submitted"
+
+    def mark_partially_paid(self, request, queryset):
+        self._bulk_update(request, queryset, payment_state='partially_paid')
+    mark_partially_paid.short_description = "Mark selected orders as partially paid"
+
+    def mark_paid(self, request, queryset):
+        self._bulk_update(request, queryset, payment_state='paid')
+    mark_paid.short_description = "Mark selected orders as paid"
+
+    def mark_failed(self, request, queryset):
+        self._bulk_update(request, queryset, payment_state='failed')
+    mark_failed.short_description = "Mark selected orders as failed"
+
+    def mark_refunded(self, request, queryset):
+        self._bulk_update(request, queryset, payment_state='refunded')
+    mark_refunded.short_description = "Mark selected orders as refunded"
+
+    def mark_processing(self, request, queryset):
+        self._bulk_update(request, queryset, order_status='processing')
+    mark_processing.short_description = "Mark selected orders as processing"
+
+    def mark_shipped(self, request, queryset):
+        self._bulk_update(request, queryset, order_status='shipped')
+    mark_shipped.short_description = "Mark selected orders as shipped"
+
+    def mark_delivered(self, request, queryset):
+        self._bulk_update(request, queryset, order_status='delivered', payment_state='paid')
+    mark_delivered.short_description = "Mark selected orders as delivered"
+
+    def mark_delivery_charge_paid(self, request, queryset):
+        updated = queryset.update(
+            delivery_charge_paid=True,
+            payment_state='partially_paid',
+        )
+        self.message_user(request, f'{updated} orders marked with delivery charge paid.')
+    mark_delivery_charge_paid.short_description = "Mark delivery charge as paid"
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
@@ -731,8 +846,8 @@ class OrderAdmin(ExportActionMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-@admin.register(OrderItem)
-class OrderItemAdmin(admin.ModelAdmin):
+
+class OrderItemAdmin(ModelAdmin):
     list_display = ('order', 'product_name', 'get_price_display', 'quantity', 'get_total')
     list_filter = ('order__order_status', 'order__created_at')
     search_fields = ('product_name', 'order__id')
@@ -743,8 +858,8 @@ class OrderItemAdmin(admin.ModelAdmin):
     get_price_display.short_description = "Unit Price"
     
     def get_total(self, obj):
-        total = obj.product_price * obj.quantity
-        return format_html('<strong>৳{:,.2f}</strong>', total)
+        total = float(obj.product_price * obj.quantity)
+        return format_html('<strong>৳{}</strong>', f"{total:,.2f}")
     get_total.short_description = "Total"
     
     def has_add_permission(self, request):
@@ -758,8 +873,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 # ADDRESSES & COUPONS
 # ========================
 
-@admin.register(Address)
-class AddressAdmin(admin.ModelAdmin):
+class AddressAdmin(ModelAdmin):
     list_display = ['full_name', 'city', 'get_address_type_badge', 'user', 'default_badge', 'created_at']
     list_filter = ['address_type', 'city', 'created_at', 'country']
     search_fields = ['full_name', 'address_line1', 'city', 'phone', 'user__username']
@@ -791,8 +905,7 @@ class AddressAdmin(admin.ModelAdmin):
     default_badge.short_description = "Default"
 
 
-@admin.register(Coupon)
-class CouponAdmin(admin.ModelAdmin):
+class CouponAdmin(ModelAdmin):
     list_display = ('code', 'discount_display', 'minimum_order_value', 'get_active_badge', 'validity_display', 'usage_display')
     list_filter = ('is_active', 'valid_from', 'valid_to')
     search_fields = ('code',)
@@ -847,8 +960,7 @@ class CouponAdmin(admin.ModelAdmin):
 # ADMIN ALERT & AUDIT LOG
 # ========================
 
-@admin.register(AdminAlert)
-class AdminAlertAdmin(admin.ModelAdmin):
+class AdminAlertAdmin(ModelAdmin):
     list_display = ('title', 'alert_type_badge', 'severity_badge', 'is_read_badge', 'created_at')
     list_filter = ('alert_type', 'severity', 'is_read', 'created_at')
     search_fields = ('title', 'message')
@@ -905,5 +1017,57 @@ class AdminAlertAdmin(admin.ModelAdmin):
     is_read_badge.short_description = "Status"
 
 
-# Register custom admin site
-admin.site.__class__ = IWMAdminSite
+# ========================
+# USER & GROUP ADMIN
+# ========================
+
+# Import base admin classes here to avoid circular import at module level
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+
+
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+
+
+class GroupAdmin(BaseGroupAdmin, ModelAdmin):
+    pass
+
+
+# ========================
+# REGISTER ALL MODELS WITH CUSTOM ADMIN SITE
+# ========================
+
+# Unregister User and Group from default admin site if they were registered
+try:
+    admin_site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+
+try:
+    admin_site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass
+
+# Register all models with the custom admin site
+admin_site.register(User, UserAdmin)
+admin_site.register(Group, GroupAdmin)
+admin_site.register(Category, CategoryAdmin)
+admin_site.register(SubCategory, SubCategoryAdmin)
+admin_site.register(FeatureReason, FeatureReasonAdmin)
+admin_site.register(Product, ProductAdmin)
+admin_site.register(Review, ReviewAdmin)
+admin_site.register(Color, ColorAdmin)
+admin_site.register(Size, SizeAdmin)
+admin_site.register(Brand, BrandAdmin)
+admin_site.register(Tag, TagAdmin)
+admin_site.register(MoreImages, MoreImagesAdmin)
+admin_site.register(NewsletterSubscriber, NewsletterSubscriberAdmin)
+admin_site.register(Order, OrderAdmin)
+admin_site.register(OrderItem, OrderItemAdmin)
+admin_site.register(Address, AddressAdmin)
+admin_site.register(Coupon, CouponAdmin)
+admin_site.register(AdminAlert, AdminAlertAdmin)

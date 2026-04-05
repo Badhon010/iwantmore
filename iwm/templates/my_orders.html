@@ -5,55 +5,139 @@
 {% block scripts %}<script src="{% static 'js/orders.js' %}"></script>{% endblock %}
 
 {% block content %}
-{% csrf_token %}
-
 <div class="orders-container">
     <h2>My Orders</h2>
-    
-    {% if orders %}
-        {% for order in orders %}
-        <div class="order">
-            <div class="order-header">
-                <span class="order-id">Order #{{ order.id }}</span>
-                <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
-            </div>
-            <div class="order-items">
-                {% for item in order.items.all %}
-                <div class="order-item">
-                    {% if item.product and item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
-                    {% else %}
-                        <div class="no-image">No Image</div>
-                    {% endif %}
-                    <div class="order-info">
-                        <h3>{{ item.product_name }}</h3>
-                        <p>Quantity: {{ item.quantity }}</p>
-                        <p class="price">৳{{ item.product_price }}</p>
+    <p class="orders-intro">Signed-in users can see account orders here. Everyone can also unlock orders with the email or phone number used at checkout plus the order PIN.</p>
+
+    <div class="order" style="margin-bottom: 24px;">
+        <div class="order-header">
+            <span class="order-id">Find Orders</span>
+            <span class="order-date">Secure lookup with contact + PIN</span>
+        </div>
+        <div class="order-items" style="display: block; padding: 20px;">
+            <form method="post" class="checkout-form">
+                {% csrf_token %}
+                <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1 1 180px;">
+                        <label for="lookup-order-id">Order ID (optional)</label>
+                        <input id="lookup-order-id" type="text" name="order_id" value="{{ lookup_order_id }}" placeholder="Order number">
                     </div>
-                    <span class="order-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+                    <div class="form-group" style="flex: 1 1 240px;">
+                        <label for="lookup-contact">Email or Phone</label>
+                        <input id="lookup-contact" type="text" name="contact" value="{{ lookup_contact }}" required>
+                    </div>
+                    <div class="form-group" style="flex: 1 1 180px;">
+                        <label for="lookup-pin">Order PIN</label>
+                        <input id="lookup-pin" type="password" name="access_pin" inputmode="numeric" maxlength="8" required>
+                    </div>
+                </div>
+                <div class="order-actions" style="margin-top: 16px;">
+                    <button type="submit" class="btn details-btn">Find Orders</button>
+                </div>
+            </form>
+            <p style="margin-top: 12px;">We do not show orders from email or phone alone. The checkout PIN is required.</p>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="orders-section">
+            <h3>Your Account Orders</h3>
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order">
+                    <div class="order-header">
+                        <span class="order-id">Order #{{ order.id }}</span>
+                        <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                        <div class="order-item">
+                            {% if item.product and item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                            {% else %}
+                                <div class="no-image">No Image</div>
+                            {% endif %}
+                            <div class="order-info">
+                                <h3>{{ item.product_name }}</h3>
+                                <p>Quantity: {{ item.quantity }}</p>
+                                <p class="price">&#2547;{{ item.product_price }}</p>
+                            </div>
+                            <span class="order-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="order-actions">
+                        <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn details-btn">View Details</a>
+                        {% if order.order_status != 'cancelled' %}
+                            <a href="{% url 'track_order' order.id %}" class="btn track-btn">Track Order</a>
+                        {% endif %}
+                        {% if order.order_status == 'pending' %}
+                            <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
-            </div>
-            <div class="order-actions">
-                <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn details-btn">View Details</a>
-                {% if order.order_status != 'cancelled' %}
-                    <a href="{% url 'track_order' order.id %}" class="btn track-btn">Track Order</a>
-                {% endif %}
-                {% if order.order_status == 'pending' %}
-                    <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
-                    </form>
-                {% endif %}
-            </div>
+            {% else %}
+                <div class="no-orders">
+                    <p>You do not have any account orders yet.</p>
+                    <a href="{% url 'shop' %}" class="btn shop-btn">Start Shopping</a>
+                </div>
+            {% endif %}
         </div>
-        {% endfor %}
-    {% else %}
+    {% endif %}
+
+    {% if show_lookup_results %}
+        <div class="orders-section">
+            <h3>Unlocked Orders</h3>
+            {% if lookup_orders %}
+                {% for order in lookup_orders %}
+                <div class="order">
+                    <div class="order-header">
+                        <span class="order-id">Order #{{ order.id }}</span>
+                        <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                        <div class="order-item">
+                            {% if item.product and item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                            {% else %}
+                                <div class="no-image">No Image</div>
+                            {% endif %}
+                            <div class="order-info">
+                                <h3>{{ item.product_name }}</h3>
+                                <p>Quantity: {{ item.quantity }}</p>
+                                <p class="price">&#2547;{{ item.product_price }}</p>
+                            </div>
+                            <span class="order-status {{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="order-actions">
+                        <a href="{% url 'track_order' order.id %}" class="btn details-btn">View Order</a>
+                        <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn track-btn">Order Summary</a>
+                        {% if user.is_authenticated and order.user == user and order.order_status == 'pending' %}
+                            <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-orders">
+                    <p>No orders matched that contact and PIN.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% elif not user.is_authenticated %}
         <div class="no-orders">
-            <p>You haven't placed any orders yet.</p>
-            <a href="{% url 'shop' %}" class="btn shop-btn">Start Shopping</a>
+            <p>Enter your email or phone number and the order PIN you created at checkout to see your orders.</p>
         </div>
     {% endif %}
 </div>
-
 {% endblock %}
