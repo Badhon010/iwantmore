@@ -1,5 +1,7 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
 {% load i18n %}
+
+{% block title %}Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block content %}
 <style>
@@ -74,10 +76,19 @@
         padding: 0.15rem 0.5rem; border-radius: 9999px;
         font-size: 0.7rem; font-weight: 600;
     }
+    .iwm-apps {
+        background: var(--color-white, #fff);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+    .dark .iwm-apps {
+        background: var(--color-gray-900, #111827);
+        border-color: var(--border-color, #374151);
+    }
 </style>
 
 <div class="iwm-dashboard">
-    <!-- Stats Row 1: Key Metrics -->
     <div class="iwm-grid iwm-grid-4">
         <div class="iwm-card">
             <div class="iwm-stat">
@@ -86,11 +97,10 @@
                 </div>
                 <div>
                     <div class="iwm-stat-label">Today's Revenue</div>
-                    <div class="iwm-stat-value">৳{{ today_revenue|floatformat:2 }}</div>
+                    <div class="iwm-stat-value">Tk {{ today_revenue|floatformat:2 }}</div>
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #f0fdf4; color: #22c55e;">
@@ -102,7 +112,6 @@
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #eff6ff; color: #3b82f6;">
@@ -114,7 +123,6 @@
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #fefce8; color: #eab308;">
@@ -128,7 +136,6 @@
         </div>
     </div>
 
-    <!-- Stats Row 2: Inventory & Revenue -->
     <div class="iwm-grid iwm-grid-4">
         <div class="iwm-card">
             <div class="iwm-stat">
@@ -141,7 +148,6 @@
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #fffbeb; color: #f59e0b;">
@@ -153,7 +159,6 @@
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #f0f9ff; color: #0ea5e9;">
@@ -161,11 +166,10 @@
                 </div>
                 <div>
                     <div class="iwm-stat-label">Total Revenue</div>
-                    <div class="iwm-stat-value">৳{{ total_revenue|floatformat:2 }}</div>
+                    <div class="iwm-stat-value">Tk {{ total_revenue|floatformat:2 }}</div>
                 </div>
             </div>
         </div>
-
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #faf5ff; color: #a855f7;">
@@ -179,7 +183,6 @@
         </div>
     </div>
 
-    <!-- Alerts & Quick Actions -->
     <div class="iwm-grid iwm-grid-2">
         {% if recent_alerts %}
         <div class="iwm-card">
@@ -194,10 +197,7 @@
             </div>
             {% for alert in recent_alerts %}
             <div class="iwm-alert-item {% if alert.severity == 'critical' %}iwm-alert-critical{% elif alert.severity == 'warning' %}iwm-alert-warning{% else %}iwm-alert-info{% endif %}">
-                <div class="iwm-alert-title">
-                    {% if alert.alert_type == 'low_stock' %}📦{% elif alert.alert_type == 'high_orders' %}📈{% elif alert.alert_type == 'failed_payment' %}❌{% else %}⚙️{% endif %}
-                    {{ alert.title }}
-                </div>
+                <div class="iwm-alert-title">{{ alert.title }}</div>
                 <div class="iwm-alert-msg">{{ alert.message }}</div>
                 <div class="iwm-alert-meta">{{ alert.created_at|date:"M d, Y H:i" }}</div>
             </div>
@@ -230,7 +230,9 @@
             </div>
         </div>
     </div>
-</div>
 
-{{ block.super }}
+    <div class="iwm-apps">
+        {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    </div>
+</div>
 {% endblock %}

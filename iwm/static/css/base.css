@@ -615,7 +615,7 @@ header .nav1 a:hover {
 
 #sea {
     flex: 1;
-    padding: 10px;
+    padding: 9px;
     border: 1px solid var(--dropdown-border);
     border-radius: 5px 0 0 5px;
     outline: none;
@@ -644,7 +644,6 @@ header .nav1 a:hover {
     background: var(--btn-bg);
     color: var(--white);
     border: none;
-    padding: 21px 15px;
     border-radius: 0 5px 5px 0;
     cursor: pointer;
     transition: background 0.3s ease;

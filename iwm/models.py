@@ -1,4 +1,10 @@
-from django.db import models
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
+from django.db.models import F, Q, Sum
+from django.db.models.functions import Lower
+from django.utils import timezone
 from django.utils.text import slugify
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
@@ -132,12 +138,54 @@ class Product(models.Model):
         Returns:
             Boolean: True if update was successful, False if there's not enough stock
         """
-        if self.stock + quantity_change < 0:
+        if not self.pk:
             return False
-            
-        self.stock += quantity_change
-        self.save(update_fields=['stock'])
+
+        try:
+            quantity_change = int(quantity_change)
+        except (TypeError, ValueError):
+            return False
+
+        if quantity_change == 0:
+            return True
+
+        queryset = Product.objects.filter(pk=self.pk)
+        if quantity_change < 0:
+            updated = queryset.filter(stock__gte=abs(quantity_change)).update(stock=F('stock') + quantity_change)
+        else:
+            updated = queryset.update(stock=F('stock') + quantity_change)
+
+        if not updated:
+            return False
+
+        self.refresh_from_db(fields=['stock'])
         return True
+
+    def reserve_stock(self, quantity):
+        try:
+            quantity = abs(int(quantity))
+        except (TypeError, ValueError):
+            return False
+        return self.update_stock(-quantity)
+
+    def restore_stock(self, quantity):
+        try:
+            quantity = abs(int(quantity))
+        except (TypeError, ValueError):
+            return False
+        return self.update_stock(quantity)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(stock__gte=0),
+                name='product_stock_gte_0',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['stock']),
+        ]
 
 class MoreImages(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="more_images")  # ForeignKey ব্যবহার করা হয়েছে
@@ -240,6 +288,12 @@ class Address(models.Model):
         verbose_name_plural = "Addresses"
 
 class Order(models.Model):
+    MANUAL_PAYMENT_METHODS = {'bkash', 'nagad'}
+    TERMINAL_STATUSES = {'cancelled', 'refunded'}
+    MONEY_QUANTIZER = Decimal('0.01')
+    INSIDE_DHAKA_SHIPPING = Decimal('80.00')
+    OUTSIDE_DHAKA_SHIPPING = Decimal('150.00')
+
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('processing', 'Processing'),
@@ -269,7 +323,26 @@ class Order(models.Model):
         ('nagad', 'Nagad'),
     )
 
+    ORDER_STATUS_TRANSITIONS = {
+        'pending': {'processing', 'cancelled'},
+        'processing': {'shipped', 'cancelled', 'refunded'},
+        'shipped': {'delivered', 'refunded'},
+        'delivered': {'refunded'},
+        'cancelled': {'refunded'},
+        'refunded': set(),
+    }
+
+    PAYMENT_STATE_TRANSITIONS = {
+        'awaiting_payment': {'payment_submitted', 'partially_paid', 'paid', 'failed', 'refunded'},
+        'payment_submitted': {'partially_paid', 'paid', 'failed', 'refunded'},
+        'partially_paid': {'paid', 'failed', 'refunded'},
+        'paid': {'refunded'},
+        'failed': {'payment_submitted', 'paid', 'refunded'},
+        'refunded': set(),
+    }
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     idempotency_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
     access_pin_hash = models.CharField(max_length=255, blank=True, default='')
 
@@ -302,7 +375,10 @@ class Order(models.Model):
         blank=True,
         null=True
     )
+    delivery_sender_number = models.CharField(max_length=20, blank=True, null=True)
     delivery_transaction_id = models.CharField(max_length=255, blank=True, null=True)
+    inventory_restored_at = models.DateTimeField(blank=True, null=True)
+    coupon_usage_released_at = models.DateTimeField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -312,7 +388,11 @@ class Order(models.Model):
     estimated_delivery = models.DateField(blank=True, null=True)
 
     def set_access_pin(self, raw_pin):
-        self.access_pin_hash = make_password(raw_pin)
+        normalized_pin = (raw_pin or '').strip()
+        if not normalized_pin:
+            self.access_pin_hash = ''
+            return
+        self.access_pin_hash = make_password(normalized_pin)
 
     def check_access_pin(self, raw_pin):
         if not self.access_pin_hash or not raw_pin:
@@ -327,6 +407,595 @@ class Order(models.Model):
     def requires_payment_follow_up(self):
         return self.payment_state in {'awaiting_payment', 'payment_submitted'}
 
+    @staticmethod
+    def _normalize_optional_text(value, *, uppercase=False):
+        normalized = (value or '').strip()
+        if not normalized:
+            return None
+        return normalized.upper() if uppercase else normalized
+
+    @classmethod
+    def _to_money(cls, amount):
+        if amount is None:
+            amount = Decimal('0.00')
+        return Decimal(str(amount)).quantize(cls.MONEY_QUANTIZER, rounding=ROUND_HALF_UP)
+
+    @classmethod
+    def _raise_checkout_error(cls, error_cls, message):
+        if error_cls is ValidationError:
+            raise ValidationError({'items': message})
+        raise error_cls(message)
+
+    @classmethod
+    def resolve_checkout_items(cls, raw_items, *, lock_for_update=False, error_cls=ValueError):
+        if not isinstance(raw_items, list):
+            cls._raise_checkout_error(error_cls, 'Invalid cart data.')
+
+        quantities = {}
+        ordered_product_ids = []
+
+        for raw_item in raw_items:
+            if not isinstance(raw_item, dict):
+                cls._raise_checkout_error(error_cls, 'Invalid cart item.')
+
+            try:
+                product_id = int(raw_item.get('id'))
+                quantity = int(raw_item.get('quantity', 1))
+            except (TypeError, ValueError):
+                cls._raise_checkout_error(error_cls, 'Invalid cart item.')
+
+            if product_id <= 0 or quantity <= 0:
+                cls._raise_checkout_error(error_cls, 'Invalid cart item.')
+
+            if product_id not in quantities:
+                ordered_product_ids.append(product_id)
+                quantities[product_id] = 0
+
+            quantities[product_id] += quantity
+
+        if not ordered_product_ids:
+            cls._raise_checkout_error(error_cls, 'Cart is empty.')
+
+        product_queryset = Product.objects.filter(id__in=ordered_product_ids).order_by('id')
+        if lock_for_update:
+            product_queryset = product_queryset.select_for_update()
+
+        products = {product.id: product for product in product_queryset}
+        missing_product_ids = [product_id for product_id in ordered_product_ids if product_id not in products]
+        if missing_product_ids:
+            cls._raise_checkout_error(error_cls, 'Some products are no longer available.')
+
+        resolved_items = []
+        subtotal = Decimal('0.00')
+
+        for product_id in ordered_product_ids:
+            product = products[product_id]
+            quantity = quantities[product_id]
+
+            if product.stock < quantity:
+                cls._raise_checkout_error(error_cls, f'Not enough stock for {product.name}.')
+
+            unit_price = cls._to_money(product.get_final_price())
+            line_total = cls._to_money(unit_price * quantity)
+            resolved_items.append({
+                'product_id': product.id,
+                'product': product,
+                'product_name': product.name,
+                'quantity': quantity,
+                'unit_price': unit_price,
+                'line_total': line_total,
+            })
+            subtotal += line_total
+
+        return resolved_items, cls._to_money(subtotal)
+
+    @classmethod
+    def shipping_cost_for_state(cls, state):
+        normalized_state = (state or '').strip().lower()
+        if 'dhaka' in normalized_state:
+            return cls.INSIDE_DHAKA_SHIPPING
+        return cls.OUTSIDE_DHAKA_SHIPPING
+
+    @classmethod
+    def coupon_discount_amount(cls, coupon, subtotal):
+        if not coupon:
+            return Decimal('0.00')
+
+        if coupon.discount_amount > 0:
+            discount_amount = cls._to_money(coupon.discount_amount)
+        else:
+            discount_amount = cls._to_money(subtotal * Decimal(coupon.discount_percent) / Decimal('100'))
+
+        return min(discount_amount, subtotal)
+
+    @classmethod
+    def build_pricing_summary(cls, resolved_items, shipping_state, coupon=None):
+        subtotal = cls._to_money(sum(item['line_total'] for item in resolved_items))
+        shipping_cost = cls.shipping_cost_for_state(shipping_state) if resolved_items else Decimal('0.00')
+        discount_amount = cls.coupon_discount_amount(coupon, subtotal)
+        total = cls._to_money(subtotal + shipping_cost - discount_amount)
+
+        return {
+            'subtotal': subtotal,
+            'shipping_cost': shipping_cost,
+            'discount_amount': discount_amount,
+            'total': total,
+        }
+
+    @classmethod
+    def _payment_state_for_method(cls, payment_method, *, delivery_charge_paid):
+        if payment_method in cls.MANUAL_PAYMENT_METHODS:
+            return 'payment_submitted'
+        if delivery_charge_paid:
+            return 'partially_paid'
+        return 'awaiting_payment'
+
+    @classmethod
+    def _payment_reference_filter(cls, transaction_id=None, delivery_transaction_id=None):
+        payment_reference_filter = Q()
+        if transaction_id:
+            payment_reference_filter |= (
+                Q(transaction_id__iexact=transaction_id)
+                | Q(delivery_transaction_id__iexact=transaction_id)
+            )
+        if delivery_transaction_id:
+            payment_reference_filter |= (
+                Q(transaction_id__iexact=delivery_transaction_id)
+                | Q(delivery_transaction_id__iexact=delivery_transaction_id)
+            )
+        return payment_reference_filter
+
+    @classmethod
+    def _create_address(cls, *, user, address_type, address_data, phone, fallback_full_name=None):
+        return Address.objects.create(
+            user=user,
+            address_type=address_type,
+            full_name=(address_data.get('full_name') or fallback_full_name or '').strip(),
+            phone=phone,
+            address_line1=(address_data.get('address_line1') or '').strip(),
+            address_line2=(address_data.get('address_line2') or '').strip(),
+            city=(address_data.get('city') or '').strip(),
+            postal_code=(address_data.get('postal_code') or '').strip(),
+            state=(address_data.get('state') or '').strip(),
+            country=(address_data.get('country') or 'Bangladesh').strip(),
+        )
+
+    @classmethod
+    def create_order(
+        cls,
+        *,
+        user=None,
+        idempotency_key,
+        raw_items,
+        personal_info,
+        shipping_address_data,
+        billing_address_data,
+        same_billing_address=True,
+        payment_method,
+        sender_number=None,
+        transaction_id=None,
+        delivery_payment_method=None,
+        delivery_sender_number=None,
+        delivery_transaction_id=None,
+        notes='',
+        coupon_id=None,
+        access_pin='',
+    ):
+        normalized_idempotency_key = cls._normalize_optional_text(idempotency_key)
+        if not normalized_idempotency_key:
+            raise ValidationError({'idempotency_key': 'Missing idempotency key.'})
+
+        normalized_payment_method = cls._normalize_optional_text(payment_method)
+        normalized_sender_number = cls._normalize_optional_text(sender_number)
+        normalized_transaction_id = cls._normalize_optional_text(transaction_id, uppercase=True)
+        normalized_delivery_payment_method = cls._normalize_optional_text(delivery_payment_method)
+        normalized_delivery_sender_number = cls._normalize_optional_text(delivery_sender_number)
+        normalized_delivery_transaction_id = cls._normalize_optional_text(delivery_transaction_id, uppercase=True)
+        phone = (personal_info.get('phone') or '').strip()
+        shipping_full_name = (shipping_address_data.get('full_name') or personal_info.get('full_name') or '').strip()
+        billing_full_name = (billing_address_data.get('full_name') or personal_info.get('full_name') or '').strip()
+
+        required_values = [
+            ((personal_info.get('full_name') or '').strip(), 'full_name'),
+            ((personal_info.get('email') or '').strip(), 'email'),
+            (phone, 'phone'),
+            (shipping_full_name, 'shipping_full_name'),
+            ((shipping_address_data.get('address_line1') or '').strip(), 'shipping_address_line1'),
+            ((shipping_address_data.get('city') or '').strip(), 'shipping_city'),
+            ((shipping_address_data.get('postal_code') or '').strip(), 'shipping_postal_code'),
+            ((shipping_address_data.get('state') or '').strip(), 'shipping_state'),
+            ((shipping_address_data.get('country') or 'Bangladesh').strip(), 'shipping_country'),
+        ]
+        if not same_billing_address:
+            required_values.extend([
+                (billing_full_name, 'billing_full_name'),
+                ((billing_address_data.get('address_line1') or '').strip(), 'billing_address_line1'),
+                ((billing_address_data.get('city') or '').strip(), 'billing_city'),
+                ((billing_address_data.get('postal_code') or '').strip(), 'billing_postal_code'),
+                ((billing_address_data.get('state') or '').strip(), 'billing_state'),
+                ((billing_address_data.get('country') or 'Bangladesh').strip(), 'billing_country'),
+            ])
+
+        for value, field_name in required_values:
+            if not value:
+                raise ValidationError({field_name: 'This field is required.'})
+
+        with transaction.atomic():
+            existing_order = cls.objects.select_for_update().filter(idempotency_key=normalized_idempotency_key).first()
+            if existing_order:
+                return existing_order, False
+
+            resolved_items, subtotal = cls.resolve_checkout_items(
+                raw_items,
+                lock_for_update=True,
+                error_cls=ValidationError,
+            )
+
+            payment_reference_filter = cls._payment_reference_filter(
+                normalized_transaction_id,
+                normalized_delivery_transaction_id,
+            )
+            if payment_reference_filter.children and cls.objects.select_for_update().filter(payment_reference_filter).exists():
+                raise ValidationError({'transaction_id': 'This transaction ID is already linked to another order.'})
+
+            coupon = None
+            if coupon_id:
+                coupon = Coupon.objects.select_for_update().filter(pk=coupon_id, is_active=True).first()
+                is_valid, coupon_message = coupon.validate_for_subtotal(subtotal) if coupon else (False, 'Invalid coupon code.')
+                if not is_valid:
+                    raise ValidationError({'coupon': coupon_message or 'This coupon is no longer available.'})
+
+            delivery_charge_paid = bool(
+                normalized_delivery_payment_method
+                or normalized_delivery_sender_number
+                or normalized_delivery_transaction_id
+            )
+            payment_state = cls._payment_state_for_method(
+                normalized_payment_method,
+                delivery_charge_paid=delivery_charge_paid,
+            )
+            shipping_state = (shipping_address_data.get('state') or '').strip()
+            pricing = cls.build_pricing_summary(resolved_items, shipping_state, coupon)
+
+            shipping_address = cls._create_address(
+                user=user,
+                address_type='shipping',
+                address_data=shipping_address_data,
+                phone=phone,
+                fallback_full_name=shipping_full_name,
+            )
+            if same_billing_address:
+                billing_address = shipping_address
+            else:
+                billing_address = cls._create_address(
+                    user=user,
+                    address_type='billing',
+                    address_data=billing_address_data,
+                    phone=phone,
+                    fallback_full_name=billing_full_name,
+                )
+
+            order = cls(
+                user=user,
+                coupon=coupon,
+                idempotency_key=normalized_idempotency_key,
+                full_name=(personal_info.get('full_name') or '').strip(),
+                email=(personal_info.get('email') or '').strip(),
+                phone=phone,
+                shipping_address=shipping_address,
+                billing_address=billing_address,
+                total_price=pricing['total'],
+                original_price=pricing['subtotal'],
+                shipping_cost=pricing['shipping_cost'],
+                discount_amount=pricing['discount_amount'],
+                order_status='pending',
+                payment_method=normalized_payment_method,
+                sender_number=normalized_sender_number if normalized_payment_method in cls.MANUAL_PAYMENT_METHODS else None,
+                transaction_id=normalized_transaction_id if normalized_payment_method in cls.MANUAL_PAYMENT_METHODS else None,
+                payment_state=payment_state,
+                delivery_charge_paid=delivery_charge_paid if normalized_payment_method == 'cash_on_delivery' else False,
+                delivery_payment_method=normalized_delivery_payment_method if normalized_payment_method == 'cash_on_delivery' else None,
+                delivery_sender_number=normalized_delivery_sender_number if normalized_payment_method == 'cash_on_delivery' else None,
+                delivery_transaction_id=normalized_delivery_transaction_id if normalized_payment_method == 'cash_on_delivery' else None,
+                notes=(notes or '').strip(),
+            )
+            order.set_access_pin(access_pin)
+            order.save()
+
+            for item in resolved_items:
+                updated = Product.objects.filter(
+                    pk=item['product'].pk,
+                    stock__gte=item['quantity'],
+                ).update(stock=F('stock') - item['quantity'])
+                if not updated:
+                    raise ValidationError({'items': f'Not enough stock for {item["product_name"]}.'})
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=item['product'],
+                    product_name=item['product_name'],
+                    product_price=item['unit_price'],
+                    quantity=item['quantity'],
+                )
+
+            if coupon:
+                coupon.consume_locked()
+
+            return order, True
+
+    def clean(self):
+        super().clean()
+
+        self.idempotency_key = self._normalize_optional_text(self.idempotency_key)
+        self.sender_number = self._normalize_optional_text(self.sender_number)
+        self.transaction_id = self._normalize_optional_text(self.transaction_id, uppercase=True)
+        self.delivery_payment_method = self._normalize_optional_text(self.delivery_payment_method)
+        self.delivery_sender_number = self._normalize_optional_text(self.delivery_sender_number)
+        self.delivery_transaction_id = self._normalize_optional_text(self.delivery_transaction_id, uppercase=True)
+
+        errors = {}
+        manual_payment = self.payment_method in self.MANUAL_PAYMENT_METHODS
+        cash_on_delivery = self.payment_method == 'cash_on_delivery'
+
+        if manual_payment:
+            if not self.sender_number:
+                errors['sender_number'] = 'Sender number is required for bKash and Nagad payments.'
+            if not self.transaction_id:
+                errors['transaction_id'] = 'Transaction ID is required for bKash and Nagad payments.'
+            if self.payment_state == 'awaiting_payment':
+                errors['payment_state'] = 'Manual wallet payments must be at least marked as payment submitted.'
+            if self.delivery_charge_paid or self.delivery_payment_method or self.delivery_sender_number or self.delivery_transaction_id:
+                errors['delivery_payment_method'] = 'Delivery charge payment fields are only available for cash on delivery orders.'
+        elif cash_on_delivery:
+            if self.sender_number:
+                errors['sender_number'] = 'Sender number is not used for cash on delivery orders.'
+            if self.transaction_id:
+                errors['transaction_id'] = 'Transaction ID is not used for cash on delivery orders.'
+
+            delivery_details_supplied = any([
+                self.delivery_charge_paid,
+                self.delivery_payment_method,
+                self.delivery_sender_number,
+                self.delivery_transaction_id,
+            ])
+            if delivery_details_supplied:
+                if self.delivery_payment_method not in {'bkash', 'nagad'}:
+                    errors['delivery_payment_method'] = 'Select bKash or Nagad when recording an online delivery charge payment.'
+                if not self.delivery_sender_number:
+                    errors['delivery_sender_number'] = 'Sender number is required when the delivery charge is paid online.'
+                if not self.delivery_transaction_id:
+                    errors['delivery_transaction_id'] = 'Transaction ID is required when the delivery charge is paid online.'
+                if not self.delivery_charge_paid:
+                    errors['delivery_charge_paid'] = 'Delivery charge must be marked paid when payment details are recorded.'
+            else:
+                self.delivery_charge_paid = False
+
+            if self.payment_state == 'payment_submitted':
+                errors['payment_state'] = 'Cash on delivery orders cannot use the payment submitted state.'
+            if self.payment_state == 'partially_paid' and not self.delivery_charge_paid:
+                errors['payment_state'] = 'Cash on delivery orders can only be partially paid when the delivery charge has been received.'
+        else:
+            errors['payment_method'] = 'Invalid payment method.'
+
+        if self.order_status == 'delivered' and self.payment_state != 'paid':
+            errors['payment_state'] = 'Delivered orders must have a paid payment state.'
+
+        if self.order_status == 'refunded' and self.payment_state != 'refunded':
+            errors['payment_state'] = 'Refunded orders must also have a refunded payment state.'
+
+        if self.payment_state == 'refunded' and self.order_status not in {'cancelled', 'refunded'}:
+            errors['order_status'] = 'Refunded payments require the order to be cancelled or refunded.'
+
+        if self.transaction_id and self.delivery_transaction_id and self.transaction_id.lower() == self.delivery_transaction_id.lower():
+            errors['delivery_transaction_id'] = 'Delivery charge transaction ID must be different from the main payment transaction ID.'
+
+        duplicate_reference_filters = Q()
+        if self.transaction_id:
+            duplicate_reference_filters |= Q(transaction_id__iexact=self.transaction_id) | Q(delivery_transaction_id__iexact=self.transaction_id)
+        if self.delivery_transaction_id:
+            duplicate_reference_filters |= Q(transaction_id__iexact=self.delivery_transaction_id) | Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
+
+        if duplicate_reference_filters.children:
+            duplicates = Order.objects.exclude(pk=self.pk).filter(duplicate_reference_filters)
+            if self.transaction_id and duplicates.filter(
+                Q(transaction_id__iexact=self.transaction_id) | Q(delivery_transaction_id__iexact=self.transaction_id)
+            ).exists():
+                errors['transaction_id'] = 'This transaction ID is already linked to another order.'
+            if self.delivery_transaction_id and duplicates.filter(
+                Q(transaction_id__iexact=self.delivery_transaction_id) | Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
+            ).exists():
+                errors['delivery_transaction_id'] = 'This transaction ID is already linked to another order.'
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        state_mutation_allowed = getattr(self, '_allow_state_mutation', False)
+        if self.pk and not state_mutation_allowed:
+            previous = type(self).objects.filter(pk=self.pk).values(
+                'order_status',
+                'payment_state',
+                'delivery_charge_paid',
+                'inventory_restored_at',
+                'coupon_usage_released_at',
+            ).first()
+            if previous and (
+                previous['order_status'] != self.order_status
+                or previous['payment_state'] != self.payment_state
+                or previous['delivery_charge_paid'] != self.delivery_charge_paid
+                or previous['inventory_restored_at'] != self.inventory_restored_at
+                or previous['coupon_usage_released_at'] != self.coupon_usage_released_at
+            ):
+                raise ValidationError('Use the order transition helpers to change lifecycle or payment state.')
+
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def _save_with_state_mutation(self, *, update_fields=None):
+        if update_fields is not None:
+            update_fields = list(dict.fromkeys([*update_fields, 'updated_at']))
+
+        self._allow_state_mutation = True
+        try:
+            self.save(update_fields=update_fields)
+        finally:
+            self._allow_state_mutation = False
+
+    def _restore_inventory_locked(self):
+        if self.inventory_restored_at:
+            return False
+
+        product_quantities = {
+            row['product']: row['total_quantity']
+            for row in self.items.filter(product__isnull=False).values('product').annotate(total_quantity=Sum('quantity'))
+        }
+
+        product_ids = sorted(product_quantities.keys())
+        if product_ids:
+            list(
+                Product.objects.select_for_update()
+                .filter(id__in=product_ids)
+                .order_by('id')
+                .values_list('id', flat=True)
+            )
+            for product_id in product_ids:
+                Product.objects.filter(pk=product_id).update(stock=F('stock') + product_quantities[product_id])
+
+        self.inventory_restored_at = timezone.now()
+        return True
+
+    def _release_coupon_usage_locked(self):
+        if not self.coupon_id or self.coupon_usage_released_at:
+            return False
+
+        coupon = Coupon.objects.select_for_update().filter(pk=self.coupon_id).first()
+        if coupon:
+            coupon.release_locked()
+
+        self.coupon_usage_released_at = timezone.now()
+        return True
+
+    def can_transition_order_status(self, new_status):
+        return new_status in self.ORDER_STATUS_TRANSITIONS.get(self.order_status, set())
+
+    def can_transition_payment_state(self, new_state):
+        return new_state in self.PAYMENT_STATE_TRANSITIONS.get(self.payment_state, set())
+
+    def _transition_order_status_locked(self, new_status):
+        normalized_status = (new_status or '').strip().lower()
+        if normalized_status == self.order_status:
+            return False
+
+        if not self.can_transition_order_status(normalized_status):
+            raise ValidationError({
+                'order_status': f'Cannot change order status from {self.get_order_status_display()} to {normalized_status}.'
+            })
+
+        update_fields = ['order_status']
+
+        if normalized_status == 'delivered':
+            if self.payment_method in self.MANUAL_PAYMENT_METHODS and self.payment_state != 'paid':
+                raise ValidationError({'payment_state': 'Manual payment orders must be marked paid before they are delivered.'})
+            if self.payment_method == 'cash_on_delivery' and self.payment_state != 'paid':
+                self.payment_state = 'paid'
+                update_fields.append('payment_state')
+
+        if normalized_status in self.TERMINAL_STATUSES:
+            if self._restore_inventory_locked():
+                update_fields.append('inventory_restored_at')
+            if self._release_coupon_usage_locked():
+                update_fields.append('coupon_usage_released_at')
+
+        if normalized_status == 'refunded' and self.payment_state != 'refunded':
+            self.payment_state = 'refunded'
+            update_fields.append('payment_state')
+
+        self.order_status = normalized_status
+        self._save_with_state_mutation(update_fields=update_fields)
+        return True
+
+    def transition_order_status(self, new_status):
+        if not self.pk:
+            raise ValidationError('Order must be saved before it can change status.')
+
+        with transaction.atomic():
+            locked_order = type(self).objects.select_for_update().prefetch_related('items').get(pk=self.pk)
+            changed = locked_order._transition_order_status_locked(new_status)
+
+        self.refresh_from_db()
+        return changed
+
+    def _transition_payment_state_locked(self, new_state):
+        normalized_state = (new_state or '').strip().lower()
+        if normalized_state == self.payment_state:
+            return False
+
+        if not self.can_transition_payment_state(normalized_state):
+            raise ValidationError({
+                'payment_state': f'Cannot change payment state from {self.get_payment_state_display()} to {normalized_state}.'
+            })
+
+        if normalized_state == 'partially_paid':
+            if self.payment_method != 'cash_on_delivery' or not self.delivery_charge_paid:
+                raise ValidationError({'payment_state': 'Only COD orders with a paid delivery charge can be marked partially paid.'})
+
+        if normalized_state == 'paid' and self.payment_method in self.MANUAL_PAYMENT_METHODS:
+            if not self.sender_number or not self.transaction_id:
+                raise ValidationError({'payment_state': 'Manual payments must keep both sender number and transaction ID before they are marked paid.'})
+
+        if normalized_state == 'refunded':
+            return self._transition_order_status_locked('refunded')
+
+        if self.order_status == 'delivered' and normalized_state != 'paid':
+            raise ValidationError({'payment_state': 'Delivered orders must remain marked as paid.'})
+
+        self.payment_state = normalized_state
+        self._save_with_state_mutation(update_fields=['payment_state'])
+        return True
+
+    def transition_payment_state(self, new_state):
+        if not self.pk:
+            raise ValidationError('Order must be saved before its payment state can change.')
+
+        with transaction.atomic():
+            locked_order = type(self).objects.select_for_update().get(pk=self.pk)
+            changed = locked_order._transition_payment_state_locked(new_state)
+
+        self.refresh_from_db()
+        return changed
+
+    def _mark_delivery_charge_paid_locked(self):
+        if self.payment_method != 'cash_on_delivery':
+            raise ValidationError({'delivery_charge_paid': 'Only cash on delivery orders can record a separate delivery charge payment.'})
+        if self.delivery_charge_paid:
+            return False
+        if not self.delivery_payment_method:
+            raise ValidationError({'delivery_payment_method': 'Select the delivery charge payment method first.'})
+        if not self.delivery_sender_number:
+            raise ValidationError({'delivery_sender_number': 'Sender number is required for online delivery charge payments.'})
+        if not self.delivery_transaction_id:
+            raise ValidationError({'delivery_transaction_id': 'Transaction ID is required for online delivery charge payments.'})
+
+        update_fields = ['delivery_charge_paid']
+        if self.payment_state in {'awaiting_payment', 'failed'}:
+            self.payment_state = 'partially_paid'
+            update_fields.append('payment_state')
+
+        self.delivery_charge_paid = True
+        self._save_with_state_mutation(update_fields=update_fields)
+        return True
+
+    def mark_delivery_charge_paid(self):
+        if not self.pk:
+            raise ValidationError('Order must be saved before delivery charge can be recorded.')
+
+        with transaction.atomic():
+            locked_order = type(self).objects.select_for_update().get(pk=self.pk)
+            changed = locked_order._mark_delivery_charge_paid_locked()
+
+        self.refresh_from_db()
+        return changed
+
     def __str__(self):
         return f"Order {self.id}"
 
@@ -334,8 +1003,22 @@ class Order(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['created_at']),
+            models.Index(fields=['order_status']),
+            models.Index(fields=['payment_state']),
             models.Index(fields=['order_status', 'created_at']),
             models.Index(fields=['payment_state', 'created_at']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                Lower('transaction_id'),
+                condition=Q(transaction_id__isnull=False) & ~Q(transaction_id=''),
+                name='order_transaction_id_ci_unique',
+            ),
+            models.UniqueConstraint(
+                Lower('delivery_transaction_id'),
+                condition=Q(delivery_transaction_id__isnull=False) & ~Q(delivery_transaction_id=''),
+                name='order_delivery_transaction_id_ci_unique',
+            ),
         ]
 
 class OrderItem(models.Model):
@@ -369,13 +1052,77 @@ class Coupon(models.Model):
     
     @property
     def is_valid(self):
-        from django.utils import timezone
         now = timezone.now()
         return (
             self.is_active and 
             self.valid_from <= now <= self.valid_to and
             (self.usage_limit == 0 or self.used_count < self.usage_limit)
         )
+
+    def clean(self):
+        super().clean()
+
+        errors = {}
+        if self.discount_amount and self.discount_percent:
+            errors['discount_percent'] = 'Use either a fixed discount amount or a percentage discount, not both.'
+        if not self.discount_amount and not self.discount_percent:
+            errors['discount_amount'] = 'Set a fixed discount or a percentage discount.'
+        if self.valid_to <= self.valid_from:
+            errors['valid_to'] = 'The coupon expiry must be after the start time.'
+
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_for_subtotal(self, subtotal):
+        if not self.is_active:
+            return False, 'This coupon is no longer active.'
+
+        now = timezone.now()
+        if not (self.valid_from <= now <= self.valid_to):
+            return False, 'This coupon is no longer valid.'
+
+        if self.usage_limit and self.used_count >= self.usage_limit:
+            return False, 'This coupon has reached its usage limit.'
+
+        if subtotal is not None:
+            minimum_order_value = subtotal.__class__(str(self.minimum_order_value))
+            if minimum_order_value and subtotal < minimum_order_value:
+                return False, f'Minimum order amount for this coupon is à§³{minimum_order_value:.2f}.'
+
+        return True, ''
+
+    def __str__(self):
+        if self.discount_amount > 0:
+            return f"{self.code} (Tk {self.discount_amount} off)"
+        return f"{self.code} ({self.discount_percent}% off)"
+
+    def validate_for_subtotal(self, subtotal):
+        if not self.is_active:
+            return False, 'This coupon is no longer active.'
+
+        now = timezone.now()
+        if not (self.valid_from <= now <= self.valid_to):
+            return False, 'This coupon is no longer valid.'
+
+        if self.usage_limit and self.used_count >= self.usage_limit:
+            return False, 'This coupon has reached its usage limit.'
+
+        if subtotal is not None:
+            minimum_order_value = subtotal.__class__(str(self.minimum_order_value))
+            if minimum_order_value and subtotal < minimum_order_value:
+                return False, f'Minimum order amount for this coupon is Tk {minimum_order_value:.2f}.'
+
+        return True, ''
+
+    def consume_locked(self):
+        if self.usage_limit and self.used_count >= self.usage_limit:
+            raise ValidationError({'code': 'This coupon has already reached its usage limit.'})
+        Coupon.objects.filter(pk=self.pk).update(used_count=F('used_count') + 1)
+        self.refresh_from_db(fields=['used_count'])
+
+    def release_locked(self):
+        Coupon.objects.filter(pk=self.pk, used_count__gt=0).update(used_count=F('used_count') - 1)
+        self.refresh_from_db(fields=['used_count'])
 
 
 class AdminAlert(models.Model):

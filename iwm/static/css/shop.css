@@ -641,6 +641,7 @@ select.filter-sort:focus {
 .color-circle{
   width: 30px;
   height: 30px;
+  cursor: pointer;
   border-radius: 50%;
   border: 3px solid #8e8e8e;
 }

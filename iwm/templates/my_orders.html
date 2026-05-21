@@ -7,7 +7,7 @@
 {% block content %}
 <div class="orders-container">
     <h2>My Orders</h2>
-    <p class="orders-intro">Signed-in users can see account orders here. Everyone can also unlock orders with the email or phone number used at checkout plus the order PIN.</p>
+    <p class="orders-intro">Signed-in users can see account orders here. Guests can unlock and cancel eligible orders with the email or phone number used at checkout plus the order PIN.</p>
 
     <div class="order" style="margin-bottom: 24px;">
         <div class="order-header">
@@ -35,7 +35,7 @@
                     <button type="submit" class="btn details-btn">Find Orders</button>
                 </div>
             </form>
-            <p style="margin-top: 12px;">We do not show orders from email or phone alone. The checkout PIN is required.</p>
+            <p style="margin-top: 12px;">We do not show guest orders from email or phone alone. If you checked out without a PIN, our support team must handle changes manually.</p>
         </div>
     </div>
 
@@ -119,7 +119,7 @@
                     <div class="order-actions">
                         <a href="{% url 'track_order' order.id %}" class="btn details-btn">View Order</a>
                         <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn track-btn">Order Summary</a>
-                        {% if user.is_authenticated and order.user == user and order.order_status == 'pending' %}
+                        {% if order.order_status == 'pending' and order.access_pin_hash %}
                             <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
@@ -136,7 +136,7 @@
         </div>
     {% elif not user.is_authenticated %}
         <div class="no-orders">
-            <p>Enter your email or phone number and the order PIN you created at checkout to see your orders.</p>
+            <p>Enter your email or phone number and the order PIN you created at checkout to see and manage guest orders.</p>
         </div>
     {% endif %}
 </div>

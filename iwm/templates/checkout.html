@@ -36,9 +36,9 @@
             </div>
 
             <div class="form-group">
-              <label for="order-access-pin">Order Access PIN <span class="required">*</span></label>
-              <input type="password" id="order-access-pin" name="order_access_pin" inputmode="numeric" maxlength="8" required>
-              <small>Use this 4 to 8 digit PIN later on My Orders with your email or phone number.</small>
+              <label for="order-access-pin">Order Access PIN</label>
+              <input type="password" id="order-access-pin" name="order_access_pin" inputmode="numeric" maxlength="8">
+              <small>Optional. Set a 4 to 8 digit PIN if you want guest order lookup and self-service cancellation later.</small>
             </div>
           </div>
           
@@ -51,7 +51,7 @@
               <label for="shipping-address-select" class="select-label">Saved Addresses</label>
               <select id="shipping-address-select" class="address-select">
                 <option value="">-- Select a saved address --</option>
-                {% for address in user.addresses.all %}
+                {% for address in shipping_addresses %}
                 {% if address.address_type == 'shipping' %}
                 <option value="{{ address.id }}" data-address="{{ address.as_json }}">
                   {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
@@ -128,7 +128,7 @@
                 <label for="billing-address-select" class="select-label">Saved Addresses</label>
                 <select id="billing-address-select" class="address-select">
                   <option value="">-- Select a saved address --</option>
-                  {% for address in user.addresses.all %}
+                  {% for address in billing_addresses %}
                   {% if address.address_type == 'billing' %}
                   <option value="{{ address.id }}" data-address="{{ address.as_json }}">
                     {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
@@ -240,8 +240,8 @@
                 <input type="text" id="bkash-number" name="bkash_number">
               </div>
               <div class="form-group">
-                <label for="bkash-trx-id">Transaction ID</label>
-                <input type="text" id="bkash-trx-id" name="bkash_trx_id" placeholder="Enter transaction ID (optional)">
+                <label for="bkash-trx-id">Transaction ID <span class="required">*</span></label>
+                <input type="text" id="bkash-trx-id" name="bkash_trx_id" placeholder="Enter transaction ID">
               </div>
               <p class="payment-instructions">
                 Please make the payment to our bKash merchant number (01XXXXXXXXX) before confirming your order. 
@@ -255,8 +255,8 @@
                 <input type="text" id="nagad-number" name="nagad_number">
               </div>
               <div class="form-group">
-                <label for="nagad-trx-id">Transaction ID</label>
-                <input type="text" id="nagad-trx-id" name="nagad_trx_id" placeholder="Enter transaction ID (optional)">
+                <label for="nagad-trx-id">Transaction ID <span class="required">*</span></label>
+                <input type="text" id="nagad-trx-id" name="nagad_trx_id" placeholder="Enter transaction ID">
               </div>
               <p class="payment-instructions">
                 Please make the payment to our Nagad merchant number (01XXXXXXXXX) before confirming your order. 
@@ -278,10 +278,15 @@
                   <option value="nagad">Nagad</option>
                 </select>
               </div>
+
+              <div class="form-group">
+                <label for="cod-delivery-sender-number">Delivery Sender Number</label>
+                <input type="text" id="cod-delivery-sender-number" name="cod_delivery_sender_number" placeholder="Enter sender number if delivery charge is paid online">
+              </div>
               
               <div class="form-group">
                 <label for="cod-delivery-trx-id">Delivery Transaction ID</label>
-                <input type="text" id="cod-delivery-trx-id" name="cod_delivery_trx_id" placeholder="Enter delivery transaction ID (if applicable)">
+                <input type="text" id="cod-delivery-trx-id" name="cod_delivery_trx_id" placeholder="Enter delivery transaction ID if delivery charge is paid online">
               </div>
             </div>
             
@@ -351,8 +356,8 @@
       <div class="payment-instructions manual-payment">
         <p><strong>Important:</strong> After placing order, our team will contact you via phone or Messenger to confirm payment and delivery.</p>
         <p>For Cash on Delivery, delivery charge must be paid to our delivery person.</p>
-        <p>For bKash/Nagad, please make payment to our merchant number and share the transaction details.</p>
-        <p>Keep your order access PIN safe. You can use it later on My Orders with your email or phone number.</p>
+        <p>For bKash/Nagad, please make payment to our merchant number and provide both the sender number and transaction ID.</p>
+        <p>If you set an order PIN, keep it safe. You can use it later on My Orders with your email or phone number.</p>
       </div>
       
       <div class="back-to-cart">
@@ -376,7 +381,7 @@
         <p><strong>Name:</strong> <span id="preview-name"></span></p>
         <p><strong>Email:</strong> <span id="preview-email"></span></p>
         <p><strong>Phone:</strong> <span id="preview-phone"></span></p>
-        <p><strong>Order Access:</strong> Your email or phone number plus your PIN</p>
+        <p><strong>Order Access:</strong> Email or phone number plus your PIN if you set one</p>
       </div>
       
       <div class="modal-section">

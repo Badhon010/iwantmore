@@ -328,6 +328,10 @@ UNFOLD = {
             "950": "77 15 25",
         },
     },
+    "SIDEBAR": {
+        "show_search": True,  # This enables the global search bar
+        "show_all_applications": True,
+    },
 }
 
 

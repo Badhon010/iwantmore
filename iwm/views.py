@@ -1,7 +1,7 @@
 ﻿from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand
 from .forms import ReviewForm
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg, Count, Prefetch
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.password_validation import validate_password
@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from django.db import models, IntegrityError, transaction
+from django.db import models, IntegrityError
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
@@ -44,20 +44,29 @@ def _500_view(request):
     return render(request, '500.html', status=500)
 
 
-def _base_product_queryset():
-    return Product.objects.select_related(
+def _base_product_queryset(*, include_tags=False, include_detail_relations=False):
+    queryset = Product.objects.select_related(
         'category',
         'subcategory',
         'color',
         'size',
         'brand',
         'feature_reason',
-    ).prefetch_related(
-        'tags',
     ).annotate(
         avg_rating_value=Avg('reviews__rating'),
         review_count=Count('reviews', distinct=True),
     )
+
+    if include_tags:
+        queryset = queryset.prefetch_related('tags')
+
+    if include_detail_relations:
+        queryset = queryset.prefetch_related(
+            'more_images',
+            Prefetch('reviews', queryset=Review.objects.select_related('user')),
+        )
+
+    return queryset
 
 
 def _apply_product_rating_display(products):
@@ -180,7 +189,7 @@ def edit_profile(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(
-        _base_product_queryset(),
+        _base_product_queryset(include_tags=True, include_detail_relations=True),
         slug=slug,
     )
     
@@ -190,7 +199,7 @@ def product_detail(request, slug):
     )
     
     # Get related products with similar tags
-    product_tags = product.tags.all()
+    product_tags = list(product.tags.all())
     related_by_tags = list(
         _base_product_queryset().filter(tags__in=product_tags).exclude(id=product.id).distinct()[:4]
     )
@@ -768,65 +777,11 @@ def _lookup_orders_by_contact_and_pin(contact_value, access_pin, order_id=None):
 
 
 def _resolve_checkout_items(raw_items):
-    if not isinstance(raw_items, list):
-        raise ValueError('Invalid cart data.')
-
-    quantities = {}
-    ordered_product_ids = []
-
-    for raw_item in raw_items:
-        if not isinstance(raw_item, dict):
-            raise ValueError('Invalid cart item.')
-
-        try:
-            product_id = int(raw_item.get('id'))
-            quantity = int(raw_item.get('quantity', 1))
-        except (TypeError, ValueError):
-            raise ValueError('Invalid cart item.')
-
-        if product_id <= 0 or quantity <= 0:
-            raise ValueError('Invalid cart item.')
-
-        if product_id not in quantities:
-            ordered_product_ids.append(product_id)
-            quantities[product_id] = 0
-
-        quantities[product_id] += quantity
-
-    if not ordered_product_ids:
-        raise ValueError('Cart is empty.')
-
-    products = Product.objects.in_bulk(ordered_product_ids)
-    missing_product_ids = [product_id for product_id in ordered_product_ids if product_id not in products]
-    if missing_product_ids:
-        raise ValueError('Some products are no longer available.')
-
-    resolved_items = []
-    subtotal = Decimal('0.00')
-
-    for product_id in ordered_product_ids:
-        product = products[product_id]
-        quantity = quantities[product_id]
-        unit_price = _to_money(product.get_final_price())
-        line_total = _to_money(unit_price * quantity)
-        resolved_items.append({
-            'product_id': product.id,
-            'product': product,
-            'product_name': product.name,
-            'quantity': quantity,
-            'unit_price': unit_price,
-            'line_total': line_total,
-        })
-        subtotal += line_total
-
-    return resolved_items, _to_money(subtotal)
+    return Order.resolve_checkout_items(raw_items)
 
 
 def _shipping_cost_for_state(state):
-    normalized_state = (state or '').strip().lower()
-    if 'dhaka' in normalized_state:
-        return INSIDE_DHAKA_SHIPPING
-    return OUTSIDE_DHAKA_SHIPPING
+    return Order.shipping_cost_for_state(state)
 
 
 def _session_coupon(request):
@@ -851,40 +806,27 @@ def _validate_coupon(coupon, subtotal):
     if coupon is None:
         return False, 'Invalid coupon code.'
 
-    if not coupon.is_valid:
-        return False, 'This coupon is no longer valid.'
+    return coupon.validate_for_subtotal(subtotal)
 
-    minimum_order_value = _to_money(coupon.minimum_order_value)
-    if minimum_order_value and subtotal < minimum_order_value:
-        return False, f'Minimum order amount for this coupon is à§³{minimum_order_value:.2f}.'
 
-    return True, ''
+def _validation_error_message(exc):
+    if hasattr(exc, 'message_dict') and exc.message_dict:
+        first_error_list = next(iter(exc.message_dict.values()))
+        if first_error_list:
+            return str(first_error_list[0])
+
+    if hasattr(exc, 'messages') and exc.messages:
+        return str(exc.messages[0])
+
+    return str(exc)
 
 
 def _coupon_discount_amount(coupon, subtotal):
-    if not coupon:
-        return Decimal('0.00')
-
-    if coupon.discount_amount > 0:
-        discount_amount = _to_money(coupon.discount_amount)
-    else:
-        discount_amount = _to_money(subtotal * Decimal(coupon.discount_percent) / Decimal('100'))
-
-    return min(discount_amount, subtotal)
+    return Order.coupon_discount_amount(coupon, subtotal)
 
 
 def _build_pricing_summary(resolved_items, shipping_state, coupon=None):
-    subtotal = _to_money(sum(item['line_total'] for item in resolved_items))
-    shipping_cost = _shipping_cost_for_state(shipping_state) if resolved_items else Decimal('0.00')
-    discount_amount = _coupon_discount_amount(coupon, subtotal)
-    total = _to_money(subtotal + shipping_cost - discount_amount)
-
-    return {
-        'subtotal': subtotal,
-        'shipping_cost': shipping_cost,
-        'discount_amount': discount_amount,
-        'total': total,
-    }
+    return Order.build_pricing_summary(resolved_items, shipping_state, coupon)
 
 
 def _serialize_checkout_items(resolved_items):
@@ -910,7 +852,20 @@ def _serialize_pricing_summary(pricing):
     }
 
 def checkout(request):
-    return render(request, 'checkout.html')
+    shipping_addresses = []
+    billing_addresses = []
+
+    if request.user.is_authenticated:
+        saved_addresses = list(
+            Address.objects.filter(user=request.user).order_by('-default', '-created_at')
+        )
+        shipping_addresses = [address for address in saved_addresses if address.address_type == 'shipping']
+        billing_addresses = [address for address in saved_addresses if address.address_type == 'billing']
+
+    return render(request, 'checkout.html', {
+        'shipping_addresses': shipping_addresses,
+        'billing_addresses': billing_addresses,
+    })
 
 @require_POST
 def checkout_totals(request):
@@ -1080,25 +1035,14 @@ def place_order(request):
     if not idempotency_key:
         return JsonResponse({'status': 'error', 'message': 'Missing idempotency key.'}, status=400)
 
-    if not access_pin.isdigit() or not 4 <= len(access_pin) <= 8:
+    if access_pin and (not access_pin.isdigit() or not 4 <= len(access_pin) <= 8):
         return JsonResponse({'status': 'error', 'message': 'Order access PIN must be 4 to 8 digits.'}, status=400)
-
-    existing_order = Order.objects.filter(idempotency_key=idempotency_key).first()
-    if existing_order:
-        if not request.user.is_authenticated and existing_order.user is None:
-            request.session['guest_order_id'] = str(existing_order.id)
-        _grant_order_access(request, [existing_order.id])
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Order already received. We will continue with the same order.',
-            'order_id': existing_order.id,
-        })
 
     if payment_method is None:
         return JsonResponse({'status': 'error', 'message': 'Invalid payment method.'}, status=400)
 
     try:
-        requested_items, _ = _resolve_checkout_items(raw_items)
+        _resolve_checkout_items(raw_items)
     except ValueError as exc:
         return JsonResponse({'status': 'error', 'message': str(exc)}, status=400)
 
@@ -1151,163 +1095,120 @@ def place_order(request):
                 return JsonResponse({'status': 'error', 'message': f'{label} is required.'}, status=400)
 
     sender_number = (payment_details.get('sender_number') or '').strip()
-    transaction_id = (payment_details.get('transaction_id') or '').strip()
+    transaction_id = (payment_details.get('transaction_id') or '').strip().upper()
     delivery_payment_method = _normalize_payment_method(payment_details.get('delivery_payment_method'))
-    delivery_transaction_id = (payment_details.get('delivery_transaction_id') or '').strip()
-
-    if payment_method in {'bkash', 'nagad'} and not sender_number:
-        return JsonResponse({'status': 'error', 'message': 'Sender number is required for manual payment.'}, status=400)
+    delivery_sender_number = (payment_details.get('delivery_sender_number') or '').strip()
+    delivery_transaction_id = (payment_details.get('delivery_transaction_id') or '').strip().upper()
 
     if delivery_payment_method == 'cash_on_delivery':
         delivery_payment_method = None
 
+    if payment_method in {'bkash', 'nagad'}:
+        if not sender_number:
+            return JsonResponse({'status': 'error', 'message': 'Sender number is required for bKash and Nagad payments.'}, status=400)
+        if not transaction_id:
+            return JsonResponse({'status': 'error', 'message': 'Transaction ID is required for bKash and Nagad payments.'}, status=400)
+        delivery_payment_method = None
+        delivery_sender_number = ''
+        delivery_transaction_id = ''
+        delivery_charge_paid = False
+    else:
+        delivery_details_supplied = any([
+            delivery_payment_method,
+            delivery_sender_number,
+            delivery_transaction_id,
+        ])
+
+        if delivery_details_supplied and delivery_payment_method not in {'bkash', 'nagad'}:
+            return JsonResponse({'status': 'error', 'message': 'Select bKash or Nagad for delivery charge payment.'}, status=400)
+        if delivery_details_supplied and not delivery_sender_number:
+            return JsonResponse({'status': 'error', 'message': 'Sender number is required when the delivery charge is paid online.'}, status=400)
+        if delivery_details_supplied and not delivery_transaction_id:
+            return JsonResponse({'status': 'error', 'message': 'Transaction ID is required when the delivery charge is paid online.'}, status=400)
+        if not delivery_details_supplied:
+            delivery_payment_method = None
+            delivery_sender_number = ''
+            delivery_transaction_id = ''
+
+        delivery_charge_paid = delivery_details_supplied
+
     if delivery_payment_method not in {None, 'bkash', 'nagad'}:
         return JsonResponse({'status': 'error', 'message': 'Invalid delivery payment method.'}, status=400)
 
-    coupon = _session_coupon(request)
-    payment_state = 'payment_submitted' if payment_method in {'bkash', 'nagad'} else 'awaiting_payment'
+    coupon_id = request.session.get('coupon_id')
 
     try:
-        with transaction.atomic():
-            existing_order = Order.objects.select_for_update().filter(idempotency_key=idempotency_key).first()
-            if existing_order:
-                if not request.user.is_authenticated and existing_order.user is None:
-                    request.session['guest_order_id'] = str(existing_order.id)
-                _grant_order_access(request, [existing_order.id])
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Order already received. We will continue with the same order.',
-                    'order_id': existing_order.id,
-                })
+        order, created = Order.create_order(
+            user=request.user if request.user.is_authenticated else None,
+            idempotency_key=idempotency_key,
+            raw_items=raw_items,
+            personal_info={
+                'full_name': full_name,
+                'email': email,
+                'phone': phone,
+            },
+            shipping_address_data={
+                'full_name': shipping_full_name,
+                'address_line1': shipping_address_line1,
+                'address_line2': shipping_address_line2,
+                'city': shipping_city,
+                'postal_code': shipping_postal_code,
+                'state': shipping_state,
+                'country': shipping_country,
+            },
+            billing_address_data={
+                'full_name': billing_full_name,
+                'address_line1': billing_address_line1,
+                'address_line2': billing_address_line2,
+                'city': billing_city,
+                'postal_code': billing_postal_code,
+                'state': billing_state,
+                'country': billing_country,
+            },
+            same_billing_address=same_billing_address,
+            payment_method=payment_method,
+            sender_number=sender_number,
+            transaction_id=transaction_id,
+            delivery_payment_method=delivery_payment_method,
+            delivery_sender_number=delivery_sender_number,
+            delivery_transaction_id=delivery_transaction_id,
+            notes=additional_notes,
+            coupon_id=coupon_id,
+            access_pin=access_pin,
+        )
 
-            requested_quantities = {
-                item['product_id']: item['quantity']
-                for item in requested_items
-            }
-            locked_products = Product.objects.select_for_update().filter(
-                id__in=requested_quantities.keys()
-            ).order_by('id')
-            product_map = {product.id: product for product in locked_products}
+        request.session.pop('coupon_id', None)
+        request.session.pop('discount', None)
 
-            if len(product_map) != len(requested_quantities):
-                return JsonResponse({'status': 'error', 'message': 'Some products are no longer available.'}, status=400)
-
-            locked_items = []
-            for item in requested_items:
-                product = product_map[item['product_id']]
-                quantity = requested_quantities[product.id]
-
-                if product.stock < quantity:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': f'Not enough stock for {product.name}.',
-                    }, status=400)
-
-                unit_price = _to_money(product.get_final_price())
-                line_total = _to_money(unit_price * quantity)
-                locked_items.append({
-                    'product': product,
-                    'product_name': product.name,
-                    'quantity': quantity,
-                    'unit_price': unit_price,
-                    'line_total': line_total,
-                })
-
-            subtotal = _to_money(sum(item['line_total'] for item in locked_items))
-            if coupon:
-                is_valid, _coupon_message = _validate_coupon(coupon, subtotal)
-                if not is_valid:
-                    request.session.pop('coupon_id', None)
-                    coupon = None
-
-            pricing = _build_pricing_summary(locked_items, shipping_state, coupon)
-
-            shipping_address = Address.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                address_type='shipping',
-                full_name=shipping_full_name,
-                phone=phone,
-                address_line1=shipping_address_line1,
-                address_line2=shipping_address_line2,
-                city=shipping_city,
-                postal_code=shipping_postal_code,
-                state=shipping_state,
-                country=shipping_country,
-            )
-
-            if same_billing_address:
-                billing_address = shipping_address
-            else:
-                billing_address = Address.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
-                    address_type='billing',
-                    full_name=billing_full_name,
-                    phone=phone,
-                    address_line1=billing_address_line1,
-                    address_line2=billing_address_line2,
-                    city=billing_city,
-                    postal_code=billing_postal_code,
-                    state=billing_state,
-                    country=billing_country,
-                )
-
-            order = Order.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                idempotency_key=idempotency_key,
-                full_name=full_name,
-                email=email,
-                phone=phone,
-                shipping_address=shipping_address,
-                billing_address=billing_address,
-                total_price=pricing['total'],
-                original_price=pricing['subtotal'],
-                shipping_cost=pricing['shipping_cost'],
-                discount_amount=pricing['discount_amount'],
-                order_status='pending',
-                payment_method=payment_method,
-                sender_number=sender_number if payment_method in {'bkash', 'nagad'} else None,
-                transaction_id=transaction_id if payment_method in {'bkash', 'nagad'} else None,
-                payment_state=payment_state,
-                delivery_charge_paid=False,
-                delivery_payment_method=delivery_payment_method if payment_method == 'cash_on_delivery' else None,
-                delivery_transaction_id=delivery_transaction_id if payment_method == 'cash_on_delivery' else None,
-                notes=additional_notes,
-            )
-            order.set_access_pin(access_pin)
-            order.save(update_fields=['access_pin_hash'])
-
-            for item in locked_items:
-                OrderItem.objects.create(
-                    order=order,
-                    product=item['product'],
-                    product_name=item['product_name'],
-                    product_price=item['unit_price'],
-                    quantity=item['quantity'],
-                )
-                item['product'].stock -= item['quantity']
-                item['product'].save(update_fields=['stock'])
-
-            if coupon:
-                Coupon.objects.filter(pk=coupon.pk).update(used_count=models.F('used_count') + 1)
-
-            request.session.pop('coupon_id', None)
-            request.session.pop('discount', None)
-
-            if not request.user.is_authenticated:
-                request.session['guest_order_id'] = str(order.id)
+        if not request.user.is_authenticated and order.user is None:
+            request.session['guest_order_id'] = str(order.id)
+        if access_pin and order.check_access_pin(access_pin):
             _grant_order_access(request, [order.id])
 
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Order placed successfully. We will contact you to confirm payment and delivery.'
+            if created else 'Order already received. We will continue with the same order.',
+            'order_id': order.id,
+        })
+    except ValidationError as exc:
+        if 'coupon' in getattr(exc, 'message_dict', {}):
+            request.session.pop('coupon_id', None)
             return JsonResponse({
-                'status': 'success',
-                'message': 'Order placed successfully. We will contact you to confirm payment and delivery.',
-                'order_id': order.id,
-            })
+                'status': 'error',
+                'message': _validation_error_message(exc),
+            }, status=409)
+        return JsonResponse({
+            'status': 'error',
+            'message': _validation_error_message(exc),
+        }, status=400)
     except IntegrityError:
         existing_order = Order.objects.filter(idempotency_key=idempotency_key).first()
         if existing_order:
             if not request.user.is_authenticated and existing_order.user is None:
                 request.session['guest_order_id'] = str(existing_order.id)
-            _grant_order_access(request, [existing_order.id])
+            if access_pin and existing_order.check_access_pin(access_pin):
+                _grant_order_access(request, [existing_order.id])
             return JsonResponse({
                 'status': 'success',
                 'message': 'Order already received. We will continue with the same order.',
@@ -1338,30 +1239,25 @@ def track_order(request, order_id):
     return render(request, 'track_order.html', {'order': order})
 
 
-@login_required
 @require_POST
 def cancel_order(request, order_id):
-    with transaction.atomic():
-        order = get_object_or_404(
-            Order.objects.select_for_update().prefetch_related('items__product'),
-            id=order_id,
-        )
+    order = get_object_or_404(
+        Order.objects.select_related('user'),
+        id=order_id,
+    )
 
-        if order.user != request.user:
-            messages.error(request, "You don't have permission to cancel this order.")
-            return redirect('my_orders')
+    has_account_access = request.user.is_authenticated and order.user == request.user
+    has_pin_access = bool(order.access_pin_hash) and order.id in _authorized_order_ids(request)
 
-        if order.order_status != 'pending':
-            messages.error(request, "Only pending orders can be cancelled.")
-            return redirect('my_orders')
+    if not has_account_access and not has_pin_access:
+        messages.error(request, "You don't have permission to cancel this order.")
+        return redirect('my_orders')
 
-        for item in order.items.all():
-            if item.product:
-                item.product.stock += item.quantity
-                item.product.save(update_fields=['stock'])
-
-        order.order_status = 'cancelled'
-        order.save(update_fields=['order_status', 'updated_at'])
+    try:
+        order.transition_order_status('cancelled')
+    except ValidationError as exc:
+        messages.error(request, _validation_error_message(exc))
+        return redirect('my_orders')
 
     messages.success(request, f"Order #{order.id} has been cancelled successfully.")
     return redirect('my_orders')
@@ -1388,7 +1284,7 @@ def my_orders(request):
         lookup_order_id = (request.POST.get('order_id') or '').strip()
 
         if not lookup_contact or not lookup_pin:
-            messages.error(request, 'Enter the email or phone number and the order PIN you used at checkout.')
+            messages.error(request, 'Enter the email or phone number and the order PIN you used at checkout. Orders without a PIN must be handled by our support team.')
         elif not lookup_pin.isdigit() or not 4 <= len(lookup_pin) <= 8:
             messages.error(request, 'Order PIN must be 4 to 8 digits.')
         else:

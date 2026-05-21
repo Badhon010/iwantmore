@@ -299,7 +299,7 @@ function validateCheckoutForm() {
         document.getElementById('phone').classList.add('error');
     }
 
-    if (!/^\d{4,8}$/.test(accessPin)) {
+    if (accessPin !== '' && !/^\d{4,8}$/.test(accessPin)) {
         isValid = false;
         document.getElementById('order-access-pin').classList.add('error');
     }
@@ -378,15 +378,45 @@ function validateCheckoutForm() {
     const paymentMethod = document.querySelector('.payment-method input[type="radio"]:checked').value;
     if (paymentMethod === 'bkash') {
         const bkashNumber = document.getElementById('bkash-number').value.trim();
+        const bkashTransactionId = document.getElementById('bkash-trx-id').value.trim();
         if (bkashNumber === '') {
             isValid = false;
             document.getElementById('bkash-number').classList.add('error');
         }
+        if (bkashTransactionId === '') {
+            isValid = false;
+            document.getElementById('bkash-trx-id').classList.add('error');
+        }
     } else if (paymentMethod === 'nagad') {
         const nagadNumber = document.getElementById('nagad-number').value.trim();
+        const nagadTransactionId = document.getElementById('nagad-trx-id').value.trim();
         if (nagadNumber === '') {
             isValid = false;
             document.getElementById('nagad-number').classList.add('error');
+        }
+        if (nagadTransactionId === '') {
+            isValid = false;
+            document.getElementById('nagad-trx-id').classList.add('error');
+        }
+    } else if (paymentMethod === 'cash_on_delivery' || paymentMethod === 'cod') {
+        const deliveryMethod = document.getElementById('cod-delivery-payment-method')?.value || '';
+        const deliverySenderNumber = document.getElementById('cod-delivery-sender-number')?.value.trim() || '';
+        const deliveryTransactionId = document.getElementById('cod-delivery-trx-id')?.value.trim() || '';
+        const deliveryDetailsProvided = Boolean(deliveryMethod || deliverySenderNumber || deliveryTransactionId);
+
+        if (deliveryDetailsProvided) {
+            if (deliveryMethod === '') {
+                isValid = false;
+                document.getElementById('cod-delivery-payment-method').classList.add('error');
+            }
+            if (deliverySenderNumber === '') {
+                isValid = false;
+                document.getElementById('cod-delivery-sender-number').classList.add('error');
+            }
+            if (deliveryTransactionId === '') {
+                isValid = false;
+                document.getElementById('cod-delivery-trx-id').classList.add('error');
+            }
         }
     }
 
@@ -546,6 +576,7 @@ function submitOrder() {
     } else if (paymentMethod === 'cash_on_delivery' || paymentMethod === 'cod') {
         paymentDetails = {
             delivery_payment_method: document.getElementById('cod-delivery-payment-method') ? document.getElementById('cod-delivery-payment-method').value : '',
+            delivery_sender_number: document.getElementById('cod-delivery-sender-number') ? document.getElementById('cod-delivery-sender-number').value : '',
             delivery_transaction_id: document.getElementById('cod-delivery-trx-id') ? document.getElementById('cod-delivery-trx-id').value : ''
         };
     }

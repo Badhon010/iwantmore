@@ -1,6 +1,6 @@
 from django.urls.resolvers import URLPattern, URLResolver
 from typing import Any
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.views.decorators import staff_member_required
 # Delayed imports to avoid circular dependency
 # from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
@@ -11,11 +11,13 @@ from django.utils.html import format_html
 from django.urls import path, reverse
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Sum, Count, Q, F, DecimalField
 from django.utils import timezone
 from django import forms
 from django.conf import settings
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, time
 import json
 import csv
 
@@ -40,6 +42,31 @@ from .models import (
 CAPTURED_PAYMENT_STATES = ['paid', 'partially_paid']
 FOLLOW_UP_PAYMENT_STATES = ['awaiting_payment', 'payment_submitted']
 logger = logging.getLogger(__name__)
+
+
+def _as_local_aware(value):
+    if timezone.is_aware(timezone.now()) and timezone.is_naive(value):
+        return timezone.make_aware(value, timezone.get_current_timezone())
+    return value
+
+
+def _day_range(day):
+    return (
+        _as_local_aware(datetime.combine(day, time.min)),
+        _as_local_aware(datetime.combine(day, time.max)),
+    )
+
+
+def _validation_error_message(exc):
+    if hasattr(exc, 'message_dict') and exc.message_dict:
+        first_error_list = next(iter(exc.message_dict.values()))
+        if first_error_list:
+            return str(first_error_list[0])
+
+    if hasattr(exc, 'messages') and exc.messages:
+        return str(exc.messages[0])
+
+    return str(exc)
 
 
 # ========================
@@ -70,31 +97,40 @@ class NewsletterSubscriberResource(resources.ModelResource):
 
 def check_and_create_alerts():
     """Check all alert conditions and create necessary alerts"""
+    today = timezone.localdate()
+    today_start, today_end = _day_range(today)
+
     # Low stock
-    low_stock = Product.objects.filter(stock__lt=10, stock__gt=0)
-    for product in low_stock:
-        if not AdminAlert.objects.filter(
-            product=product,
+    low_stock_products = list(
+        Product.objects.filter(stock__lt=10, stock__gt=0).only('id', 'name', 'stock')
+    )
+    existing_low_stock_alerts = set(
+        AdminAlert.objects.filter(
             alert_type='low_stock',
             is_read=False,
-            created_at__date=timezone.now().date()
-        ).exists():
-            AdminAlert.objects.create(
-                alert_type='low_stock',
-                severity='warning',
-                title=f"Low Stock: {product.name}",
-                message=f"Product '{product.name}' has only {product.stock} units left.",
-                product=product
-            )
+            created_at__range=(today_start, today_end),
+            product_id__in=[product.id for product in low_stock_products],
+        ).values_list('product_id', flat=True)
+    )
+    AdminAlert.objects.bulk_create([
+        AdminAlert(
+            alert_type='low_stock',
+            severity='warning',
+            title=f"Low Stock: {product.name}",
+            message=f"Product '{product.name}' has only {product.stock} units left.",
+            product=product,
+        )
+        for product in low_stock_products
+        if product.id not in existing_low_stock_alerts
+    ])
     
     # High orders
-    today = timezone.now().date()
-    today_orders = Order.objects.filter(created_at__date=today).count()
+    today_orders = Order.objects.filter(created_at__range=(today_start, today_end)).count()
     if today_orders > 20:
         if not AdminAlert.objects.filter(
             alert_type='high_orders',
             is_read=False,
-            created_at__date=today
+            created_at__range=(today_start, today_end)
         ).exists():
             AdminAlert.objects.create(
                 alert_type='high_orders',
@@ -109,20 +145,25 @@ def check_and_create_alerts():
         payment_state__in=FOLLOW_UP_PAYMENT_STATES,
         order_status__in=['pending', 'processing'],
         created_at__lt=threshold
-    )
-    for order in failed_payments:
-        if not AdminAlert.objects.filter(
-            order=order,
+    ).only('id', 'full_name')
+    existing_failed_payment_alerts = set(
+        AdminAlert.objects.filter(
             alert_type='failed_payment',
-            is_read=False
-        ).exists():
-            AdminAlert.objects.create(
-                alert_type='failed_payment',
-                severity='critical',
-                title=f"Unpaid Order: #{order.id}",
-                message=f"Order #{order.id} from {order.full_name} hasn't been paid for over 24 hours.",
-                order=order
-            )
+            is_read=False,
+            order_id__in=failed_payments.values_list('id', flat=True),
+        ).values_list('order_id', flat=True)
+    )
+    AdminAlert.objects.bulk_create([
+        AdminAlert(
+            alert_type='failed_payment',
+            severity='critical',
+            title=f"Unpaid Order: #{order.id}",
+            message=f"Order #{order.id} from {order.full_name} hasn't been paid for over 24 hours.",
+            order=order,
+        )
+        for order in failed_payments
+        if order.id not in existing_failed_payment_alerts
+    ])
 
 
 # ========================
@@ -133,6 +174,7 @@ class IWMAdminSite(UnfoldAdminSite):
     site_header = "I Want More Admin"
     site_title = "I Want More Admin Panel"
     index_title = "Dashboard"
+    index_template = "admin/custom_index.html"
     
     def get_urls(self):
         urls = super().get_urls()
@@ -149,9 +191,10 @@ class IWMAdminSite(UnfoldAdminSite):
         daily_data = []
         
         for i in range(days, 0, -1):
-            date = timezone.now().date() - timedelta(days=i)
+            date = timezone.localdate() - timedelta(days=i)
+            day_start, day_end = _day_range(date)
             revenue = Order.objects.filter(
-                created_at__date=date,
+                created_at__range=(day_start, day_end),
                 payment_state__in=CAPTURED_PAYMENT_STATES
             ).aggregate(Sum('total_price'))['total_price__sum'] or 0
             daily_data.append({'date': str(date), 'revenue': float(revenue)})
@@ -188,14 +231,17 @@ class IWMAdminSite(UnfoldAdminSite):
         """Comprehensive analytics dashboard"""
         check_and_create_alerts()
         
-        today = timezone.now().date()
+        today = timezone.localdate()
         week_ago = today - timedelta(days=7)
         month_ago = today - timedelta(days=30)
+        today_start, today_end = _day_range(today)
+        week_start, _week_end = _day_range(week_ago)
+        month_start, _month_end = _day_range(month_ago)
         
         # Order statistics
-        today_orders = Order.objects.filter(created_at__date=today)
-        week_orders = Order.objects.filter(created_at__date__gte=week_ago)
-        month_orders = Order.objects.filter(created_at__date__gte=month_ago)
+        today_orders = Order.objects.filter(created_at__range=(today_start, today_end))
+        week_orders = Order.objects.filter(created_at__range=(week_start, today_end))
+        month_orders = Order.objects.filter(created_at__range=(month_start, today_end))
         
         today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
         week_revenue = week_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
@@ -213,18 +259,27 @@ class IWMAdminSite(UnfoldAdminSite):
         ]
 
         # Create category pie chart
-        category_data = OrderItem.objects.values('product__category__name').annotate(
+        category_data = list(OrderItem.objects.filter(
+            order__created_at__range=(month_start, today_end)
+        ).exclude(
+            product__category__name__isnull=True
+        ).values('product__category__name').annotate(
             count=Count('id')
-        ).order_by('-count')[:10]
-        
-        fig = px.pie(
-            names=[item['product__category__name'] for item in category_data],
-            values=[item['count'] for item in category_data],
-            title="Orders by Category",
-            template="plotly_dark"
-        )
-        fig.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
-        category_chart = plot(fig, output_type='div', include_plotlyjs='cdn')
+        ).order_by('-count')[:10])
+
+        if category_data:
+            fig = px.pie(
+                names=[item['product__category__name'] for item in category_data],
+                values=[item['count'] for item in category_data],
+                title="Orders by Category",
+                template="plotly_dark"
+            )
+            fig.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
+            category_chart = plot(fig, output_type='div', include_plotlyjs='cdn')
+        else:
+            category_chart = format_html(
+                '<div style="padding: 2rem; text-align: center; color: #9ca3af;">No category data available for the selected period.</div>'
+            )
         
         # Calculate average order value
         avg_order_value = 0
@@ -237,7 +292,7 @@ class IWMAdminSite(UnfoldAdminSite):
         total_customers = month_orders.exclude(email='').values('email').distinct().count()
         delivered_orders = month_orders.filter(order_status='delivered').count()
         cancelled_orders = month_orders.filter(order_status='cancelled').count()
-        top_products = OrderItem.objects.filter(order__created_at__date__gte=month_ago).values('product_name').annotate(
+        top_products = OrderItem.objects.filter(order__created_at__range=(month_start, today_end)).values('product_name').annotate(
             total_quantity=Sum('quantity')
         ).order_by('-total_quantity')[:5]
         
@@ -268,17 +323,14 @@ class IWMAdminSite(UnfoldAdminSite):
         """Alert management view"""
         check_and_create_alerts()
         
-        alerts = AdminAlert.objects.all().order_by('-created_at')
+        alerts = AdminAlert.objects.select_related('product', 'order', 'read_by').order_by('-created_at')
         unread_count = alerts.filter(is_read=False).count()
         
         # Mark as read
         if request.method == 'POST':
             alert_id = request.POST.get('alert_id')
             if alert_id:
-                alert = AdminAlert.objects.get(id=alert_id)
-                alert.is_read = True
-                alert.read_by = request.user
-                alert.save()
+                AdminAlert.objects.filter(id=alert_id).update(is_read=True, read_by=request.user)
         
         context = {**self.each_context(request),
             'alerts': alerts[:50],
@@ -294,10 +346,11 @@ class IWMAdminSite(UnfoldAdminSite):
         
         check_and_create_alerts()
         
-        today = timezone.now().date()
+        today = timezone.localdate()
+        today_start, today_end = _day_range(today)
         
         # Core statistics
-        today_orders = Order.objects.filter(created_at__date=today)
+        today_orders = Order.objects.filter(created_at__range=(today_start, today_end))
         today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
         total_revenue = Order.objects.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
         
@@ -333,7 +386,7 @@ class IWMAdminSite(UnfoldAdminSite):
 # ========================
 
 # Instantiate the custom admin site for use in urls.py
-admin_site = IWMAdminSite(name='iwm_admin')
+admin_site = IWMAdminSite(name='admin')
 
 
 # ========================
@@ -609,6 +662,8 @@ class NewsletterSubscriberAdmin(ExportActionMixin, ModelAdmin):
     def send_newsletter_email_view(self, request):
         selected_ids = request.session.get('selected_subscribers', [])
         subscribers = NewsletterSubscriber.objects.filter(pk__in=selected_ids)
+        selected_subscribers = list(subscribers)
+        subscriber_count = len(selected_subscribers)
         
         if request.method == 'POST':
             form = EmailForm(request.POST)
@@ -657,7 +712,8 @@ class NewsletterSubscriberAdmin(ExportActionMixin, ModelAdmin):
         
         context = {**self.admin_site.each_context(request),
             'form': form,
-            'subscribers': subscribers,
+            'subscribers': selected_subscribers,
+            'subscriber_count': subscriber_count,
             'opts': self.model._meta,
             'title': 'Send Email to Subscribers',
         }
@@ -671,6 +727,11 @@ class NewsletterSubscriberAdmin(ExportActionMixin, ModelAdmin):
 # ORDER ADMIN (WITH EXPORTS & AUDIT)
 # ========================
 
+class OrderAdminForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = "__all__"
+
 class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
@@ -682,6 +743,7 @@ class OrderItemInline(TabularInline):
 
 
 class OrderAdmin(ExportActionMixin, ModelAdmin):
+    form = OrderAdminForm
     resource_class = OrderResource
     inlines = [OrderItemInline]
     actions = [
@@ -690,6 +752,7 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
         'mark_paid',
         'mark_failed',
         'mark_refunded',
+        'mark_cancelled',
         'mark_processing',
         'mark_shipped',
         'mark_delivered',
@@ -699,13 +762,14 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
     list_filter = ['order_status', 'payment_state', 'payment_method', 'created_at']
     search_fields = ['id', 'user__username', 'full_name', 'email', 'phone']
     readonly_fields = ['user', 'full_name', 'email', 'phone', 'original_price', 'shipping_cost', 
-                      'discount_amount', 'total_price', 'created_at', 'updated_at']
-    list_select_related = ['user', 'shipping_address', 'billing_address']
+                      'discount_amount', 'total_price', 'coupon', 'inventory_restored_at',
+                      'coupon_usage_released_at', 'created_at', 'updated_at']
+    list_select_related = ['user', 'shipping_address', 'billing_address', 'coupon']
     date_hierarchy = 'created_at'
 
     fieldsets = [
         ('Order Information', {
-            'fields': ['order_status', 'user', 'full_name', 'email', 'phone', 'created_at', 'updated_at']
+            'fields': ['order_status', 'user', 'full_name', 'email', 'phone', 'coupon', 'created_at', 'updated_at']
         }),
         ('Addresses', {
             'fields': ['shipping_address', 'billing_address']
@@ -714,7 +778,11 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
             'fields': ['payment_method', 'payment_state', 'transaction_id', 'sender_number']
         }),
         ('Manual Payment Workflow (NEW)', {
-            'fields': ['delivery_charge_paid', 'delivery_payment_method', 'delivery_transaction_id'],
+            'fields': ['delivery_charge_paid', 'delivery_payment_method', 'delivery_sender_number', 'delivery_transaction_id'],
+            'classes': ('collapse',)
+        }),
+        ('Recovery Tracking', {
+            'fields': ['inventory_restored_at', 'coupon_usage_released_at'],
             'classes': ('collapse',)
         }),
         ('Financial Details', {
@@ -729,7 +797,7 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
     ]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user', 'shipping_address', 'billing_address')
+        return super().get_queryset(request).select_related('user', 'shipping_address', 'billing_address', 'coupon')
 
     def order_id(self, obj):
         return format_html('<strong>#{}</strong>', obj.id)
@@ -796,48 +864,111 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
         )
     get_payment_badge.short_description = "Payment"
 
-    def _bulk_update(self, request, queryset, **updates):
-        updated = queryset.update(**updates)
-        self.message_user(request, f'{updated} orders updated.')
+    def _run_order_action(self, request, queryset, *, order_status=None, payment_state=None, record_delivery_charge=False):
+        updated = 0
+        skipped = []
+
+        for order in queryset.select_related('coupon').order_by('id'):
+            try:
+                changed = False
+                if payment_state == 'refunded':
+                    changed = order.transition_payment_state('refunded') or changed
+                elif order_status == 'refunded':
+                    changed = order.transition_order_status('refunded') or changed
+                else:
+                    if payment_state and payment_state != order.payment_state:
+                        changed = order.transition_payment_state(payment_state) or changed
+                    if order_status and order_status != order.order_status:
+                        changed = order.transition_order_status(order_status) or changed
+                    if record_delivery_charge:
+                        changed = order.mark_delivery_charge_paid() or changed
+
+                if changed:
+                    updated += 1
+            except ValidationError as exc:
+                skipped.append(f"#{order.id}: {_validation_error_message(exc)}")
+
+        if updated:
+            self.message_user(request, f'{updated} order(s) updated successfully.', level=messages.SUCCESS)
+        if skipped:
+            self.message_user(
+                request,
+                'Skipped ' + '; '.join(skipped[:5]),
+                level=messages.WARNING,
+            )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            return super().save_model(request, obj, form, change)
+
+        lifecycle_fields = {'order_status', 'payment_state', 'delivery_charge_paid'}
+        non_lifecycle_fields = [field for field in form.changed_data if field not in lifecycle_fields]
+
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(pk=obj.pk)
+
+            for field in non_lifecycle_fields:
+                setattr(locked_order, field, form.cleaned_data[field])
+
+            if non_lifecycle_fields:
+                locked_order.save(update_fields=non_lifecycle_fields)
+
+            requested_status = form.cleaned_data.get('order_status', locked_order.order_status)
+            requested_payment_state = form.cleaned_data.get('payment_state', locked_order.payment_state)
+            requested_delivery_paid = form.cleaned_data.get('delivery_charge_paid', locked_order.delivery_charge_paid)
+
+            if requested_payment_state == 'refunded' and requested_payment_state != locked_order.payment_state:
+                locked_order._transition_payment_state_locked('refunded')
+            elif requested_status == 'refunded' and requested_status != locked_order.order_status:
+                locked_order._transition_order_status_locked('refunded')
+            else:
+                if requested_delivery_paid and not locked_order.delivery_charge_paid:
+                    locked_order._mark_delivery_charge_paid_locked()
+
+                if requested_payment_state != locked_order.payment_state:
+                    locked_order._transition_payment_state_locked(requested_payment_state)
+
+                if requested_status != locked_order.order_status:
+                    locked_order._transition_order_status_locked(requested_status)
 
     def mark_payment_submitted(self, request, queryset):
-        self._bulk_update(request, queryset, payment_state='payment_submitted')
+        self._run_order_action(request, queryset, payment_state='payment_submitted')
     mark_payment_submitted.short_description = "Mark selected orders as payment submitted"
 
     def mark_partially_paid(self, request, queryset):
-        self._bulk_update(request, queryset, payment_state='partially_paid')
+        self._run_order_action(request, queryset, payment_state='partially_paid')
     mark_partially_paid.short_description = "Mark selected orders as partially paid"
 
     def mark_paid(self, request, queryset):
-        self._bulk_update(request, queryset, payment_state='paid')
+        self._run_order_action(request, queryset, payment_state='paid')
     mark_paid.short_description = "Mark selected orders as paid"
 
     def mark_failed(self, request, queryset):
-        self._bulk_update(request, queryset, payment_state='failed')
+        self._run_order_action(request, queryset, payment_state='failed')
     mark_failed.short_description = "Mark selected orders as failed"
 
     def mark_refunded(self, request, queryset):
-        self._bulk_update(request, queryset, payment_state='refunded')
+        self._run_order_action(request, queryset, payment_state='refunded')
     mark_refunded.short_description = "Mark selected orders as refunded"
 
+    def mark_cancelled(self, request, queryset):
+        self._run_order_action(request, queryset, order_status='cancelled')
+    mark_cancelled.short_description = "Mark selected orders as cancelled"
+
     def mark_processing(self, request, queryset):
-        self._bulk_update(request, queryset, order_status='processing')
+        self._run_order_action(request, queryset, order_status='processing')
     mark_processing.short_description = "Mark selected orders as processing"
 
     def mark_shipped(self, request, queryset):
-        self._bulk_update(request, queryset, order_status='shipped')
+        self._run_order_action(request, queryset, order_status='shipped')
     mark_shipped.short_description = "Mark selected orders as shipped"
 
     def mark_delivered(self, request, queryset):
-        self._bulk_update(request, queryset, order_status='delivered', payment_state='paid')
+        self._run_order_action(request, queryset, order_status='delivered')
     mark_delivered.short_description = "Mark selected orders as delivered"
 
     def mark_delivery_charge_paid(self, request, queryset):
-        updated = queryset.update(
-            delivery_charge_paid=True,
-            payment_state='partially_paid',
-        )
-        self.message_user(request, f'{updated} orders marked with delivery charge paid.')
+        self._run_order_action(request, queryset, record_delivery_charge=True)
     mark_delivery_charge_paid.short_description = "Mark delivery charge as paid"
 
     def has_delete_permission(self, request, obj=None):
