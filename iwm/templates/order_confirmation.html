@@ -30,7 +30,7 @@
         <ul>
           <li>Our customer service team will contact you within 24 hours</li>
           <li>We will confirm payment details and delivery schedule</li>
-          <li>For bKash/Nagad orders: Please keep your transaction ID ready</li>
+          <li>For bKash/Nagad orders: Our team will guide you through payment verification</li>
           <li>For Cash on Delivery: Prepare payment for our delivery person</li>
         </ul>
       </div>
@@ -43,11 +43,11 @@
         <h3>Shipping Information</h3>
         <div class="detail-content">
           <p><strong>Name:</strong> {{ order.shipping_address.full_name }}</p>
-          <p><strong>Address:</strong> {{ order.shipping_address.address_line1 }}</p>
+          <p><strong>Full Address:</strong> {{ order.shipping_address.address_line1 }}</p>
+          <p><strong>District:</strong> {{ order.shipping_address.state|default:order.shipping_address.city }}</p>
           {% if order.shipping_address.address_line2 %}
-          <p>{{ order.shipping_address.address_line2 }}</p>
+          <p><strong>Location Details:</strong> {{ order.shipping_address.address_line2 }}</p>
           {% endif %}
-          <p>{{ order.shipping_address.city }}</p>
           <p><strong>Phone:</strong> {{ order.shipping_address.phone }}</p>
         </div>
       </div>

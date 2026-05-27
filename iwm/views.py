@@ -1,5 +1,5 @@
 ﻿from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand
+from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand, PromoBanner
 from .forms import ReviewForm
 from django.db.models import Q, Avg, Count, Prefetch
 from django.contrib.auth.decorators import login_required
@@ -32,6 +32,19 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from decouple import config
 
 logger = logging.getLogger(__name__)
+
+BANGLADESH_DISTRICTS = [
+    'Bagerhat', 'Bandarban', 'Barguna', 'Barishal', 'Bhola', 'Bogura', 'Brahmanbaria',
+    'Chandpur', 'Chattogram', "Cox's Bazar", 'Cumilla', 'Dhaka', 'Dinajpur', 'Faridpur',
+    'Feni', 'Gaibandha', 'Gazipur', 'Gopalganj', 'Habiganj', 'Jamalpur', 'Jashore',
+    'Jhalokathi', 'Jhenaidah', 'Joypurhat', 'Khagrachhari', 'Khulna', 'Kishoreganj',
+    'Kurigram', 'Kushtia', 'Lakshmipur', 'Lalmonirhat', 'Madaripur', 'Magura',
+    'Manikganj', 'Meherpur', 'Moulvibazar', 'Munshiganj', 'Mymensingh', 'Naogaon',
+    'Narail', 'Narayanganj', 'Narsingdi', 'Natore', 'Netrokona', 'Nilphamari',
+    'Noakhali', 'Pabna', 'Panchagarh', 'Patuakhali', 'Pirojpur', 'Rajbari', 'Rajshahi',
+    'Rangamati', 'Rangpur', 'Satkhira', 'Shariatpur', 'Sherpur', 'Sirajganj',
+    'Sunamganj', 'Sylhet', 'Tangail', 'Thakurgaon',
+]
 
 def rd(request):
     return redirect('home')
@@ -105,10 +118,14 @@ def home(request):
     featured_products = _base_product_queryset().filter(is_featured=True).order_by('-created_at')[:8]
     _apply_product_rating_display(featured_products)
     brands = Brand.objects.all()
+    promo = PromoBanner.objects.filter(is_active=True).first()
+    featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
     context = {
         'categories': categories,
         'featured_products': featured_products,
-        'brands': brands
+        'brands': brands,
+        'promo': promo,
+        'featured_reviews': featured_reviews
     }
     return render(request, 'home.html', context)
 
@@ -129,7 +146,8 @@ def shop(request):
 
 
 def about(request):
-    return render(request, 'about.html')
+    featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
+    return render(request, 'about.html', {'featured_reviews': featured_reviews})
 
 def contact(request):
     if request.method == 'POST':
@@ -157,7 +175,8 @@ def contact(request):
     return render(request, 'contact.html')
 
 def services(request):
-    return render(request, 'services.html')
+    featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
+    return render(request, 'services.html', {'featured_reviews': featured_reviews})
 
 def profile(request):
     try:
@@ -214,9 +233,23 @@ def product_detail(request, slug):
     related_products = related_products[:4]
     _apply_product_rating_display([product, *related_products])
     
+    # Determine whether the current visitor may submit a review for this product.
+    purchased_in_account = False
+    purchased_unlocked = False
+
+    if request.user.is_authenticated:
+        purchased_in_account = Order.objects.filter(user=request.user, items__product=product).exists()
+
+    authorized_ids = _authorized_order_ids(request)
+    if authorized_ids:
+        purchased_unlocked = Order.objects.filter(id__in=authorized_ids, items__product=product).exists()
+
+    can_comment = bool(purchased_in_account or purchased_unlocked)
+
     context = {
         'product': product,
-        'related_products': related_products
+        'related_products': related_products,
+        'can_comment': can_comment,
     }
     
     return render(request, 'product.html', context)
@@ -448,25 +481,54 @@ def autocomplete_suggestions(request):
     
     return JsonResponse(suggestions, safe=False)
 
-@login_required
 def submit_review(request, product_slug):
-    product = get_object_or_404(Product, slug=product_slug)
+    product = get_object_or_404(
+        Product,
+        slug=product_slug
+    )
+
+    purchased_in_account = False
+
+    if request.user.is_authenticated:
+        purchased_in_account = Order.objects.filter(
+            user=request.user,
+            items__product=product
+        ).exists()
+
+    authorized_ids = _authorized_order_ids(request)
+
+    purchased_unlocked = False
+
+    if authorized_ids:
+        purchased_unlocked = Order.objects.filter(
+            id__in=authorized_ids,
+            items__product=product
+        ).exists()
+
+    if not (purchased_in_account or purchased_unlocked):
+        messages.error(
+            request,
+            'Only customers who bought this product can submit a review.'
+        )
+
+        return redirect(
+            'product_detail',
+            slug=product.slug
+        )
 
     if request.method == 'POST':
         review_text = request.POST.get('review')
         rating = request.POST.get('rating')
 
         if review_text and rating:
-            review = Review.objects.create(
-                product=product,
-                user=request.user,
-                comment=review_text,
-                rating=rating
-            )
+            review = Review(product=product,comment=review_text,rating=rating)
+            if request.user.is_authenticated:
+                review.user = request.user
             review.save()
-            return redirect('product_detail', slug=product.slug)
 
-    return render(request, 'product.html', {'product': product})
+            return redirect('product_detail',slug=product.slug)
+
+    return redirect('product_detail',slug=product.slug)
 
 def logout_view(request):
     logout(request)
@@ -865,6 +927,7 @@ def checkout(request):
     return render(request, 'checkout.html', {
         'shipping_addresses': shipping_addresses,
         'billing_addresses': billing_addresses,
+        'bangladesh_districts': BANGLADESH_DISTRICTS,
     })
 
 @require_POST
@@ -1062,10 +1125,11 @@ def place_order(request):
         (email, 'Email'),
         (phone, 'Phone number'),
         (shipping_full_name, 'Shipping full name'),
-        (shipping_address_line1, 'Shipping address'),
-        (shipping_city, 'Shipping city'),
+        (shipping_address_line1, 'Shipping full address'),
+        (shipping_address_line2, 'Describe your location'),
+        (shipping_city, 'Shipping district'),
         (shipping_postal_code, 'Shipping postal code'),
-        (shipping_state, 'Shipping state'),
+        (shipping_state, 'Shipping district'),
         (shipping_country, 'Shipping country'),
     ]
 
@@ -1084,10 +1148,11 @@ def place_order(request):
     if not same_billing_address:
         billing_required_values = [
             (billing_full_name, 'Billing full name'),
-            (billing_address_line1, 'Billing address'),
-            (billing_city, 'Billing city'),
+            (billing_address_line1, 'Billing full address'),
+            (billing_address_line2, 'Billing location details'),
+            (billing_city, 'Billing district'),
             (billing_postal_code, 'Billing postal code'),
-            (billing_state, 'Billing state'),
+            (billing_state, 'Billing district'),
             (billing_country, 'Billing country'),
         ]
         for value, label in billing_required_values:
@@ -1104,10 +1169,8 @@ def place_order(request):
         delivery_payment_method = None
 
     if payment_method in {'bkash', 'nagad'}:
-        if not sender_number:
-            return JsonResponse({'status': 'error', 'message': 'Sender number is required for bKash and Nagad payments.'}, status=400)
-        if not transaction_id:
-            return JsonResponse({'status': 'error', 'message': 'Transaction ID is required for bKash and Nagad payments.'}, status=400)
+        sender_number = ''
+        transaction_id = ''
         delivery_payment_method = None
         delivery_sender_number = ''
         delivery_transaction_id = ''

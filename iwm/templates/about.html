@@ -170,56 +170,6 @@ services.{% endblock dis %}
     <a href="{% url 'shop' %}" class="btn">Start Shopping</a>
 </div>
 
-<div class="testimonials">
-    <h2>What Our Customers Say</h2>
-    <div class="testimonial-list">
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Customer">
-            </div>
-            <p>"I Want More has completely transformed my shopping experience. The quality of their products is
-                outstanding, and their customer service is second to none!"</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <h4>Jessica M.</h4>
-        </div>
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="Customer">
-            </div>
-            <p>"I've been shopping with I Want More for over a year now. Their commitment to quality and service keeps
-                me coming back. Truly a cut above the rest!"</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-            </div>
-            <h4>Robert T.</h4>
-        </div>
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/women/58.jpg" alt="Customer">
-            </div>
-            <p>"From browsing to delivery, shopping with I Want More is an absolute pleasure. Their attention to detail
-                and commitment to customer satisfaction is evident in everything they do."</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <h4>Amanda P.</h4>
-        </div>
-    </div>
-</div>
-
+{% include "components/review.html" %}
 {% include "components/newsletter.html"%}
 {% endblock %}

@@ -36,7 +36,7 @@ from unfold.sites import UnfoldAdminSite
 from .models import (
     Product, Review, Tag, MoreImages, NewsletterSubscriber,
     Category, SubCategory, FeatureReason, Order, OrderItem,
-    Address, Coupon, Color, Size, Brand, AdminAlert
+    Address, Coupon, Color, Size, Brand, AdminAlert,PromoBanner
 )
 
 CAPTURED_PAYMENT_STATES = ['paid', 'partially_paid']
@@ -275,7 +275,7 @@ class IWMAdminSite(UnfoldAdminSite):
                 template="plotly_dark"
             )
             fig.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
-            category_chart = plot(fig, output_type='div', include_plotlyjs='cdn')
+            category_chart = plot(fig, output_type='div', include_plotlyjs=True)
         else:
             category_chart = format_html(
                 '<div style="padding: 2rem; text-align: center; color: #9ca3af;">No category data available for the selected period.</div>'
@@ -427,14 +427,7 @@ class FeatureReasonAdmin(ModelAdmin):
 class MoreImagesInline(TabularInline):
     model = MoreImages
     extra = 1
-    fields = ('image', 'image_preview')
-    readonly_fields = ('image_preview',)
-    
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="height: 50px; border-radius: 5px;" />', obj.image.url)
-        return "-"
-    image_preview.short_description = "Preview"
+    fields = ('image',)
 
 
 class ProductAdmin(ExportActionMixin, ModelAdmin):
@@ -445,14 +438,14 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
     list_filter = ('price', 'tags', 'subcategory', 'is_featured', 'color', 'size', 'brand', 'created_at')
     filter_horizontal = ('tags',)
     inlines = [MoreImagesInline]
-    readonly_fields = ('slug', 'image_preview', 'discount_percentage_display', 'created_at')
+    readonly_fields = ('slug', 'discount_percentage_display', 'created_at')
     
     fieldsets = (
         ('Product Information', {
-            'fields': ('name', 'slug', 'description', 'image', 'image_preview')
+            'fields': ('name', 'slug', 'description', 'image')
         }),
         ('Pricing & Stock', {
-            'fields': ('price', 'discount_price', 'discount_percentage_display', 'stock')
+            'fields': ('price', 'buying_price', 'discount_price', 'discount_percentage_display', 'stock')
         }),
         ('Categorization', {
             'fields': ('subcategory', 'tags')
@@ -505,11 +498,7 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
         return "-"
     get_colors.short_description = "Color"
     
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="height: 200px; border-radius: 5px;" />', obj.image.url)
-        return "-"
-    image_preview.short_description = "Preview"
+    # Image preview removed — Unfold admin provides an automatic preview
     
     def discount_percentage_display(self, obj):
         return format_html('<strong>{}</strong>', f"{float(obj.discount_percentage):.1f}%") if getattr(obj, "discount_percentage", 0) and obj.discount_percentage > 0 else "-"
@@ -584,16 +573,9 @@ class TagAdmin(ModelAdmin):
 
 
 class MoreImagesAdmin(ModelAdmin):
-    list_display = ('product', 'image_preview')
+    list_display = ('product',)
     list_filter = ('product',)
     search_fields = ('product__name',)
-    readonly_fields = ('image_preview',)
-    
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="height: 50px; border-radius: 5px;" />', obj.image.url)
-        return "-"
-    image_preview.short_description = "Preview"
 
 
 # ========================
@@ -1167,7 +1149,56 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 class GroupAdmin(BaseGroupAdmin, ModelAdmin):
     pass
 
+class PromoBannerAdmin(ModelAdmin):
+    list_display = (
+        'title_1',
+        'title_2',
+        'status_badge',
+    )
 
+    list_filter = (
+        'is_active',
+    )
+
+    search_fields = (
+        'title_1',
+        'title_2',
+        'description',
+    )
+
+    fieldsets = (
+        ('Banner Content', {
+            'fields': (
+                'title_1',
+                'title_2',
+                'description',
+                'image',
+            )
+        }),
+
+        ('Status', {
+            'fields': (
+                'is_active',
+            )
+        }),
+    )
+
+    def status_badge(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="background:#d4edda; color:#155724; '
+                'padding:5px 10px; border-radius:20px; '
+                'font-weight:bold;">ACTIVE</span>'
+            )
+
+        return format_html(
+            '<span style="background:#f8d7da; color:#721c24; '
+            'padding:5px 10px; border-radius:20px; '
+            'font-weight:bold;">INACTIVE</span>'
+        )
+
+    status_badge.short_description = "Status"
+    
 # ========================
 # REGISTER ALL MODELS WITH CUSTOM ADMIN SITE
 # ========================
@@ -1202,3 +1233,4 @@ admin_site.register(OrderItem, OrderItemAdmin)
 admin_site.register(Address, AddressAdmin)
 admin_site.register(Coupon, CouponAdmin)
 admin_site.register(AdminAlert, AdminAlertAdmin)
+admin_site.register(PromoBanner, PromoBannerAdmin)

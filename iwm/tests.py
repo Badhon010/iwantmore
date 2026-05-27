@@ -56,7 +56,7 @@ class OrderWorkflowTests(TestCase):
             'shipping_address': {
                 'full_name': 'Guest Buyer',
                 'address_line1': 'Road 1',
-                'address_line2': '',
+                'address_line2': 'Near the main road',
                 'city': 'Dhaka',
                 'postal_code': '1207',
                 'state': 'Dhaka',
@@ -65,7 +65,7 @@ class OrderWorkflowTests(TestCase):
             'billing_address': {
                 'full_name': 'Guest Buyer',
                 'address_line1': 'Road 1',
-                'address_line2': '',
+                'address_line2': 'Near the main road',
                 'city': 'Dhaka',
                 'postal_code': '1207',
                 'state': 'Dhaka',
@@ -91,7 +91,7 @@ class OrderWorkflowTests(TestCase):
         shipping_address_data = overrides.pop('shipping_address_data', {
             'full_name': 'Buyer Name',
             'address_line1': 'Street 1',
-            'address_line2': '',
+            'address_line2': 'Near the market',
             'city': 'Dhaka',
             'postal_code': '1207',
             'state': 'Dhaka',
@@ -195,6 +195,19 @@ class OrderWorkflowTests(TestCase):
         self.product.refresh_from_db()
         self.assertEqual(order.order_status, 'cancelled')
         self.assertEqual(self.product.stock, 5)
+
+    def test_manual_wallet_order_can_be_created_without_payment_references(self):
+        order, created = self._create_order(
+            idempotency_key='manual-order-no-references',
+            payment_method='bkash',
+            raw_items=[{'id': self.product.id, 'quantity': 1}],
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(order.payment_method, 'bkash')
+        self.assertEqual(order.payment_state, 'awaiting_payment')
+        self.assertFalse(order.sender_number)
+        self.assertFalse(order.transaction_id)
 
     def test_duplicate_transaction_id_is_rejected_case_insensitively(self):
         self._create_order(

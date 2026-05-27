@@ -67,9 +67,6 @@
             <button class="dot" data-slide="2" aria-label="Go to slide 3"></button>
         </div>
     </div>
-    <div class="floating-shape shape-1"></div>
-    <div class="floating-shape shape-2"></div>
-    <div class="floating-shape shape-3"></div>
 </div>
 
 <div class="categories">
@@ -77,26 +74,34 @@
     <div class="cont">
         {% for category in categories %}
         <div class="category-item">
-            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+            {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}">
+            {% else %}
+                <div class="category-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+            {% endif %}
             <h3>{{ category.name }}</h3>
             <a href="{% url 'shop' %}" class="btn-explore">Explore</a>
         </div>
+        {% empty %}
+        <p>No categories available at the moment.</p>
         {% endfor %}
     </div>
     <div class="promo-banner">
+        {% if promo %}
         <div class="promo-content">
             <div class="promo-text">
-                <h3>SUMMER SALE</h3>
-                <h3>SUMMER SALE</h3>
-                <h2>Up to 50% Off</h2>
-                <p>Limited time offer on selected items. Don't miss out!</p>
-                <a href="{% url 'shop' %}" class="btn-shop-now">Shop Now</a>
+                <h3>{{ promo.title_1 }}</h3>
+                <h2>{{ promo.title_2 }}</h2>
+                <p>{{ promo.description }}</p>
+                <a href="{% url 'shop' %}"class="btn-shop-now">Shop Now</a>
             </div>
             <div class="promo-image">
-                <img src="https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=600&auto=format&fit=crop&q=80"
-                    alt="Summer Sale">
+                <img src="{{ promo.image.url }}"alt="{{ promo.title_1 }}">
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
@@ -107,6 +112,8 @@
     <div class="product-list">
         {% for product in featured_products %}
         {% include "components/item_cart.html" with product=product %}
+        {% empty %}
+        <p>No featured products at the moment.</p>
         {% endfor %}
     </div>
 
@@ -137,58 +144,7 @@
     </div>
 </div>
 
-
-
-<div class="testimonials">
-    <h2>What Our Customers Say</h2>
-    <div class="testimonial-list">
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Customer">
-            </div>
-            <p>"The quality of the products exceeded my expectations. Fast shipping and excellent customer service. I'll
-                definitely be a returning customer!"</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <h4>Sarah Johnson</h4>
-        </div>
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="Customer">
-            </div>
-            <p>"I've been shopping here for years and have never been disappointed. The selection is amazing and the
-                prices are competitive."</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <h4>Michael Chen</h4>
-        </div>
-        <div class="testimonial-item">
-            <div class="customer-avatar">
-                <img src="https://randomuser.me/api/portraits/women/58.jpg" alt="Customer">
-            </div>
-            <p>"The attention to detail in packaging was impressive. The clothes fit perfectly, and I loved the personal
-                touch in the delivery note!"</p>
-            <div class="customer-rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-            </div>
-            <h4>Emma Rodriguez</h4>
-        </div>
-    </div>
-</div>
+{% include "components/review.html" %}
 
 <div class="features-section">
     <div class="feature">
@@ -220,5 +176,6 @@
         <p>Dedicated customer service</p>
     </div>
 </div>
+
 {% include "components/newsletter.html"%}
 {% endblock %}

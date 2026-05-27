@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ product.name }} - I Want More{% endblock %}
+{% block title %}{{ product.meta_title|default:product.name }} - I Want More{% endblock %}
+{% block og_title %}{{ product.meta_title|default:product.name }}{% endblock %}
+{% block og_description %}{{ product.meta_description|default:product.description|striptags|truncatechars:160 }}{% endblock %}
+{% block og_image %}{{ product.image.url }}{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/product.css' %}">
     <link rel="stylesheet" href="{% static 'css/item_cart.css' %}">
@@ -21,18 +24,20 @@
             </div>
             
             <!-- Thumbnail Images -->
-            {% if product.more_images.all %}
+            {% with more_images=product.more_images.all %}
+            {% if more_images %}
             <div class="thumbnail-images">
                 <div class="thumbnail active">
                     <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 </div>
-                {% for img in product.more_images.all %}
+                {% for img in more_images %}
                 <div class="thumbnail">
                     <img src="{{ img.image.url }}" alt="{{ product.name }}">
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
+            {% endwith %}
         </div>
 
         <!-- Product Info Section -->
@@ -73,10 +78,12 @@
 
             <!-- Product Details -->
             <div class="product-details">
+                {% if product.category %}
                 <div class="detail-item">
                     <span class="label">Category:</span>
                     <span class="value">{{ product.category.name }}</span>
                 </div>
+                {% endif %}
                 {% if product.subcategory %}
                 <div class="detail-item">
                     <span class="label">Subcategory:</span>
@@ -104,7 +111,7 @@
             </div>
 
             <!-- Tags -->
-            {% if product.tags.all %}
+            {% if product.tags.exists %}
             <div class="tags-section">
                 <span class="tags-label">Tags:</span>
                 <div class="tags">
@@ -130,7 +137,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="action-buttons">
                     <button class="btn btn-cart" id="addToCartBtn">
                         <i class="fas fa-shopping-cart"></i>
@@ -156,7 +163,7 @@
         <h2>Customer Reviews ({{ product.review_count }})</h2>
         
         <!-- Review Form -->
-        {% if user.is_authenticated %}
+        {% if can_comment %}
         <div class="review-form-section">
             <h3>Write a Review</h3>
             <form method="post" action="{% url 'submit_review' product_slug=product.slug %}" class="review-form">
@@ -183,7 +190,7 @@
         {% else %}
         <div class="login-prompt">
             <i class="fas fa-user-lock"></i>
-            <p>Please <a href="{% url 'login' %}">log in</a> to write a review</p>
+            <p>Only customers who bought this product can write a review. <a href="{% url 'my_orders' %}">View your orders</a>.</p>
         </div>
         {% endif %}
 
@@ -193,9 +200,9 @@
             <div class="review-card">
                 <div class="review-header">
                     <div class="reviewer-info">
-                        <div class="avatar">{{ review.user.username|first|upper }}</div>
+                        <div class="avatar">{% if review.user %}{{ review.user.username|first|upper }}{% else %}<i class="fas fa-user"></i>{% endif %}</div>
                         <div>
-                            <h4>{{ review.user.username }}</h4>
+                            <h4>{% if review.user %}{{ review.user.username }}{% else %}Guest{% endif %}</h4>
                             <p class="review-date">{{ review.created_at|date:"F d, Y" }}</p>
                         </div>
                     </div>

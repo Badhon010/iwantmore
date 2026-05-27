@@ -1,55 +1,122 @@
-const title = document.querySelector('.title');
 const moreSmall = document.getElementById('moreSmall');
 const smallDropdown = document.querySelector("#more-link-small .dropdown-menu");
+const moreLink = document.getElementById('more-link');
+const moreLinkToggle = document.getElementById('moreLinkToggle');
 const search = document.getElementById('search');
-const seaBtn = document.getElementById('sea-btn');
 const innerHeader = document.getElementById('i-h');
-const searchBtn = document.getElementsByClassName('search-btn')[0];
+const searchBtn = document.getElementById('searchToggle');
 const searchInput = document.getElementById("sea");
 const clearBtn = document.getElementById("clear-btn");
 const suggestionsContainer = document.getElementById('suggestions');
+const orderLinks = document.querySelector('.order_links');
+const storeToggle = document.getElementById('store');
 
+function setSearchOpen(isOpen) {
+    if (!search || !innerHeader || !searchBtn) return;
 
-search.style.display = 'none';
-let dropDown = false;
+    search.style.display = isOpen ? 'flex' : 'none';
+    innerHeader.style.display = isOpen ? 'none' : 'flex';
+    searchBtn.setAttribute('aria-expanded', String(isOpen));
 
-// Toggle the search bar on searchBtn click
-searchBtn.addEventListener("click", (event) => {
-    event.stopPropagation(); // Prevent the click from bubbling up
-    if (search.style.display === 'flex') {
-        // If already open, close it
-        search.style.display = 'none';
-        innerHeader.style.display = 'flex';
-    } else {
-        // Open search bar and hide header
-        search.style.display = 'flex';
-        innerHeader.style.display = 'none';
+    if (isOpen && searchInput) {
+        searchInput.focus();
+    }
+}
+
+function setToggleState(button, expanded) {
+    if (button) {
+        button.setAttribute('aria-expanded', String(expanded));
+    }
+}
+
+setSearchOpen(false);
+
+if (searchBtn) {
+    searchBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        setSearchOpen(search.style.display !== 'flex');
+    });
+}
+
+if (moreSmall && smallDropdown) {
+    moreSmall.addEventListener("click", () => {
+        const isOpen = smallDropdown.style.display === 'block';
+        smallDropdown.style.display = isOpen ? 'none' : 'block';
+        setToggleState(moreSmall, !isOpen);
+    });
+}
+
+if (moreLink && moreLinkToggle) {
+    moreLinkToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = moreLink.classList.toggle('open');
+        setToggleState(moreLinkToggle, isOpen);
+    });
+}
+
+if (storeToggle && orderLinks) {
+    storeToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = orderLinks.classList.toggle('open');
+        setToggleState(storeToggle, isOpen);
+    });
+}
+
+document.addEventListener("click", (event) => {
+    if (search && search.style.display === 'flex' && !search.contains(event.target) && !searchBtn?.contains(event.target)) {
+        setSearchOpen(false);
+    }
+
+    if (moreLink && !moreLink.contains(event.target)) {
+        moreLink.classList.remove('open');
+        setToggleState(moreLinkToggle, false);
+    }
+
+    if (smallDropdown && moreSmall && !moreSmall.contains(event.target) && !smallDropdown.contains(event.target)) {
+        smallDropdown.style.display = 'none';
+        setToggleState(moreSmall, false);
+    }
+
+    if (orderLinks && !orderLinks.contains(event.target)) {
+        orderLinks.classList.remove('open');
+        setToggleState(storeToggle, false);
     }
 });
 
-// Toggle dropdown in the bottom nav
-moreSmall.addEventListener("click", () => {
-    dropDown = !dropDown;
-    smallDropdown.style.display = dropDown ? 'block' : 'none';
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    setSearchOpen(false);
+
+    if (moreLink) {
+        moreLink.classList.remove('open');
+        setToggleState(moreLinkToggle, false);
+    }
+
+    if (smallDropdown) {
+        smallDropdown.style.display = 'none';
+        setToggleState(moreSmall, false);
+    }
+
+    if (orderLinks) {
+        orderLinks.classList.remove('open');
+        setToggleState(storeToggle, false);
+    }
 });
 
-// Extra: Close the search bar when clicking anywhere outside of it
-document.addEventListener("click", (event) => {if (search.style.display === 'flex' && !search.contains(event.target)) {
-    search.style.display = 'none';
-    innerHeader.style.display = 'flex';
-}});
+if (searchInput && clearBtn) {
+    searchInput.addEventListener("input", function() {
+        clearBtn.style.display = this.value ? "block" : "none";
+    });
 
-
-
-searchInput.addEventListener("input", function() {
-    clearBtn.style.display = this.value ? "block" : "none";
-});
-
-clearBtn.addEventListener("click", function() {
-    searchInput.value = "";
-    clearBtn.style.display = "none";
-    searchInput.focus();
-});
+    clearBtn.addEventListener("click", function() {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        searchInput.focus();
+    });
+}
 
  
 

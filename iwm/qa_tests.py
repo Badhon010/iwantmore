@@ -59,6 +59,7 @@ class QAAuditTests(TransactionTestCase):
         shipping_address_data = overrides.pop('shipping_address_data', {
             'full_name': 'QA Buyer',
             'address_line1': 'Street 1',
+            'address_line2': 'Near the bus stand',
             'city': 'Dhaka',
             'postal_code': '1207',
             'state': 'Dhaka',
@@ -96,9 +97,9 @@ class QAAuditTests(TransactionTestCase):
         self.assertEqual(self.product.stock, 4)
 
     def test_successful_bkash_order(self):
-        order, created = self._create_order(payment_method='bkash', sender_number='017111', transaction_id='TXN1')
+        order, created = self._create_order(payment_method='bkash')
         self.assertTrue(created)
-        self.assertEqual(order.payment_state, 'payment_submitted')
+        self.assertEqual(order.payment_state, 'awaiting_payment')
 
     def test_guest_and_authenticated_orders(self):
         guest_order, _ = self._create_order(user=None)
@@ -153,9 +154,10 @@ class QAAuditTests(TransactionTestCase):
             self._create_order(coupon_id=self.coupon.id, idempotency_key='c2')
 
     # PHASE 5: PAYMENT VALIDATION
-    def test_missing_transaction_id_for_bkash(self):
-        with self.assertRaises(ValidationError):
-            self._create_order(payment_method='bkash', sender_number='017111', transaction_id='')
+    def test_bkash_order_does_not_require_transaction_id(self):
+        order, created = self._create_order(payment_method='bkash', sender_number='017111', transaction_id='')
+        self.assertTrue(created)
+        self.assertEqual(order.payment_state, 'awaiting_payment')
 
     def test_cod_fake_delivery_payment(self):
         with self.assertRaises(ValidationError):

@@ -485,154 +485,6 @@
     transform: scale(1.08);
 }
 
-/* Service Testimonials Section with improved styling */
-.service-testimonials {
-    background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
-    padding: 100px 20px;
-    text-align: center;
-    margin-bottom: 80px;
-    position: relative;
-    overflow: hidden;
-}
-
-.service-testimonials::before,
-.service-testimonials::after {
-    content: '';
-    position: absolute;
-    background: radial-gradient(circle, rgba(255, 111, 145, 0.05) 0%, rgba(255, 111, 145, 0) 70%);
-    border-radius: 50%;
-}
-
-.service-testimonials::before {
-    width: 500px;
-    height: 500px;
-    top: -250px;
-    left: -250px;
-}
-
-.service-testimonials::after {
-    width: 600px;
-    height: 600px;
-    bottom: -300px;
-    right: -300px;
-}
-
-.service-testimonials h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 60px;
-    color: var(--text-color);
-    position: relative;
-    display: inline-block;
-}
-
-.service-testimonials h2::after {
-    content: '';
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--btn-bg) 0%, rgba(255, 111, 145, 0.5) 100%);
-    border-radius: 4px;
-}
-
-.testimonial-slider {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.testimonial-item {
-    width: 350px;
-    padding: 40px 30px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
-    transition: all 0.5s ease;
-    position: relative;
-    z-index: 1;
-    text-align: left;
-    animation: fadeInUp 1s backwards;
-}
-
-.testimonial-item:nth-child(2) {
-    animation-delay: 0.3s;
-}
-
-.testimonial-item:nth-child(3) {
-    animation-delay: 0.6s;
-}
-
-.testimonial-item::before {
-    content: '"';
-    position: absolute;
-    top: 15px;
-    left: 20px;
-    font-size: 120px;
-    color: rgba(255, 111, 145, 0.08);
-    font-family: 'Georgia', serif;
-    line-height: 0.8;
-    z-index: -1;
-}
-
-.testimonial-item:hover {
-    transform: translateY(-15px) rotate(1deg);
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.08);
-}
-
-.testimonial-content {
-    margin-bottom: 25px;
-    position: relative;
-}
-
-.testimonial-content p {
-    color: #555;
-    line-height: 1.8;
-    font-style: italic;
-    position: relative;
-    z-index: 1;
-    font-size: 1.05rem;
-}
-
-.testimonial-author {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.testimonial-author img {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid white;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.5s ease;
-}
-
-.testimonial-item:hover .testimonial-author img {
-    transform: scale(1.1) rotate(-5deg);
-    border-color: rgba(255, 111, 145, 0.3);
-}
-
-.author-info h4 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--text-color);
-}
-
-.author-info span {
-    font-size: 0.95rem;
-    color: #777;
-    display: block;
-}
-
 /* Animation keyframes */
 @keyframes float {
     0% {
@@ -654,15 +506,6 @@
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
     }
 }
 
@@ -704,11 +547,6 @@
     .stat-item {
         flex: 0 0 200px;
     }
-    
-    .testimonial-item {
-        width: 100%;
-        max-width: 450px;
-    }
 }
 
 @media (max-width: 768px) {
@@ -736,10 +574,6 @@
     
     .cta-content h2 {
         font-size: 2rem;
-    }
-    
-    .service-testimonials h2 {
-        font-size: 2.2rem;
     }
     
     .stats-section {
@@ -786,18 +620,6 @@
     
     .cta-image {
         height: 250px;
-    }
-    
-    .service-testimonials {
-        padding: 60px 20px;
-    }
-    
-    .service-testimonials h2 {
-        font-size: 2rem;
-    }
-    
-    .testimonial-item {
-        padding: 30px 25px;
     }
     
     .stats-section {

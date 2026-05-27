@@ -17,29 +17,27 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Update cart and wishlist count badges
     updateWishlistCount();
+
+    window.addEventListener('popstate', function() {
+        initFromURL();
+        fetchProducts(window.location.href, { pushHistory: false });
+    });
 });
+
+let activeProductsRequest = null;
 
 // Ensure all product items have data-id attributes
 function ensureProductIds() {
-    let missingIdCount = 0;
-    let fixedCount = 0;
-    
     document.querySelectorAll('.product-item').forEach((item, index) => {
-        // Skip if already has data-id
         if (item.getAttribute('data-id')) {
             return;
         }
         
-        missingIdCount++;
         let id = null;
         
-        // Try to get ID from various sources
         const possibleIdSources = [
-            // From item's own ID
             () => item.id && item.id.match(/\d+$/) ? item.id.match(/\d+$/)[0] : null,
-            // From data attributes
             () => item.getAttribute('data-product-id'),
-            // From links to the product
             () => {
                 const link = item.querySelector('a.add-to-cart, a.view-details');
                 if (link && link.href) {
@@ -48,11 +46,9 @@ function ensureProductIds() {
                 }
                 return null;
             },
-            // Last resort: use index + timestamp for a unique ID
             () => `temp-${index}-${Date.now()}`
         ];
         
-        // Try each source in order until we find an ID
         for (const getIdFunc of possibleIdSources) {
             id = getIdFunc();
             if (id) {
@@ -62,11 +58,8 @@ function ensureProductIds() {
         
         if (id) {
             item.setAttribute('data-id', id);
-            fixedCount++;
         }
     });
-    
-    console.log(`Fixed ${fixedCount}/${missingIdCount} missing product IDs`);
 }
 
 function initFromURL() {
@@ -442,7 +435,8 @@ function initFilters() {
     // Reset all filters
     if (resetAllButton) {
     resetAllButton.addEventListener('click', function() {
-        window.location.href = '/search/';
+        const searchUrl = new URL('/search/', window.location.origin);
+        window.location.href = searchUrl.toString();
     });
     }
 }
@@ -457,15 +451,26 @@ function updateURL(urlParams) {
         currentPath = '/search/'; // Default to /search/ if not already there
     }
 
-    const newURL = `${currentPath}?${urlParams.toString()}`;
-    window.history.pushState({}, '', newURL);
-    
-    // Call fetchProducts if you have AJAX-based content update
-    fetchProducts(newURL);
+    const queryString = urlParams.toString();
+    const newURL = queryString ? `${currentPath}?${queryString}` : currentPath;
+
+    fetchProducts(newURL, { pushHistory: true });
 }
 
-function fetchProducts(url) {
-    fetch(url)
+function fetchProducts(url, options = {}) {
+    const { pushHistory = false } = options;
+
+    if (pushHistory) {
+        window.history.pushState({}, '', url);
+    }
+
+    if (activeProductsRequest) {
+        activeProductsRequest.abort();
+    }
+
+    activeProductsRequest = new AbortController();
+
+    fetch(url, { signal: activeProductsRequest.signal })
         .then(response => response.text())
         .then(html => {
             const parser = new DOMParser();
@@ -498,7 +503,14 @@ function fetchProducts(url) {
             // Reinitialize product interactions for the new content
             initProductInteractions();
         })
-        .catch(error => console.error('Error fetching products:', error));
+        .catch(error => {
+            if (error.name !== 'AbortError') {
+                console.error('Error fetching products:', error);
+            }
+        })
+        .finally(() => {
+            activeProductsRequest = null;
+        });
 }
 
 function initSubcategoryToggles() {

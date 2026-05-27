@@ -54,7 +54,7 @@
                 {% for address in shipping_addresses %}
                 {% if address.address_type == 'shipping' %}
                 <option value="{{ address.id }}" data-address="{{ address.as_json }}">
-                  {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
+                  {{ address.full_name }}, {{ address.address_line1 }}, {{ address.state|default:address.city }}
                 </option>
                 {% endif %}
                 {% endfor %}
@@ -63,31 +63,19 @@
             {% endif %}
             
             <div class="form-group">
-              <label for="shipping-address-line1">Address Line 1 <span class="required">*</span></label>
-              <input type="text" id="shipping-address-line1" name="shipping_address_line1" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="shipping-address-line2">Address Line 2</label>
-              <input type="text" id="shipping-address-line2" name="shipping_address_line2">
+              <label for="shipping-address-line1">Full Address <span class="required">*</span></label>
+              <input type="text" id="shipping-address-line1" name="shipping_address_line1" placeholder="House, road, area" required>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label for="shipping-city">City <span class="required">*</span></label>
-                <input type="text" id="shipping-city" name="shipping_city" required>
-              </div>
-              
-              <div class="form-group">
-                <label for="shipping-postal-code">Postal Code <span class="required">*</span></label>
-                <input type="text" id="shipping-postal-code" name="shipping_postal_code" required value="1000">
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="shipping-state">State/Division <span class="required">*</span></label>
-                <input type="text" id="shipping-state" name="shipping_state" required value="Dhaka">
+                <label for="shipping-district">District <span class="required">*</span></label>
+                <select id="shipping-district" name="shipping_district" required>
+                  <option value="">Select your district</option>
+                  {% for district in bangladesh_districts %}
+                  <option value="{{ district }}"{% if district == 'Dhaka' %} selected{% endif %}>{{ district }}</option>
+                  {% endfor %}
+                </select>
               </div>
               
               <div class="form-group">
@@ -95,6 +83,10 @@
                 <input type="text" id="shipping-country" name="shipping_country" required value="Bangladesh" readonly>
               </div>
             </div>
+
+            <input type="hidden" id="shipping-city" name="shipping_city" value="Dhaka">
+            <input type="hidden" id="shipping-postal-code" name="shipping_postal_code" value="1000">
+            <input type="hidden" id="shipping-state" name="shipping_state" value="Dhaka">
             
             <div class="form-group">
               <label for="shipping-location-description">Describe Your Location <span class="required">*</span></label>
@@ -131,7 +123,7 @@
                   {% for address in billing_addresses %}
                   {% if address.address_type == 'billing' %}
                   <option value="{{ address.id }}" data-address="{{ address.as_json }}">
-                    {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
+                    {{ address.full_name }}, {{ address.address_line1 }}, {{ address.state|default:address.city }}
                   </option>
                   {% endif %}
                   {% endfor %}
@@ -145,31 +137,19 @@
               </div>
               
               <div class="form-group">
-                <label for="billing-address-line1">Address Line 1 <span class="required">*</span></label>
-                <input type="text" id="billing-address-line1" name="billing_address_line1">
-              </div>
-              
-              <div class="form-group">
-                <label for="billing-address-line2">Address Line 2</label>
-                <input type="text" id="billing-address-line2" name="billing_address_line2">
+                <label for="billing-address-line1">Full Address <span class="required">*</span></label>
+                <input type="text" id="billing-address-line1" name="billing_address_line1" placeholder="House, road, area">
               </div>
               
               <div class="form-row">
                 <div class="form-group">
-                  <label for="billing-city">City <span class="required">*</span></label>
-                  <input type="text" id="billing-city" name="billing_city">
-                </div>
-                
-                <div class="form-group">
-                  <label for="billing-postal-code">Postal Code <span class="required">*</span></label>
-                  <input type="text" id="billing-postal-code" name="billing_postal_code" value="1000">
-                </div>
-              </div>
-              
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="billing-state">State/Division <span class="required">*</span></label>
-                  <input type="text" id="billing-state" name="billing_state" value="Dhaka">
+                  <label for="billing-district">District <span class="required">*</span></label>
+                  <select id="billing-district" name="billing_district">
+                    <option value="">Select your district</option>
+                    {% for district in bangladesh_districts %}
+                    <option value="{{ district }}"{% if district == 'Dhaka' %} selected{% endif %}>{{ district }}</option>
+                    {% endfor %}
+                  </select>
                 </div>
                 
                 <div class="form-group">
@@ -177,6 +157,10 @@
                   <input type="text" id="billing-country" name="billing_country" value="Bangladesh" readonly>
                 </div>
               </div>
+
+              <input type="hidden" id="billing-city" name="billing_city" value="Dhaka">
+              <input type="hidden" id="billing-postal-code" name="billing_postal_code" value="1000">
+              <input type="hidden" id="billing-state" name="billing_state" value="Dhaka">
               
               <div class="form-group">
                 <label for="billing-location-description">Describe Your Location <span class="required">*</span></label>
@@ -235,59 +219,21 @@
             </div>
             
             <div class="payment-fields bkash-fields" style="display: none;">
-              <div class="form-group">
-                <label for="bkash-number">bKash Number <span class="required">*</span></label>
-                <input type="text" id="bkash-number" name="bkash_number">
-              </div>
-              <div class="form-group">
-                <label for="bkash-trx-id">Transaction ID <span class="required">*</span></label>
-                <input type="text" id="bkash-trx-id" name="bkash_trx_id" placeholder="Enter transaction ID">
-              </div>
               <p class="payment-instructions">
-                Please make the payment to our bKash merchant number (01XXXXXXXXX) before confirming your order. 
-                Use your order ID as the reference number.
+                Choose bKash and place the order. Our team will call you to confirm the payment and delivery details.
               </p>
             </div>
             
             <div class="payment-fields nagad-fields" style="display: none;">
-              <div class="form-group">
-                <label for="nagad-number">Nagad Number <span class="required">*</span></label>
-                <input type="text" id="nagad-number" name="nagad_number">
-              </div>
-              <div class="form-group">
-                <label for="nagad-trx-id">Transaction ID <span class="required">*</span></label>
-                <input type="text" id="nagad-trx-id" name="nagad_trx_id" placeholder="Enter transaction ID">
-              </div>
               <p class="payment-instructions">
-                Please make the payment to our Nagad merchant number (01XXXXXXXXX) before confirming your order. 
-                Use your order ID as the reference number.
+                Choose Nagad and place the order. Our team will call you to confirm the payment and delivery details.
               </p>
             </div>
             
             <div class="payment-fields cod-fields" style="display: none;">
               <p class="payment-instructions">
-                For Cash on Delivery, you will pay the order amount to our delivery person.
-                Additionally, please select the delivery charge payment method below:
+                Choose Cash on Delivery and place the order. Our team will call you to confirm the address, delivery charge, and delivery timing.
               </p>
-              
-              <div class="form-group">
-                <label for="cod-delivery-payment-method">Delivery Charge Payment Method</label>
-                <select id="cod-delivery-payment-method" name="cod_delivery_payment_method">
-                  <option value="">Select delivery payment method</option>
-                  <option value="bkash">bKash</option>
-                  <option value="nagad">Nagad</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="cod-delivery-sender-number">Delivery Sender Number</label>
-                <input type="text" id="cod-delivery-sender-number" name="cod_delivery_sender_number" placeholder="Enter sender number if delivery charge is paid online">
-              </div>
-              
-              <div class="form-group">
-                <label for="cod-delivery-trx-id">Delivery Transaction ID</label>
-                <input type="text" id="cod-delivery-trx-id" name="cod_delivery_trx_id" placeholder="Enter delivery transaction ID if delivery charge is paid online">
-              </div>
             </div>
             
 
@@ -356,7 +302,7 @@
       <div class="payment-instructions manual-payment">
         <p><strong>Important:</strong> After placing order, our team will contact you via phone or Messenger to confirm payment and delivery.</p>
         <p>For Cash on Delivery, delivery charge must be paid to our delivery person.</p>
-        <p>For bKash/Nagad, please make payment to our merchant number and provide both the sender number and transaction ID.</p>
+        <p>For bKash/Nagad, you do not need to enter sender number or transaction ID at checkout. Our team will verify payment details with you after the order is placed.</p>
         <p>If you set an order PIN, keep it safe. You can use it later on My Orders with your email or phone number.</p>
       </div>
       

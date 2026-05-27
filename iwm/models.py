@@ -78,11 +78,12 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     price = models.PositiveIntegerField()
+    buying_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(null=True, blank=True)
     image = models.ImageField(upload_to='product_images/')
     stock = models.PositiveIntegerField(default=0)  
     created_at = models.DateTimeField(auto_now_add=True)
-    tags = models.ManyToManyField('Tag', related_name="products")  
+    tags = models.ManyToManyField('Tag', related_name="products", blank=True)  
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, editable=False, related_name='products')
     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, related_name='products')
     is_featured = models.BooleanField(default=False)
@@ -196,13 +197,16 @@ class MoreImages(models.Model):
 
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='reviews')
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def reviewer_name(self):
+        return self.user.username if self.user else "Guest"
+
     def __str__(self):
-        return f"Review by {self.user.username} for {self.product.name} - {self.rating}★"
+        return f"Review by {self.reviewer_name()} for {self.product.name} - {self.rating}★"
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True)
@@ -364,7 +368,7 @@ class Order(models.Model):
 
     # Payment info (for full payment or partial)
     sender_number = models.CharField(max_length=20, blank=True, null=True)
-    transaction_id = models.CharField(max_length=255, blank=True, null=True)
+    transaction_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     payment_state = models.CharField(max_length=30, choices=PAYMENT_STATE_CHOICES, default='awaiting_payment')
 
     # Delivery charge payment (IMPORTANT for COD)
@@ -376,7 +380,7 @@ class Order(models.Model):
         null=True
     )
     delivery_sender_number = models.CharField(max_length=20, blank=True, null=True)
-    delivery_transaction_id = models.CharField(max_length=255, blank=True, null=True)
+    delivery_transaction_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     inventory_restored_at = models.DateTimeField(blank=True, null=True)
     coupon_usage_released_at = models.DateTimeField(blank=True, null=True)
 
@@ -525,7 +529,7 @@ class Order(models.Model):
     @classmethod
     def _payment_state_for_method(cls, payment_method, *, delivery_charge_paid):
         if payment_method in cls.MANUAL_PAYMENT_METHODS:
-            return 'payment_submitted'
+            return 'awaiting_payment'
         if delivery_charge_paid:
             return 'partially_paid'
         return 'awaiting_payment'
@@ -601,6 +605,7 @@ class Order(models.Model):
             (phone, 'phone'),
             (shipping_full_name, 'shipping_full_name'),
             ((shipping_address_data.get('address_line1') or '').strip(), 'shipping_address_line1'),
+            ((shipping_address_data.get('address_line2') or '').strip(), 'shipping_address_line2'),
             ((shipping_address_data.get('city') or '').strip(), 'shipping_city'),
             ((shipping_address_data.get('postal_code') or '').strip(), 'shipping_postal_code'),
             ((shipping_address_data.get('state') or '').strip(), 'shipping_state'),
@@ -610,6 +615,7 @@ class Order(models.Model):
             required_values.extend([
                 (billing_full_name, 'billing_full_name'),
                 ((billing_address_data.get('address_line1') or '').strip(), 'billing_address_line1'),
+                ((billing_address_data.get('address_line2') or '').strip(), 'billing_address_line2'),
                 ((billing_address_data.get('city') or '').strip(), 'billing_city'),
                 ((billing_address_data.get('postal_code') or '').strip(), 'billing_postal_code'),
                 ((billing_address_data.get('state') or '').strip(), 'billing_state'),
@@ -728,87 +734,195 @@ class Order(models.Model):
 
         self.idempotency_key = self._normalize_optional_text(self.idempotency_key)
         self.sender_number = self._normalize_optional_text(self.sender_number)
-        self.transaction_id = self._normalize_optional_text(self.transaction_id, uppercase=True)
-        self.delivery_payment_method = self._normalize_optional_text(self.delivery_payment_method)
-        self.delivery_sender_number = self._normalize_optional_text(self.delivery_sender_number)
-        self.delivery_transaction_id = self._normalize_optional_text(self.delivery_transaction_id, uppercase=True)
+        self.transaction_id = self._normalize_optional_text(
+            self.transaction_id,
+            uppercase=True
+        )
+
+        self.delivery_payment_method = self._normalize_optional_text(
+            self.delivery_payment_method
+        )
+        self.delivery_sender_number = self._normalize_optional_text(
+            self.delivery_sender_number
+        )
+        self.delivery_transaction_id = self._normalize_optional_text(
+            self.delivery_transaction_id,
+            uppercase=True
+        )
 
         errors = {}
+
         manual_payment = self.payment_method in self.MANUAL_PAYMENT_METHODS
         cash_on_delivery = self.payment_method == 'cash_on_delivery'
 
+        # -------- MANUAL PAYMENT (bKash/Nagad) --------
+
         if manual_payment:
-            if not self.sender_number:
-                errors['sender_number'] = 'Sender number is required for bKash and Nagad payments.'
-            if not self.transaction_id:
-                errors['transaction_id'] = 'Transaction ID is required for bKash and Nagad payments.'
-            if self.payment_state == 'awaiting_payment':
-                errors['payment_state'] = 'Manual wallet payments must be at least marked as payment submitted.'
-            if self.delivery_charge_paid or self.delivery_payment_method or self.delivery_sender_number or self.delivery_transaction_id:
-                errors['delivery_payment_method'] = 'Delivery charge payment fields are only available for cash on delivery orders.'
+
+            # delivery fields never belong here
+            if any([
+                self.delivery_charge_paid,
+                self.delivery_payment_method,
+                self.delivery_sender_number,
+                self.delivery_transaction_id
+            ]):
+                errors['delivery_payment_method'] = (
+                    'Delivery charge fields only belong to COD.'
+                )
+
+            # sender + trx become OPTIONAL until admin verifies
+            if self.payment_state == 'paid':
+                if not self.sender_number:
+                    errors['sender_number'] = (
+                        'Sender number required before marking paid.'
+                    )
+
+                if not self.transaction_id:
+                    errors['transaction_id'] = (
+                        'Transaction ID required before marking paid.'
+                    )
+
+        # -------- COD --------
+
         elif cash_on_delivery:
+
             if self.sender_number:
-                errors['sender_number'] = 'Sender number is not used for cash on delivery orders.'
+                errors['sender_number'] = (
+                    'Sender number not used for COD.'
+                )
+
             if self.transaction_id:
-                errors['transaction_id'] = 'Transaction ID is not used for cash on delivery orders.'
+                errors['transaction_id'] = (
+                    'Transaction ID not used for COD.'
+                )
 
             delivery_details_supplied = any([
-                self.delivery_charge_paid,
                 self.delivery_payment_method,
                 self.delivery_sender_number,
                 self.delivery_transaction_id,
             ])
+
             if delivery_details_supplied:
-                if self.delivery_payment_method not in {'bkash', 'nagad'}:
-                    errors['delivery_payment_method'] = 'Select bKash or Nagad when recording an online delivery charge payment.'
+
+                # automatically mark paid
+                self.delivery_charge_paid = True
+
+                if self.delivery_payment_method not in {
+                    'bkash',
+                    'nagad'
+                }:
+                    errors['delivery_payment_method'] = (
+                        'Select bKash or Nagad.'
+                    )
+
                 if not self.delivery_sender_number:
-                    errors['delivery_sender_number'] = 'Sender number is required when the delivery charge is paid online.'
+                    errors['delivery_sender_number'] = (
+                        'Sender number required.'
+                    )
+
                 if not self.delivery_transaction_id:
-                    errors['delivery_transaction_id'] = 'Transaction ID is required when the delivery charge is paid online.'
-                if not self.delivery_charge_paid:
-                    errors['delivery_charge_paid'] = 'Delivery charge must be marked paid when payment details are recorded.'
+                    errors['delivery_transaction_id'] = (
+                        'Transaction ID required.'
+                    )
+
             else:
                 self.delivery_charge_paid = False
 
-            if self.payment_state == 'payment_submitted':
-                errors['payment_state'] = 'Cash on delivery orders cannot use the payment submitted state.'
-            if self.payment_state == 'partially_paid' and not self.delivery_charge_paid:
-                errors['payment_state'] = 'Cash on delivery orders can only be partially paid when the delivery charge has been received.'
+            if (
+                self.payment_state == 'partially_paid'
+                and not self.delivery_charge_paid
+            ):
+                errors['payment_state'] = (
+                    'COD can only become partially paid after delivery charge payment.'
+                )
+
         else:
             errors['payment_method'] = 'Invalid payment method.'
 
-        if self.order_status == 'delivered' and self.payment_state != 'paid':
-            errors['payment_state'] = 'Delivered orders must have a paid payment state.'
+        # delivered order must stay paid
 
-        if self.order_status == 'refunded' and self.payment_state != 'refunded':
-            errors['payment_state'] = 'Refunded orders must also have a refunded payment state.'
+        if (
+            self.order_status == 'delivered'
+            and self.payment_state != 'paid'
+        ):
+            errors['payment_state'] = (
+                'Delivered orders must be paid.'
+            )
 
-        if self.payment_state == 'refunded' and self.order_status not in {'cancelled', 'refunded'}:
-            errors['order_status'] = 'Refunded payments require the order to be cancelled or refunded.'
+        # refunds
 
-        if self.transaction_id and self.delivery_transaction_id and self.transaction_id.lower() == self.delivery_transaction_id.lower():
-            errors['delivery_transaction_id'] = 'Delivery charge transaction ID must be different from the main payment transaction ID.'
+        if (
+            self.order_status == 'refunded'
+            and self.payment_state != 'refunded'
+        ):
+            errors['payment_state'] = (
+                'Refunded orders must also be refunded.'
+            )
+
+        if (
+            self.payment_state == 'refunded'
+            and self.order_status not in {
+                'cancelled',
+                'refunded'
+            }
+        ):
+            errors['order_status'] = (
+                'Refunded payment requires cancelled/refunded order.'
+            )
+
+        # duplicate transaction checks
 
         duplicate_reference_filters = Q()
+
         if self.transaction_id:
-            duplicate_reference_filters |= Q(transaction_id__iexact=self.transaction_id) | Q(delivery_transaction_id__iexact=self.transaction_id)
+            duplicate_reference_filters |= (
+                Q(transaction_id__iexact=self.transaction_id)
+                |
+                Q(delivery_transaction_id__iexact=self.transaction_id)
+            )
+
         if self.delivery_transaction_id:
-            duplicate_reference_filters |= Q(transaction_id__iexact=self.delivery_transaction_id) | Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
+            duplicate_reference_filters |= (
+                Q(transaction_id__iexact=self.delivery_transaction_id)
+                |
+                Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
+            )
 
         if duplicate_reference_filters.children:
-            duplicates = Order.objects.exclude(pk=self.pk).filter(duplicate_reference_filters)
-            if self.transaction_id and duplicates.filter(
-                Q(transaction_id__iexact=self.transaction_id) | Q(delivery_transaction_id__iexact=self.transaction_id)
-            ).exists():
-                errors['transaction_id'] = 'This transaction ID is already linked to another order.'
-            if self.delivery_transaction_id and duplicates.filter(
-                Q(transaction_id__iexact=self.delivery_transaction_id) | Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
-            ).exists():
-                errors['delivery_transaction_id'] = 'This transaction ID is already linked to another order.'
+
+            duplicates = (
+                Order.objects
+                .exclude(pk=self.pk)
+                .filter(duplicate_reference_filters)
+            )
+
+            if (
+                self.transaction_id
+                and duplicates.filter(
+                    Q(transaction_id__iexact=self.transaction_id)
+                    |
+                    Q(delivery_transaction_id__iexact=self.transaction_id)
+                ).exists()
+            ):
+                errors['transaction_id'] = (
+                    'Transaction ID already used.'
+                )
+
+            if (
+                self.delivery_transaction_id
+                and duplicates.filter(
+                    Q(transaction_id__iexact=self.delivery_transaction_id)
+                    |
+                    Q(delivery_transaction_id__iexact=self.delivery_transaction_id)
+                ).exists()
+            ):
+                errors['delivery_transaction_id'] = (
+                    'Transaction ID already used.'
+                )
 
         if errors:
             raise ValidationError(errors)
-
+        
     def save(self, *args, **kwargs):
         state_mutation_allowed = getattr(self, '_allow_state_mutation', False)
         if self.pk and not state_mutation_allowed:
@@ -1008,18 +1122,6 @@ class Order(models.Model):
             models.Index(fields=['order_status', 'created_at']),
             models.Index(fields=['payment_state', 'created_at']),
         ]
-        constraints = [
-            models.UniqueConstraint(
-                Lower('transaction_id'),
-                condition=Q(transaction_id__isnull=False) & ~Q(transaction_id=''),
-                name='order_transaction_id_ci_unique',
-            ),
-            models.UniqueConstraint(
-                Lower('delivery_transaction_id'),
-                condition=Q(delivery_transaction_id__isnull=False) & ~Q(delivery_transaction_id=''),
-                name='order_delivery_transaction_id_ci_unique',
-            ),
-        ]
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -1166,3 +1268,29 @@ class AdminAlert(models.Model):
             models.Index(fields=['is_read']),
             models.Index(fields=['severity']),
         ]
+
+
+class PromoBanner(models.Model):
+    title_1 = models.CharField(max_length=100)
+    title_2 = models.CharField(max_length=100)
+    description = models.TextField(max_length=300)
+    image = models.ImageField(upload_to='promo_banners/')
+    is_active = models.BooleanField(default=False)
+
+    def clean(self):
+        if self.is_active:
+            existing = PromoBanner.objects.filter(
+                is_active=True
+            ).exclude(pk=self.pk)
+
+            if existing.exists():
+                raise ValidationError(
+                    "Only one PromoBanner can be active."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()   # runs clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.title_1} ({'Active' if self.is_active else 'Inactive'})"

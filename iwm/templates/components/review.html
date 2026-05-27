@@ -1,0 +1,33 @@
+<section class="testimonials">
+    <div class="section-header">
+        <h2>What Customers Say</h2>
+    </div>
+    <div class="testimonial-grid">
+        {% for review in featured_reviews %}
+        <article class="testimonial-card">
+            <div class="testimonial-top">
+                <div class="review-user">
+                    <div class="avatar">
+                        {% if review.user %}
+                        <div>{{ review.user.username|first|upper }}</div>
+                        {% else %}
+                        <div><i class="fas fa-user"></i></div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4>{% if review.user %}{{ review.user.username }}{% else %}Guest{% endif %}</h4>
+                        <small>{{ review.product.name|truncatechars:25 }}</small>
+                    </div>
+                </div>
+                <div class="rating">
+                    {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                </div>
+            </div>
+            <p class="review-text">"{{ review.comment|truncatechars:120 }}"</p>
+            <div class="review-date">{{ review.created_at|date:"F j, Y" }}</div>
+        </article>
+        {% empty %}
+        <p class="empty-reviews">No customer reviews yet.</p>
+        {% endfor %}
+    </div>
+</section>

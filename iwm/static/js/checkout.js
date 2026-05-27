@@ -30,11 +30,40 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeCheckout() {
     renderSummaryItems([]);
 
-    const shippingStateField = document.getElementById('shipping-state');
-    if (shippingStateField) {
-        shippingStateField.addEventListener('change', function() {
+    const shippingDistrictField = document.getElementById('shipping-district');
+    if (shippingDistrictField) {
+        syncDistrictFields('shipping', shippingDistrictField.value);
+        shippingDistrictField.addEventListener('change', function() {
+            syncDistrictFields('shipping', this.value);
             refreshOrderSummary();
         });
+    }
+
+    const billingDistrictField = document.getElementById('billing-district');
+    if (billingDistrictField) {
+        syncDistrictFields('billing', billingDistrictField.value);
+        billingDistrictField.addEventListener('change', function() {
+            syncDistrictFields('billing', this.value);
+        });
+    }
+}
+
+function syncDistrictFields(type, districtValue) {
+    const normalizedDistrict = districtValue || '';
+    const cityField = document.getElementById(`${type}-city`);
+    const stateField = document.getElementById(`${type}-state`);
+    const districtField = document.getElementById(`${type}-district`);
+
+    if (districtField && districtField.value !== normalizedDistrict) {
+        districtField.value = normalizedDistrict;
+    }
+
+    if (cityField) {
+        cityField.value = normalizedDistrict;
+    }
+
+    if (stateField) {
+        stateField.value = normalizedDistrict;
     }
 }
 
@@ -109,11 +138,18 @@ function setupAddressSelect() {
 
 function fillAddressFields(type, addressData) {
     const prefix = type === 'shipping' ? 'shipping-' : 'billing-';
+    const district = addressData.state || addressData.city || '';
 
     document.getElementById(`${prefix}address-line1`).value = addressData.address_line1 || '';
-    document.getElementById(`${prefix}address-line2`).value = addressData.address_line2 || '';
-    document.getElementById(`${prefix}city`).value = addressData.city || '';
-    document.getElementById(`${prefix}state`).value = addressData.state || '';
+    const fullNameField = document.getElementById(`${prefix}full-name`);
+    if (fullNameField) {
+        fullNameField.value = addressData.full_name || '';
+    }
+    const locationDescriptionField = document.getElementById(`${prefix}location-description`);
+    if (locationDescriptionField) {
+        locationDescriptionField.value = addressData.address_line2 || '';
+    }
+    syncDistrictFields(type, district);
     document.getElementById(`${prefix}postal-code`).value = addressData.postal_code || '';
     document.getElementById(`${prefix}country`).value = addressData.country || '';
 }
@@ -305,29 +341,23 @@ function validateCheckoutForm() {
     }
 
     const shippingAddressLine1 = document.getElementById('shipping-address-line1').value.trim();
-    const shippingCity = document.getElementById('shipping-city').value.trim();
-    const shippingPostalCode = document.getElementById('shipping-postal-code').value.trim();
-    const shippingState = document.getElementById('shipping-state').value.trim();
+    const shippingDistrict = document.getElementById('shipping-district').value.trim();
     const shippingCountry = document.getElementById('shipping-country').value.trim();
+    const shippingLocationDescription = document.getElementById('shipping-location-description').value.trim();
 
     if (shippingAddressLine1 === '') {
         isValid = false;
         document.getElementById('shipping-address-line1').classList.add('error');
     }
 
-    if (shippingCity === '') {
+    if (shippingDistrict === '') {
         isValid = false;
-        document.getElementById('shipping-city').classList.add('error');
+        document.getElementById('shipping-district').classList.add('error');
     }
 
-    if (shippingPostalCode === '') {
+    if (shippingLocationDescription === '') {
         isValid = false;
-        document.getElementById('shipping-postal-code').classList.add('error');
-    }
-
-    if (shippingState === '') {
-        isValid = false;
-        document.getElementById('shipping-state').classList.add('error');
+        document.getElementById('shipping-location-description').classList.add('error');
     }
 
     if (shippingCountry === '') {
@@ -339,10 +369,9 @@ function validateCheckoutForm() {
     if (!sameBillingAddress) {
         const billingFullName = document.getElementById('billing-full-name').value.trim();
         const billingAddressLine1 = document.getElementById('billing-address-line1').value.trim();
-        const billingCity = document.getElementById('billing-city').value.trim();
-        const billingPostalCode = document.getElementById('billing-postal-code').value.trim();
-        const billingState = document.getElementById('billing-state').value.trim();
+        const billingDistrict = document.getElementById('billing-district').value.trim();
         const billingCountry = document.getElementById('billing-country').value.trim();
+        const billingLocationDescription = document.getElementById('billing-location-description').value.trim();
 
         if (billingFullName === '') {
             isValid = false;
@@ -354,69 +383,19 @@ function validateCheckoutForm() {
             document.getElementById('billing-address-line1').classList.add('error');
         }
 
-        if (billingCity === '') {
+        if (billingDistrict === '') {
             isValid = false;
-            document.getElementById('billing-city').classList.add('error');
+            document.getElementById('billing-district').classList.add('error');
         }
 
-        if (billingPostalCode === '') {
+        if (billingLocationDescription === '') {
             isValid = false;
-            document.getElementById('billing-postal-code').classList.add('error');
-        }
-
-        if (billingState === '') {
-            isValid = false;
-            document.getElementById('billing-state').classList.add('error');
+            document.getElementById('billing-location-description').classList.add('error');
         }
 
         if (billingCountry === '') {
             isValid = false;
             document.getElementById('billing-country').classList.add('error');
-        }
-    }
-
-    const paymentMethod = document.querySelector('.payment-method input[type="radio"]:checked').value;
-    if (paymentMethod === 'bkash') {
-        const bkashNumber = document.getElementById('bkash-number').value.trim();
-        const bkashTransactionId = document.getElementById('bkash-trx-id').value.trim();
-        if (bkashNumber === '') {
-            isValid = false;
-            document.getElementById('bkash-number').classList.add('error');
-        }
-        if (bkashTransactionId === '') {
-            isValid = false;
-            document.getElementById('bkash-trx-id').classList.add('error');
-        }
-    } else if (paymentMethod === 'nagad') {
-        const nagadNumber = document.getElementById('nagad-number').value.trim();
-        const nagadTransactionId = document.getElementById('nagad-trx-id').value.trim();
-        if (nagadNumber === '') {
-            isValid = false;
-            document.getElementById('nagad-number').classList.add('error');
-        }
-        if (nagadTransactionId === '') {
-            isValid = false;
-            document.getElementById('nagad-trx-id').classList.add('error');
-        }
-    } else if (paymentMethod === 'cash_on_delivery' || paymentMethod === 'cod') {
-        const deliveryMethod = document.getElementById('cod-delivery-payment-method')?.value || '';
-        const deliverySenderNumber = document.getElementById('cod-delivery-sender-number')?.value.trim() || '';
-        const deliveryTransactionId = document.getElementById('cod-delivery-trx-id')?.value.trim() || '';
-        const deliveryDetailsProvided = Boolean(deliveryMethod || deliverySenderNumber || deliveryTransactionId);
-
-        if (deliveryDetailsProvided) {
-            if (deliveryMethod === '') {
-                isValid = false;
-                document.getElementById('cod-delivery-payment-method').classList.add('error');
-            }
-            if (deliverySenderNumber === '') {
-                isValid = false;
-                document.getElementById('cod-delivery-sender-number').classList.add('error');
-            }
-            if (deliveryTransactionId === '') {
-                isValid = false;
-                document.getElementById('cod-delivery-trx-id').classList.add('error');
-            }
         }
     }
 
@@ -433,35 +412,23 @@ function showOrderPreview() {
     document.getElementById('preview-phone').textContent = phone;
 
     const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
-    const shippingAddressLine2 = document.getElementById('shipping-address-line2').value;
-    const shippingCity = document.getElementById('shipping-city').value;
-    const shippingPostalCode = document.getElementById('shipping-postal-code').value;
-    const shippingState = document.getElementById('shipping-state').value;
+    const shippingDistrict = document.getElementById('shipping-district').value;
+    const shippingLocationDescription = document.getElementById('shipping-location-description').value;
     const shippingCountry = document.getElementById('shipping-country').value;
 
     let shippingAddressHTML = `${fullName}<br>${shippingAddressLine1}`;
-    if (shippingAddressLine2) {
-        shippingAddressHTML += `<br>${shippingAddressLine2}`;
+    if (shippingDistrict) {
+        shippingAddressHTML += `<br>District: ${shippingDistrict}`;
     }
-    shippingAddressHTML += `<br>${shippingCity}, ${shippingState} ${shippingPostalCode}<br>${shippingCountry}`;
+    if (shippingLocationDescription) {
+        shippingAddressHTML += `<br>${shippingLocationDescription}`;
+    }
+    shippingAddressHTML += `<br>${shippingCountry}`;
     document.getElementById('preview-shipping-address').innerHTML = shippingAddressHTML;
 
     const paymentMethodRadio = document.querySelector('.payment-method input[type="radio"]:checked');
     const paymentMethodLabel = paymentMethodRadio.closest('.payment-method').querySelector('.payment-label').textContent.trim();
-    let paymentMethodHTML = paymentMethodLabel;
-    if (paymentMethodRadio.value === 'bkash') {
-        const bkashNumber = document.getElementById('bkash-number').value;
-        if (bkashNumber) {
-            paymentMethodHTML += `<br>bKash Number: ${bkashNumber}`;
-        }
-    } else if (paymentMethodRadio.value === 'nagad') {
-        const nagadNumber = document.getElementById('nagad-number').value;
-        if (nagadNumber) {
-            paymentMethodHTML += `<br>Nagad Number: ${nagadNumber}`;
-        }
-    } else if (paymentMethodRadio.value === 'cash_on_delivery' || paymentMethodRadio.value === 'cod') {
-        paymentMethodHTML += '<br>Cash on Delivery';
-    }
+    let paymentMethodHTML = `${paymentMethodLabel}<br>Our team will call you to confirm payment and delivery details.`;
     document.getElementById('preview-payment-method').innerHTML = paymentMethodHTML;
 
     const orderItemsContainer = document.getElementById('preview-order-items');
@@ -536,10 +503,10 @@ function submitOrder() {
     const shippingAddress = {
         full_name: personalInfo.full_name,
         address_line1: document.getElementById('shipping-address-line1').value,
-        address_line2: document.getElementById('shipping-address-line2').value || '',
-        city: document.getElementById('shipping-city').value,
+        address_line2: document.getElementById('shipping-location-description').value || '',
+        city: document.getElementById('shipping-district')?.value || 'Dhaka',
         postal_code: document.getElementById('shipping-postal-code')?.value || '1000',
-        state: document.getElementById('shipping-state')?.value || 'Dhaka',
+        state: document.getElementById('shipping-district')?.value || 'Dhaka',
         country: document.getElementById('shipping-country')?.value || 'Bangladesh'
     };
 
@@ -552,34 +519,16 @@ function submitOrder() {
         billingAddress = {
             full_name: document.getElementById('billing-full-name')?.value || personalInfo.full_name,
             address_line1: document.getElementById('billing-address-line1').value,
-            address_line2: document.getElementById('billing-address-line2')?.value || '',
-            city: document.getElementById('billing-city').value,
+            address_line2: document.getElementById('billing-location-description')?.value || '',
+            city: document.getElementById('billing-district')?.value || 'Dhaka',
             postal_code: document.getElementById('billing-postal-code')?.value || '1000',
-            state: document.getElementById('billing-state')?.value || 'Dhaka',
+            state: document.getElementById('billing-district')?.value || 'Dhaka',
             country: document.getElementById('billing-country')?.value || 'Bangladesh'
         };
     }
 
     const paymentMethod = document.querySelector('.payment-method input[type="radio"]:checked').value;
-    let paymentDetails = {};
-
-    if (paymentMethod === 'bkash') {
-        paymentDetails = {
-            sender_number: document.getElementById('bkash-number').value,
-            transaction_id: document.getElementById('bkash-trx-id') ? document.getElementById('bkash-trx-id').value : ''
-        };
-    } else if (paymentMethod === 'nagad') {
-        paymentDetails = {
-            sender_number: document.getElementById('nagad-number').value,
-            transaction_id: document.getElementById('nagad-trx-id') ? document.getElementById('nagad-trx-id').value : ''
-        };
-    } else if (paymentMethod === 'cash_on_delivery' || paymentMethod === 'cod') {
-        paymentDetails = {
-            delivery_payment_method: document.getElementById('cod-delivery-payment-method') ? document.getElementById('cod-delivery-payment-method').value : '',
-            delivery_sender_number: document.getElementById('cod-delivery-sender-number') ? document.getElementById('cod-delivery-sender-number').value : '',
-            delivery_transaction_id: document.getElementById('cod-delivery-trx-id') ? document.getElementById('cod-delivery-trx-id').value : ''
-        };
-    }
+    const paymentDetails = {};
 
     const additionalNotes = document.getElementById('additional-notes').value;
     const orderData = {
