@@ -15,98 +15,384 @@
 <style>
     .analytics-wrap { font-family: inherit; }
     .a-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
-    .a-grid-4 { grid-template-columns: repeat(4, 1fr); }
-    .a-grid-2 { grid-template-columns: repeat(2, 1fr); }
-    .a-grid-3 { grid-template-columns: repeat(3, 1fr); }
-    @media (max-width: 1024px) {
-        .a-grid-4, .a-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .a-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .a-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .a-grid-2 { grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr); }
+    @media (max-width: 1200px) {
+        .a-grid-4, .a-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .a-grid-2 { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
-        .a-grid-4, .a-grid-3, .a-grid-2 { grid-template-columns: 1fr; }
+        .a-grid-4, .a-grid-3 { grid-template-columns: 1fr; }
     }
     .a-card {
-        background: #fff; border: 1px solid #e5e7eb;
-        border-radius: 0.75rem; padding: 1.25rem;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.85rem;
+        padding: 1.25rem;
         transition: box-shadow 0.2s;
     }
-    .dark .a-card { background: #111827; border-color: #374151; }
-    .a-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .a-stat { display: flex; align-items: center; gap: 1rem; }
-    .a-stat-icon {
-        width: 3rem; height: 3rem; border-radius: 0.75rem;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.25rem; flex-shrink: 0;
+    .dark .a-card {
+        background: #111827;
+        border-color: #374151;
     }
-    .a-stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.1rem; }
+    .a-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+    .a-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .a-toolbar p { margin: 0.35rem 0 0; color: #6b7280; font-size: 0.9rem; }
+    .a-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: end;
+        margin-top: 1rem;
+    }
+    .a-field { min-width: 170px; flex: 1 1 170px; }
+    .a-field label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 0.35rem;
+    }
+    .dark .a-field label { color: #d1d5db; }
+    .a-field input {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0.65rem;
+        padding: 0.7rem 0.85rem;
+        background: #fff;
+        color: #111827;
+    }
+    .dark .a-field input {
+        background: #0f172a;
+        border-color: #475569;
+        color: #f8fafc;
+    }
+    .a-filter-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .a-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.72rem 1rem;
+        border-radius: 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+    .a-btn-primary {
+        color: #fff;
+        background: linear-gradient(135deg, #ff6f91, #ff4e6a);
+    }
+    .a-btn-secondary {
+        color: #111827;
+        background: #e5e7eb;
+    }
+    .dark .a-btn-secondary {
+        color: #f8fafc;
+        background: #334155;
+    }
+    .a-presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .a-preset {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.8rem;
+        border-radius: 9999px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .dark .a-preset {
+        background: #1f2937;
+        color: #d1d5db;
+    }
+    .a-preset.is-active {
+        background: #111827;
+        color: #fff;
+    }
+    .dark .a-preset.is-active {
+        background: #f8fafc;
+        color: #111827;
+    }
+    .a-stat {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .a-stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .a-stat-label {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-bottom: 0.15rem;
+    }
     .dark .a-stat-label { color: #9ca3af; }
-    .a-stat-value { font-size: 1.35rem; font-weight: 700; color: #111827; }
+    .a-stat-value {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #111827;
+    }
     .dark .a-stat-value { color: #f3f4f6; }
     .a-section-title {
-        font-size: 1rem; font-weight: 600; color: #374151;
-        margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     .dark .a-section-title { color: #e5e7eb; }
+    .a-chart-shell {
+        background: linear-gradient(180deg, rgba(15, 118, 110, 0.06), rgba(255, 255, 255, 0));
+        border: 1px solid #e5e7eb;
+        border-radius: 0.85rem;
+        padding: 1rem;
+    }
+    .dark .a-chart-shell {
+        background: linear-gradient(180deg, rgba(20, 184, 166, 0.12), rgba(15, 23, 42, 0));
+        border-color: #334155;
+    }
+    .a-chart-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) {
+        .a-chart-summary { grid-template-columns: 1fr; }
+    }
+    .a-summary-box {
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 0.8rem;
+        padding: 0.85rem;
+    }
+    .dark .a-summary-box {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 0.95);
+    }
+    .a-summary-box span {
+        display: block;
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+    .dark .a-summary-box span { color: #94a3b8; }
+    .a-summary-box strong {
+        font-size: 1.05rem;
+        color: #111827;
+    }
+    .dark .a-summary-box strong { color: #f8fafc; }
+    .a-canvas-wrap {
+        position: relative;
+        min-height: 320px;
+    }
+    .a-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+    @media (max-width: 900px) {
+        .a-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+        .a-meta-grid { grid-template-columns: 1fr; }
+    }
     .a-meta-card {
-        text-align: center; padding: 1rem;
-        background: #f9fafb; border-radius: 0.5rem;
+        text-align: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 0.75rem;
     }
     .dark .a-meta-card { background: #1f2937; }
-    .a-meta-label { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; }
+    .a-meta-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
     .dark .a-meta-label { color: #9ca3af; }
-    .a-meta-value { font-size: 1.1rem; font-weight: 700; color: #111827; }
+    .a-meta-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #111827;
+    }
     .dark .a-meta-value { color: #f3f4f6; }
     .a-progress-wrap { margin-bottom: 1rem; }
-    .a-progress-header { display: flex; justify-content: space-between; margin-bottom: 0.35rem; font-size: 0.8rem; color: #6b7280; }
-    .dark .a-progress-header { color: #9ca3af; }
-    .a-progress-bar { height: 0.5rem; background: #f3f4f6; border-radius: 9999px; overflow: hidden; }
-    .dark .a-progress-bar { background: #374151; }
-    .a-progress-fill { height: 100%; border-radius: 9999px; transition: width 0.5s; }
-    .a-btn {
-        display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-        padding: 0.6rem 1rem; border-radius: 0.5rem;
-        font-size: 0.85rem; font-weight: 600; text-decoration: none;
-        color: #fff; width: 100%; transition: opacity 0.2s; border: none; cursor: pointer;
+    .a-progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+        font-size: 0.8rem;
+        color: #6b7280;
     }
-    .a-btn:hover { opacity: 0.9; color: #fff; }
+    .dark .a-progress-header { color: #9ca3af; }
+    .a-progress-bar {
+        height: 0.55rem;
+        background: #f3f4f6;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+    .dark .a-progress-bar { background: #374151; }
+    .a-progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.4s;
+    }
     .a-product-item {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid #f3f4f6;
     }
     .dark .a-product-item { border-bottom-color: #374151; }
     .a-product-item:last-child { border-bottom: none; }
-    .a-product-name { font-size: 0.85rem; color: #374151; }
+    .a-product-name { font-size: 0.86rem; color: #374151; }
     .dark .a-product-name { color: #d1d5db; }
     .a-product-qty {
-        background: #eff6ff; color: #2563eb; padding: 0.15rem 0.6rem;
-        border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
+        background: #ecfeff;
+        color: #0f766e;
+        padding: 0.18rem 0.65rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
     }
-    .dark .a-product-qty { background: #1e3a5f; color: #60a5fa; }
+    .dark .a-product-qty {
+        background: #134e4a;
+        color: #99f6e4;
+    }
 </style>
 
 <div class="analytics-wrap">
-    <!-- Page Header -->
-    <div style="margin-bottom: 1.5rem;">
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">Analytics Dashboard</h1>
-        <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.25rem;">Comprehensive overview of your e-commerce performance</p>
+    <div class="a-toolbar">
+        <div>
+            <h1 style="font-size: 1.55rem; font-weight: 700; color: #111827; margin: 0;">Analytics Dashboard</h1>
+            <p>See revenue, profit, and performance trends in one place with a custom date range.</p>
+        </div>
     </div>
 
-    <!-- Stats Cards -->
+    <div class="a-card mb-6">
+        <div class="a-section-title">
+            <span class="material-symbols-outlined" style="font-size: 1.15rem;">tune</span>
+            Filter Financial Range
+        </div>
+        <form method="get" class="a-filter-form">
+            <div class="a-field">
+                <label for="start_date">Start date</label>
+                <input id="start_date" type="date" name="start_date" value="{{ selected_start_date }}">
+            </div>
+            <div class="a-field">
+                <label for="end_date">End date</label>
+                <input id="end_date" type="date" name="end_date" value="{{ selected_end_date }}">
+            </div>
+            <div class="a-filter-actions">
+                <button type="submit" class="a-btn a-btn-primary">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">filter_alt</span>
+                    Apply
+                </button>
+                <a href="{% url 'admin:analytics' %}" class="a-btn a-btn-secondary">Reset</a>
+            </div>
+        </form>
+        <div class="a-presets">
+            <a href="?range=today" class="a-preset {% if selected_range == 'today' %}is-active{% endif %}">Today</a>
+            <a href="?range=7" class="a-preset {% if selected_range == '7' %}is-active{% endif %}">7 Days</a>
+            <a href="?range=30" class="a-preset {% if selected_range == '30' %}is-active{% endif %}">30 Days</a>
+            <a href="?range=90" class="a-preset {% if selected_range == '90' %}is-active{% endif %}">90 Days</a>
+            <a href="?range=365" class="a-preset {% if selected_range == '365' %}is-active{% endif %}">1 Year</a>
+        </div>
+    </div>
+
     <div class="a-grid a-grid-4">
         <div class="a-card">
             <div class="a-stat">
-                <div class="a-stat-icon" style="background: #fef2f2; color: #ef4444;">
+                <div class="a-stat-icon" style="background: #fff1f2; color: #e11d48;">
                     <span class="material-symbols-outlined">payments</span>
                 </div>
                 <div>
                     <div class="a-stat-label">Today's Revenue</div>
-                    <div class="a-stat-value">৳{{ today_revenue|floatformat:2 }}</div>
+                    <div class="a-stat-value">Tk {{ today_revenue|floatformat:0 }}</div>
                 </div>
             </div>
         </div>
         <div class="a-card">
             <div class="a-stat">
-                <div class="a-stat-icon" style="background: #f0fdf4; color: #22c55e;">
+                <div class="a-stat-icon" style="background: #f0fdf4; color: #16a34a;">
+                    <span class="material-symbols-outlined">savings</span>
+                </div>
+                <div>
+                    <div class="a-stat-label">Today's Profit</div>
+                    <div class="a-stat-value">Tk {{ today_profit|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="a-card">
+            <div class="a-stat">
+                <div class="a-stat-icon" style="background: #eff6ff; color: #2563eb;">
+                    <span class="material-symbols-outlined">monitoring</span>
+                </div>
+                <div>
+                    <div class="a-stat-label">Filtered Revenue</div>
+                    <div class="a-stat-value">Tk {{ selected_revenue|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="a-card">
+            <div class="a-stat">
+                <div class="a-stat-icon" style="background: #ecfdf5; color: #059669;">
+                    <span class="material-symbols-outlined">trending_up</span>
+                </div>
+                <div>
+                    <div class="a-stat-label">Filtered Profit</div>
+                    <div class="a-stat-value">Tk {{ selected_profit|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="a-grid a-grid-4">
+        <div class="a-card">
+            <div class="a-stat">
+                <div class="a-stat-icon" style="background: #f8fafc; color: #475569;">
                     <span class="material-symbols-outlined">shopping_cart</span>
+                </div>
+                <div>
+                    <div class="a-stat-label">Filtered Orders</div>
+                    <div class="a-stat-value">{{ selected_orders }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="a-card">
+            <div class="a-stat">
+                <div class="a-stat-icon" style="background: #f8fafc; color: #0f766e;">
+                    <span class="material-symbols-outlined">today</span>
                 </div>
                 <div>
                     <div class="a-stat-label">Today's Orders</div>
@@ -116,75 +402,96 @@
         </div>
         <div class="a-card">
             <div class="a-stat">
-                <div class="a-stat-icon" style="background: #eff6ff; color: #3b82f6;">
+                <div class="a-stat-icon" style="background: #eef2ff; color: #4338ca;">
                     <span class="material-symbols-outlined">date_range</span>
                 </div>
                 <div>
-                    <div class="a-stat-label">Weekly Orders</div>
+                    <div class="a-stat-label">7-Day Orders</div>
                     <div class="a-stat-value">{{ week_orders }}</div>
                 </div>
             </div>
         </div>
         <div class="a-card">
             <div class="a-stat">
-                <div class="a-stat-icon" style="background: #fefce8; color: #eab308;">
+                <div class="a-stat-icon" style="background: #fffbeb; color: #d97706;">
                     <span class="material-symbols-outlined">calendar_month</span>
                 </div>
                 <div>
-                    <div class="a-stat-label">Monthly Orders</div>
+                    <div class="a-stat-label">30-Day Orders</div>
                     <div class="a-stat-value">{{ month_orders }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Row -->
     <div class="a-grid a-grid-2">
         <div class="a-card">
             <div class="a-section-title">
                 <span class="material-symbols-outlined" style="font-size: 1.2rem;">show_chart</span>
-                Revenue Trend
+                Revenue & Profit Trend
             </div>
-            <a href="{% url 'admin:revenue-chart' %}" class="a-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
-                <span class="material-symbols-outlined" style="font-size: 1rem;">open_in_new</span>
-                View Detailed Revenue Chart
-            </a>
+            <div class="a-chart-shell">
+                <div class="a-chart-summary">
+                    <div class="a-summary-box">
+                        <span>Range Revenue</span>
+                        <strong>Tk {{ selected_revenue|floatformat:0 }}</strong>
+                    </div>
+                    <div class="a-summary-box">
+                        <span>Range Profit</span>
+                        <strong>Tk {{ selected_profit|floatformat:0 }}</strong>
+                    </div>
+                    <div class="a-summary-box">
+                        <span>Orders In Range</span>
+                        <strong>{{ selected_orders }}</strong>
+                    </div>
+                </div>
+                <div class="a-canvas-wrap">
+                    <canvas id="financialChart"></canvas>
+                </div>
+            </div>
         </div>
+
         <div class="a-card">
             <div class="a-section-title">
                 <span class="material-symbols-outlined" style="font-size: 1.2rem;">pie_chart</span>
                 Payment States
             </div>
-            <div style="display: flex; align-items: center; justify-content: center; min-height: 200px;">
-                <canvas id="paymentChart" width="200" height="200"></canvas>
+            <div class="a-canvas-wrap" style="min-height: 320px;">
+                <canvas id="paymentChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Category Chart -->
     <div class="a-card" style="margin-bottom: 1.5rem;">
         <div class="a-section-title">
             <span class="material-symbols-outlined" style="font-size: 1.2rem;">category</span>
-            Top Categories
+            Top Categories In Selected Range
         </div>
-        <div style="width:100%; min-height:500px; overflow:auto;">{{ category_chart|safe }}</div>
+        <div style="width: 100%; min-height: 500px; overflow: auto;">{{ category_chart|safe }}</div>
     </div>
 
-    <!-- Performance & Operations -->
     <div class="a-grid a-grid-2">
         <div class="a-card">
             <div class="a-section-title">
                 <span class="material-symbols-outlined" style="font-size: 1.2rem;">speed</span>
                 Performance Metrics
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="a-meta-grid">
                 <div class="a-meta-card">
-                    <div class="a-meta-label">Revenue (Month)</div>
-                    <div class="a-meta-value">৳{{ month_revenue|floatformat:2 }}</div>
+                    <div class="a-meta-label">Revenue (7 Days)</div>
+                    <div class="a-meta-value">Tk {{ week_revenue|floatformat:0 }}</div>
                 </div>
                 <div class="a-meta-card">
-                    <div class="a-meta-label">Revenue (Week)</div>
-                    <div class="a-meta-value">৳{{ week_revenue|floatformat:2 }}</div>
+                    <div class="a-meta-label">Profit (7 Days)</div>
+                    <div class="a-meta-value">Tk {{ week_profit|floatformat:0 }}</div>
+                </div>
+                <div class="a-meta-card">
+                    <div class="a-meta-label">Revenue (30 Days)</div>
+                    <div class="a-meta-value">Tk {{ month_revenue|floatformat:0 }}</div>
+                </div>
+                <div class="a-meta-card">
+                    <div class="a-meta-label">Profit (30 Days)</div>
+                    <div class="a-meta-value">Tk {{ month_profit|floatformat:0 }}</div>
                 </div>
                 <div class="a-meta-card">
                     <div class="a-meta-label">Active Customers</div>
@@ -192,7 +499,7 @@
                 </div>
                 <div class="a-meta-card">
                     <div class="a-meta-label">Avg Order Value</div>
-                    <div class="a-meta-value">৳{{ avg_order_value|floatformat:2|default:"0.00" }}</div>
+                    <div class="a-meta-value">Tk {{ avg_order_value|floatformat:0 }}</div>
                 </div>
             </div>
         </div>
@@ -205,35 +512,40 @@
             <div class="a-progress-wrap">
                 <div class="a-progress-header"><span>Repeat Customers</span><span>{{ repeat_customers }}</span></div>
                 <div class="a-progress-bar">
-                    <div class="a-progress-fill" style="width: {% if total_customers %}{% widthratio repeat_customers total_customers 100 %}{% else %}0{% endif %}%; background: #3b82f6;"></div>
+                    <div class="a-progress-fill" style="width: {% if total_customers %}{% widthratio repeat_customers total_customers 100 %}{% else %}0{% endif %}%; background: #2563eb;"></div>
                 </div>
             </div>
             <div class="a-progress-wrap">
                 <div class="a-progress-header"><span>Delivered Orders</span><span>{{ delivered_orders }}</span></div>
                 <div class="a-progress-bar">
-                    <div class="a-progress-fill" style="width: {% if month_orders %}{% widthratio delivered_orders month_orders 100 %}{% else %}0{% endif %}%; background: #22c55e;"></div>
+                    <div class="a-progress-fill" style="width: {% if selected_orders %}{% widthratio delivered_orders selected_orders 100 %}{% else %}0{% endif %}%; background: #16a34a;"></div>
                 </div>
             </div>
             <div class="a-progress-wrap">
                 <div class="a-progress-header"><span>Cancelled Orders</span><span>{{ cancelled_orders }}</span></div>
                 <div class="a-progress-bar">
-                    <div class="a-progress-fill" style="width: {% if month_orders %}{% widthratio cancelled_orders month_orders 100 %}{% else %}0{% endif %}%; background: #f59e0b;"></div>
+                    <div class="a-progress-fill" style="width: {% if selected_orders %}{% widthratio cancelled_orders selected_orders 100 %}{% else %}0{% endif %}%; background: #d97706;"></div>
                 </div>
             </div>
             <div class="a-progress-wrap">
                 <div class="a-progress-header"><span>Paid Orders</span><span>{{ paid_orders }}</span></div>
                 <div class="a-progress-bar">
-                    <div class="a-progress-fill" style="width: {% if month_orders %}{% widthratio paid_orders month_orders 100 %}{% else %}0{% endif %}%; background: #8b5cf6;"></div>
+                    <div class="a-progress-fill" style="width: {% if selected_orders %}{% widthratio paid_orders selected_orders 100 %}{% else %}0{% endif %}%; background: #7c3aed;"></div>
+                </div>
+            </div>
+            <div class="a-progress-wrap" style="margin-bottom: 0;">
+                <div class="a-progress-header"><span>Pending Payments</span><span>{{ pending_orders }}</span></div>
+                <div class="a-progress-bar">
+                    <div class="a-progress-fill" style="width: {% if selected_orders %}{% widthratio pending_orders selected_orders 100 %}{% else %}0{% endif %}%; background: #e11d48;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Top Products -->
-    <div class="a-card" style="margin-top: 1.5rem;">
+    <div class="a-card">
         <div class="a-section-title">
             <span class="material-symbols-outlined" style="font-size: 1.2rem;">star</span>
-            Top Products This Month
+            Top Products In Selected Range
         </div>
         {% if top_products %}
             {% for product in top_products %}
@@ -243,37 +555,90 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="color: #9ca3af; font-size: 0.85rem;">No order data available yet.</p>
+            <p style="color: #9ca3af; font-size: 0.85rem;">No order data available yet for this range.</p>
         {% endif %}
     </div>
 </div>
 
+{{ financial_chart_data|json_script:"financial-chart-data" }}
+{{ payment_chart_data|json_script:"payment-chart-data" }}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('paymentChart');
-    if (ctx) {
-        new Chart(ctx, {
+    const financialData = JSON.parse(document.getElementById('financial-chart-data').textContent);
+    const paymentData = JSON.parse(document.getElementById('payment-chart-data').textContent);
+
+    const financialCanvas = document.getElementById('financialChart');
+    if (financialCanvas) {
+        new Chart(financialCanvas, {
+            type: 'line',
+            data: {
+                labels: financialData.labels,
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: financialData.revenue,
+                        borderColor: '#f43f5e',
+                        backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                        borderWidth: 3,
+                        tension: 0.28,
+                        fill: true,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Profit',
+                        data: financialData.profit,
+                        borderColor: '#16a34a',
+                        backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                        borderWidth: 3,
+                        tension: 0.28,
+                        fill: true,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Tk ' + Math.round(value);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    const paymentCanvas = document.getElementById('paymentChart');
+    if (paymentCanvas) {
+        new Chart(paymentCanvas, {
             type: 'doughnut',
             data: {
-                labels: {{ payment_state_labels|safe }},
+                labels: paymentData.labels,
                 datasets: [{
-                    data: {{ payment_state_values|safe }},
+                    data: paymentData.values,
                     backgroundColor: [
-                        'rgba(34, 197, 94, 0.7)',
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(14, 165, 233, 0.7)',
-                        'rgba(234, 179, 8, 0.7)',
-                        'rgba(239, 68, 68, 0.7)',
-                        'rgba(156, 163, 175, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(34, 197, 94, 1)',
-                        'rgba(59, 130, 246, 1)',
-                        'rgba(14, 165, 233, 1)',
-                        'rgba(234, 179, 8, 1)',
-                        'rgba(239, 68, 68, 1)',
-                        'rgba(156, 163, 175, 1)'
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(14, 165, 233, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(148, 163, 184, 0.8)'
                     ],
                     borderWidth: 1
                 }]
@@ -282,7 +647,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } }
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 12,
+                            font: { size: 11 }
+                        }
+                    }
                 }
             }
         });

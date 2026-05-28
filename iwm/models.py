@@ -88,7 +88,13 @@ class Product(models.Model):
     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, related_name='products')
     is_featured = models.BooleanField(default=False)
     feature_reason = models.ForeignKey('FeatureReason', on_delete=models.SET_NULL, null=True, blank=True, related_name='featured_products')
-    color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True, blank=True)
+    color = models.ForeignKey(
+        Color,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Optional color for the main image. Leave empty when using color-specific images.",
+    )
     size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     # SEO fields
@@ -101,6 +107,14 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)  
         super().save(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+
+        if self.color_id and self.pk and self.color_images.exists():
+            raise ValidationError({
+                'color': 'Main image color is only for products without color-specific images.'
+            })
 
     def __str__(self):
         return self.name  
@@ -128,6 +142,37 @@ class Product(models.Model):
     def get_absolute_url(self):
         """ পণ্যের বিস্তারিত পেজের URL তৈরি করে """
         return f"/product/{self.slug}/"
+
+    def get_prefetched_color_images(self):
+        prefetched = getattr(self, '_prefetched_objects_cache', {})
+        if 'color_images' in prefetched:
+            return list(prefetched['color_images'])
+        return list(self.color_images.select_related('color').all())
+
+    def get_color_image(self, color_name=None):
+        normalized_color = (color_name or '').strip().lower()
+        if not normalized_color:
+            return None
+
+        for color_image in self.get_prefetched_color_images():
+            if color_image.color and color_image.color.name.lower() == normalized_color:
+                return color_image
+
+        return None
+
+    def get_available_color_names(self):
+        color_names = []
+        seen = set()
+
+        for color_image in self.get_prefetched_color_images():
+            if color_image.color and color_image.color.name not in seen:
+                color_names.append(color_image.color.name)
+                seen.add(color_image.color.name)
+
+        if self.color and self.color.name not in seen:
+            color_names.append(self.color.name)
+
+        return color_names
 
     def update_stock(self, quantity_change):
         """
@@ -188,12 +233,43 @@ class Product(models.Model):
             models.Index(fields=['stock']),
         ]
 
-class MoreImages(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="more_images")  # ForeignKey ব্যবহার করা হয়েছে
+class ProductColorImage(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='color_images',
+    )
+    color = models.ForeignKey(
+        Color,
+        on_delete=models.CASCADE,
+        related_name='product_images',
+    )
     image = models.ImageField(upload_to='product_images/')
 
+    class Meta:
+        ordering = ['color__name', 'id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product', 'color'],
+                name='unique_product_color_image',
+            ),
+        ]
+
     def __str__(self):
-        return f"Image for {self.product.name}"
+        return f"{self.product.name} - {self.color.name}"
+
+    def clean(self):
+        super().clean()
+
+        if self.product_id and self.product.color_id:
+            raise ValidationError(
+                'Remove the product main color before adding color-specific images.'
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
 
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
@@ -1138,82 +1214,63 @@ class OrderItem(models.Model):
 
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
-    discount_amount = models.PositiveIntegerField(default=0)  # Fixed amount discount
-    discount_percent = models.PositiveIntegerField(default=0)  # Percentage discount
+    discount_amount = models.PositiveIntegerField(null=True, blank=True, help_text="Fixed discount amount")
+    discount_percent = models.PositiveIntegerField(null=True, blank=True, help_text="Percentage discount")
     minimum_order_value = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
-    usage_limit = models.PositiveIntegerField(default=0)  # 0 means unlimited
+    usage_limit = models.PositiveIntegerField(default=0, help_text="0 means unlimited usage")
     used_count = models.PositiveIntegerField(default=0)
-    
+
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
-        if self.discount_amount > 0:
-            return f"{self.code} (৳{self.discount_amount} off)"
+        if self.discount_amount:
+            return f"{self.code} (Tk {self.discount_amount} off)"
         return f"{self.code} ({self.discount_percent}% off)"
-    
+
     @property
     def is_valid(self):
         now = timezone.now()
+        if not self.valid_from or not self.valid_to:
+            return False
         return (
-            self.is_active and 
+            self.is_active and
             self.valid_from <= now <= self.valid_to and
             (self.usage_limit == 0 or self.used_count < self.usage_limit)
         )
 
     def clean(self):
         super().clean()
-
         errors = {}
-        if self.discount_amount and self.discount_percent:
-            errors['discount_percent'] = 'Use either a fixed discount amount or a percentage discount, not both.'
-        if not self.discount_amount and not self.discount_percent:
-            errors['discount_amount'] = 'Set a fixed discount or a percentage discount.'
-        if self.valid_to <= self.valid_from:
-            errors['valid_to'] = 'The coupon expiry must be after the start time.'
-
+        if self.discount_amount not in [None, 0] and self.discount_percent not in [None, 0]:
+            errors['discount_percent'] = 'Use either fixed discount or percentage discount, not both.'
+        if self.discount_amount in [None, 0] and self.discount_percent in [None, 0]:
+            errors['discount_amount'] = 'Set either a fixed discount or a percentage discount.'
+        if self.discount_percent is not None and self.discount_percent > 100:
+            errors['discount_percent'] = 'Discount percentage cannot exceed 100.'
+        if self.valid_from and self.valid_to:
+            if self.valid_to <= self.valid_from:
+                errors['valid_to'] = 'Coupon expiry must be after the start time.'
         if errors:
             raise ValidationError(errors)
 
     def validate_for_subtotal(self, subtotal):
         if not self.is_active:
             return False, 'This coupon is no longer active.'
-
+        if not self.valid_from or not self.valid_to:
+            return False, 'Coupon validity dates are missing.'
         now = timezone.now()
         if not (self.valid_from <= now <= self.valid_to):
             return False, 'This coupon is no longer valid.'
-
         if self.usage_limit and self.used_count >= self.usage_limit:
             return False, 'This coupon has reached its usage limit.'
-
-        if subtotal is not None:
-            minimum_order_value = subtotal.__class__(str(self.minimum_order_value))
-            if minimum_order_value and subtotal < minimum_order_value:
-                return False, f'Minimum order amount for this coupon is à§³{minimum_order_value:.2f}.'
-
-        return True, ''
-
-    def __str__(self):
-        if self.discount_amount > 0:
-            return f"{self.code} (Tk {self.discount_amount} off)"
-        return f"{self.code} ({self.discount_percent}% off)"
-
-    def validate_for_subtotal(self, subtotal):
-        if not self.is_active:
-            return False, 'This coupon is no longer active.'
-
-        now = timezone.now()
-        if not (self.valid_from <= now <= self.valid_to):
-            return False, 'This coupon is no longer valid.'
-
-        if self.usage_limit and self.used_count >= self.usage_limit:
-            return False, 'This coupon has reached its usage limit.'
-
         if subtotal is not None:
             minimum_order_value = subtotal.__class__(str(self.minimum_order_value))
             if minimum_order_value and subtotal < minimum_order_value:
                 return False, f'Minimum order amount for this coupon is Tk {minimum_order_value:.2f}.'
-
         return True, ''
 
     def consume_locked(self):

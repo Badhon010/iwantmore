@@ -21,7 +21,7 @@
         {% endif %}
 
         <div class="product-image-wrapper">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+            <img src="{% firstof product.card_image_url product.image.url %}" alt="{{ product.name }}" class="product-image">
         </div>
 
         <div class="quick-actions">

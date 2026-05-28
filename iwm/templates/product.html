@@ -20,24 +20,19 @@
                 {% elif product.is_featured %}
                     <div class="product-badge featured">FEATURED</div>
                 {% endif %}
-                <img id="mainImage" src="{{ product.image.url }}" alt="{{ product.name }}">
+                <img id="mainImage" src="{% firstof product.card_image_url product.image.url %}" alt="{{ product.name }}">
             </div>
             
             <!-- Thumbnail Images -->
-            {% with more_images=product.more_images.all %}
-            {% if more_images %}
+            {% if product.gallery_images|length > 1 %}
             <div class="thumbnail-images">
-                <div class="thumbnail active">
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                </div>
-                {% for img in more_images %}
-                <div class="thumbnail">
-                    <img src="{{ img.image.url }}" alt="{{ product.name }}">
+                {% for gallery_image in product.gallery_images %}
+                <div class="thumbnail {% if forloop.first %}active{% endif %}" data-image-url="{{ gallery_image.url }}" data-color-name="{{ gallery_image.color_name|default:'' }}">
+                    <img src="{{ gallery_image.url }}" alt="{{ product.name }}{% if gallery_image.label %} - {{ gallery_image.label }}{% endif %}">
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
-            {% endwith %}
         </div>
 
         <!-- Product Info Section -->
@@ -96,10 +91,23 @@
                     <span class="value">{{ product.brand.name }}</span>
                 </div>
                 {% endif %}
-                {% if product.color %}
+                {% if product.available_colors %}
                 <div class="detail-item">
-                    <span class="label">Color:</span>
-                    <span class="value">{{ product.color.name }}</span>
+                    <span class="label">Colors:</span>
+                    <span class="value color-choice-list">
+                        {% for color_option in product.available_colors %}
+                            <button
+                                type="button"
+                                class="color-image-trigger"
+                                data-image-url="{{ color_option.image_url }}"
+                                data-color-name="{{ color_option.name }}"
+                                aria-label="Show {{ color_option.name }} image"
+                            >
+                                <span class="color-swatch" style="background-color: {{ color_option.name }};"></span>
+                                <span>{{ color_option.name }}</span>
+                            </button>
+                        {% endfor %}
+                    </span>
                 </div>
                 {% endif %}
                 {% if product.size %}

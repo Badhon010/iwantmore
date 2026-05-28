@@ -7,17 +7,17 @@
 <style>
     .iwm-dashboard { font-family: inherit; }
     .iwm-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
-    .iwm-grid-4 { grid-template-columns: repeat(4, 1fr); }
-    .iwm-grid-2 { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 1024px) { .iwm-grid-4 { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 640px) {
-        .iwm-grid-4 { grid-template-columns: 1fr; }
+    .iwm-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .iwm-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .iwm-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 760px) {
+        .iwm-grid-4,
         .iwm-grid-2 { grid-template-columns: 1fr; }
     }
     .iwm-card {
         background: var(--color-white, #fff);
         border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 0.75rem;
+        border-radius: 0.85rem;
         padding: 1.25rem;
         transition: box-shadow 0.2s;
     }
@@ -25,23 +25,165 @@
         background: var(--color-gray-900, #111827);
         border-color: var(--border-color, #374151);
     }
-    .iwm-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .iwm-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
     .iwm-stat { display: flex; align-items: center; gap: 1rem; }
     .iwm-stat-icon {
-        width: 3rem; height: 3rem;
-        border-radius: 0.75rem;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.25rem; flex-shrink: 0;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
     }
     .iwm-stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.15rem; }
     .dark .iwm-stat-label { color: #9ca3af; }
     .iwm-stat-value { font-size: 1.35rem; font-weight: 700; color: #111827; }
     .dark .iwm-stat-value { color: #f3f4f6; }
     .iwm-section-title {
-        font-size: 1rem; font-weight: 600; color: #374151;
-        margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     .dark .iwm-section-title { color: #e5e7eb; }
+    .iwm-overview-shell {
+        background: linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255, 255, 255, 0));
+        border: 1px solid #e5e7eb;
+        border-radius: 0.85rem;
+        padding: 1rem;
+    }
+    .dark .iwm-overview-shell {
+        background: linear-gradient(180deg, rgba(14, 165, 233, 0.12), rgba(15, 23, 42, 0));
+        border-color: #334155;
+    }
+    .iwm-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: end;
+        margin-bottom: 1rem;
+    }
+    .iwm-field { min-width: 165px; flex: 1 1 165px; }
+    .iwm-field label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 0.35rem;
+    }
+    .dark .iwm-field label { color: #d1d5db; }
+    .iwm-field input {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0.65rem;
+        padding: 0.68rem 0.82rem;
+        background: #fff;
+        color: #111827;
+    }
+    .dark .iwm-field input {
+        background: #0f172a;
+        border-color: #475569;
+        color: #f8fafc;
+    }
+    .iwm-filter-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+    .iwm-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        justify-content: center;
+    }
+    .iwm-btn-primary {
+        color: #fff;
+        background: linear-gradient(135deg, #ff6f91, #ff4e6a);
+    }
+    .iwm-btn-secondary {
+        color: #111827;
+        background: #e5e7eb;
+    }
+    .dark .iwm-btn-secondary {
+        color: #f8fafc;
+        background: #334155;
+    }
+    .iwm-preset-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .iwm-preset {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.82rem;
+        border-radius: 9999px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .dark .iwm-preset {
+        background: #1f2937;
+        color: #d1d5db;
+    }
+    .iwm-preset.is-active {
+        background: #111827;
+        color: #fff;
+    }
+    .dark .iwm-preset.is-active {
+        background: #f8fafc;
+        color: #111827;
+    }
+    .iwm-overview-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 760px) {
+        .iwm-overview-stats { grid-template-columns: 1fr; }
+    }
+    .iwm-mini-stat {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 0.8rem;
+        padding: 0.9rem;
+    }
+    .dark .iwm-mini-stat {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 1);
+    }
+    .iwm-mini-stat span {
+        display: block;
+        font-size: 0.76rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+    .dark .iwm-mini-stat span { color: #94a3b8; }
+    .iwm-mini-stat strong {
+        font-size: 1.05rem;
+        color: #111827;
+    }
+    .dark .iwm-mini-stat strong { color: #f8fafc; }
+    .iwm-chart-wrap {
+        position: relative;
+        min-height: 310px;
+    }
     .iwm-alert-item {
         padding: 0.75rem 1rem;
         border-left: 3px solid #e5e7eb;
@@ -61,25 +203,19 @@
     .iwm-alert-msg { font-size: 0.78rem; color: #6b7280; margin-top: 0.15rem; }
     .dark .iwm-alert-msg { color: #9ca3af; }
     .iwm-alert-meta { font-size: 0.7rem; color: #9ca3af; margin-top: 0.25rem; }
-    .iwm-btn {
-        display: inline-flex; align-items: center; gap: 0.5rem;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600;
-        text-decoration: none; color: #fff;
-        transition: opacity 0.2s, transform 0.15s;
-        border: none; cursor: pointer; width: 100%;
-        justify-content: center;
-    }
-    .iwm-btn:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
     .iwm-badge {
-        display: inline-flex; align-items: center; gap: 0.25rem;
-        padding: 0.15rem 0.5rem; border-radius: 9999px;
-        font-size: 0.7rem; font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
     }
     .iwm-apps {
         background: var(--color-white, #fff);
         border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 0.75rem;
+        border-radius: 0.85rem;
         padding: 1rem;
     }
     .dark .iwm-apps {
@@ -92,18 +228,29 @@
     <div class="iwm-grid iwm-grid-4">
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #fef2f2; color: #ef4444;">
+                <div class="iwm-stat-icon" style="background: #fff1f2; color: #e11d48;">
                     <span class="material-symbols-outlined">payments</span>
                 </div>
                 <div>
                     <div class="iwm-stat-label">Today's Revenue</div>
-                    <div class="iwm-stat-value">Tk {{ today_revenue|floatformat:2 }}</div>
+                    <div class="iwm-stat-value">Tk {{ today_revenue|floatformat:0 }}</div>
                 </div>
             </div>
         </div>
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #f0fdf4; color: #22c55e;">
+                <div class="iwm-stat-icon" style="background: #f0fdf4; color: #16a34a;">
+                    <span class="material-symbols-outlined">savings</span>
+                </div>
+                <div>
+                    <div class="iwm-stat-label">Today's Profit</div>
+                    <div class="iwm-stat-value">Tk {{ today_profit|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="iwm-card">
+            <div class="iwm-stat">
+                <div class="iwm-stat-icon" style="background: #eef2ff; color: #4338ca;">
                     <span class="material-symbols-outlined">shopping_cart</span>
                 </div>
                 <div>
@@ -114,23 +261,12 @@
         </div>
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #eff6ff; color: #3b82f6;">
+                <div class="iwm-stat-icon" style="background: #eff6ff; color: #2563eb;">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
                 <div>
                     <div class="iwm-stat-label">Total Products</div>
                     <div class="iwm-stat-value">{{ total_products }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="iwm-card">
-            <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #fefce8; color: #eab308;">
-                    <span class="material-symbols-outlined">group</span>
-                </div>
-                <div>
-                    <div class="iwm-stat-label">Active Subscribers</div>
-                    <div class="iwm-stat-value">{{ active_subscribers }}</div>
                 </div>
             </div>
         </div>
@@ -150,7 +286,7 @@
         </div>
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #fffbeb; color: #f59e0b;">
+                <div class="iwm-stat-icon" style="background: #fffbeb; color: #d97706;">
                     <span class="material-symbols-outlined">warning</span>
                 </div>
                 <div>
@@ -161,24 +297,74 @@
         </div>
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #f0f9ff; color: #0ea5e9;">
-                    <span class="material-symbols-outlined">trending_up</span>
+                <div class="iwm-stat-icon" style="background: #f8fafc; color: #0f766e;">
+                    <span class="material-symbols-outlined">group</span>
                 </div>
                 <div>
-                    <div class="iwm-stat-label">Total Revenue</div>
-                    <div class="iwm-stat-value">Tk {{ total_revenue|floatformat:2 }}</div>
+                    <div class="iwm-stat-label">Active Subscribers</div>
+                    <div class="iwm-stat-value">{{ active_subscribers }}</div>
                 </div>
             </div>
         </div>
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #faf5ff; color: #a855f7;">
+                <div class="iwm-stat-icon" style="background: #faf5ff; color: #7c3aed;">
                     <span class="material-symbols-outlined">mail</span>
                 </div>
                 <div>
                     <div class="iwm-stat-label">Total Subscribers</div>
                     <div class="iwm-stat-value">{{ total_subscribers }}</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="iwm-card" style="margin-bottom: 1.5rem;">
+        <div class="iwm-section-title">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">monitoring</span>
+            Revenue & Profit Overview
+        </div>
+        <div class="iwm-overview-shell">
+            <form method="get" class="iwm-filter-form">
+                <div class="iwm-field">
+                    <label for="overview_start_date">Start date</label>
+                    <input id="overview_start_date" type="date" name="start_date" value="{{ overview_start_date }}">
+                </div>
+                <div class="iwm-field">
+                    <label for="overview_end_date">End date</label>
+                    <input id="overview_end_date" type="date" name="end_date" value="{{ overview_end_date }}">
+                </div>
+                <div class="iwm-filter-actions">
+                    <button type="submit" class="iwm-btn iwm-btn-primary">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">filter_alt</span>
+                        Apply
+                    </button>
+                    <a href="{% url 'admin:index' %}" class="iwm-btn iwm-btn-secondary">Reset</a>
+                </div>
+            </form>
+            <div class="iwm-preset-row">
+                <a href="?range=today" class="iwm-preset {% if overview_range == 'today' %}is-active{% endif %}">Today</a>
+                <a href="?range=7" class="iwm-preset {% if overview_range == '7' %}is-active{% endif %}">7 Days</a>
+                <a href="?range=14" class="iwm-preset {% if overview_range == '14' %}is-active{% endif %}">14 Days</a>
+                <a href="?range=30" class="iwm-preset {% if overview_range == '30' %}is-active{% endif %}">30 Days</a>
+                <a href="?range=90" class="iwm-preset {% if overview_range == '90' %}is-active{% endif %}">90 Days</a>
+            </div>
+            <div class="iwm-overview-stats">
+                <div class="iwm-mini-stat">
+                    <span>Range Revenue</span>
+                    <strong>Tk {{ overview_revenue|floatformat:0 }}</strong>
+                </div>
+                <div class="iwm-mini-stat">
+                    <span>Range Profit</span>
+                    <strong>Tk {{ overview_profit|floatformat:0 }}</strong>
+                </div>
+                <div class="iwm-mini-stat">
+                    <span>Orders In Range</span>
+                    <strong>{{ overview_orders }}</strong>
+                </div>
+            </div>
+            <div class="iwm-chart-wrap">
+                <canvas id="overviewChart"></canvas>
             </div>
         </div>
     </div>
@@ -211,15 +397,15 @@
                 Quick Actions
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
+                <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3); color: #fff;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">shopping_bag</span>
                     Products
                 </a>
-                <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">receipt_long</span>
                     Orders
                 </a>
-                <a href="{% url 'admin:analytics' %}" class="iwm-btn" style="background: linear-gradient(135deg, #38a169, #48bb78);">
+                <a href="{% url 'admin:analytics' %}" class="iwm-btn" style="background: linear-gradient(135deg, #38a169, #48bb78); color: #fff;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">analytics</span>
                     Analytics
                 </a>
@@ -235,4 +421,70 @@
         {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
     </div>
 </div>
+
+{{ overview_chart_data|json_script:"overview-chart-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const overviewElement = document.getElementById('overview-chart-data');
+    const overviewCanvas = document.getElementById('overviewChart');
+    if (!overviewElement || !overviewCanvas) {
+        return;
+    }
+
+    const overviewData = JSON.parse(overviewElement.textContent);
+    new Chart(overviewCanvas, {
+        type: 'line',
+        data: {
+            labels: overviewData.labels,
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: overviewData.revenue,
+                    borderColor: '#e11d48',
+                    backgroundColor: 'rgba(225, 29, 72, 0.12)',
+                    borderWidth: 3,
+                    tension: 0.28,
+                    fill: true,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Profit',
+                    data: overviewData.profit,
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                    borderWidth: 3,
+                    tension: 0.28,
+                    fill: true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Tk ' + Math.round(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -1,5 +1,5 @@
 ﻿from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand, PromoBanner
+from .models import Product, ProductColorImage, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand, PromoBanner
 from .forms import ReviewForm
 from django.db.models import Q, Avg, Count, Prefetch
 from django.contrib.auth.decorators import login_required
@@ -57,7 +57,7 @@ def _500_view(request):
     return render(request, '500.html', status=500)
 
 
-def _base_product_queryset(*, include_tags=False, include_detail_relations=False):
+def _base_product_queryset(*, include_tags=False, include_detail_relations=False, include_color_images=False):
     queryset = Product.objects.select_related(
         'category',
         'subcategory',
@@ -73,9 +73,13 @@ def _base_product_queryset(*, include_tags=False, include_detail_relations=False
     if include_tags:
         queryset = queryset.prefetch_related('tags')
 
+    if include_color_images or include_detail_relations:
+        queryset = queryset.prefetch_related(
+            Prefetch('color_images', queryset=ProductColorImage.objects.select_related('color'))
+        )
+
     if include_detail_relations:
         queryset = queryset.prefetch_related(
-            'more_images',
             Prefetch('reviews', queryset=Review.objects.select_related('user')),
         )
 
@@ -102,6 +106,58 @@ def _apply_product_rating_display(products):
         product.empty_stars = range(5 - product.avg_rating - (1 if product.half else 0))
 
 
+def _get_prefetched_related_list(instance, related_name):
+    prefetched = getattr(instance, '_prefetched_objects_cache', {})
+    if related_name in prefetched:
+        return list(prefetched[related_name])
+    return list(getattr(instance, related_name).all())
+
+
+def _apply_product_media(products, *, selected_color='', include_gallery=False):
+    normalized_selected_color = (selected_color or '').strip().lower()
+
+    for product in products:
+        color_images = _get_prefetched_related_list(product, 'color_images')
+        main_color_name = product.color.name if product.color and not color_images else ''
+        gallery_images = [{
+            'url': product.image.url,
+            'label': main_color_name or 'Main',
+            'color_name': main_color_name,
+        }]
+        available_colors = []
+        seen_colors = set()
+
+        for color_image in color_images:
+            color_name = color_image.color.name if color_image.color else ''
+            gallery_images.append({
+                'url': color_image.image.url,
+                'label': color_name or 'Image',
+                'color_name': color_name,
+            })
+            if color_name and color_name.lower() not in seen_colors:
+                available_colors.append({
+                    'name': color_name,
+                    'image_url': color_image.image.url,
+                })
+                seen_colors.add(color_name.lower())
+
+        if not color_images and product.color and product.color.name.lower() not in seen_colors:
+            available_colors.append({
+                'name': product.color.name,
+                'image_url': product.image.url,
+            })
+
+        selected_image = product.image.url
+        if normalized_selected_color:
+            matched_color_image = product.get_color_image(normalized_selected_color)
+            if matched_color_image:
+                selected_image = matched_color_image.image.url
+
+        product.card_image_url = selected_image
+        product.gallery_images = gallery_images
+        product.available_colors = available_colors
+
+
 def _paginate_queryset(request, queryset, per_page=16):
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page')
@@ -115,8 +171,9 @@ def _paginate_queryset(request, queryset, per_page=16):
 
 def home(request):
     categories = Category.objects.prefetch_related('subcategories').all()
-    featured_products = _base_product_queryset().filter(is_featured=True).order_by('-created_at')[:8]
+    featured_products = _base_product_queryset(include_color_images=True).filter(is_featured=True).order_by('-created_at')[:8]
     _apply_product_rating_display(featured_products)
+    _apply_product_media(featured_products)
     brands = Brand.objects.all()
     promo = PromoBanner.objects.filter(is_active=True).first()
     featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
@@ -130,9 +187,10 @@ def home(request):
     return render(request, 'home.html', context)
 
 def shop(request):
-    products = _base_product_queryset().order_by('-created_at')
+    products = _base_product_queryset(include_color_images=True).order_by('-created_at')
     paginated_products, pagination_query = _paginate_queryset(request, products)
     _apply_product_rating_display(paginated_products)
+    _apply_product_media(paginated_products)
 
     return render(request, 'shop.html', {
         'products': paginated_products,
@@ -208,19 +266,19 @@ def edit_profile(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(
-        _base_product_queryset(include_tags=True, include_detail_relations=True),
+        _base_product_queryset(include_tags=True, include_detail_relations=True, include_color_images=True),
         slug=slug,
     )
     
     # Get related products from the same category, excluding the current product
     related_by_category = list(
-        _base_product_queryset().filter(category=product.category).exclude(id=product.id)[:4]
+        _base_product_queryset(include_color_images=True).filter(category=product.category).exclude(id=product.id)[:4]
     )
     
     # Get related products with similar tags
     product_tags = list(product.tags.all())
     related_by_tags = list(
-        _base_product_queryset().filter(tags__in=product_tags).exclude(id=product.id).distinct()[:4]
+        _base_product_queryset(include_color_images=True).filter(tags__in=product_tags).exclude(id=product.id).distinct()[:4]
     )
     
     # Combine both querysets and remove duplicates
@@ -232,6 +290,8 @@ def product_detail(request, slug):
     # Limit to 4 related products
     related_products = related_products[:4]
     _apply_product_rating_display([product, *related_products])
+    _apply_product_media([product], include_gallery=True)
+    _apply_product_media(related_products)
     
     # Determine whether the current visitor may submit a review for this product.
     purchased_in_account = False
@@ -267,7 +327,7 @@ def search_view(request):
     selected_size = request.GET.get("size", "").strip()
     selected_brand = request.GET.get("brand", "").strip()
     
-    products = _base_product_queryset()
+    products = _base_product_queryset(include_color_images=True)
 
     # Apply search filter
     if query:
@@ -340,7 +400,10 @@ def search_view(request):
 
     # Apply color filter
     if selected_color:
-        products = products.filter(color__name__iexact=selected_color)
+        products = products.filter(
+            Q(color_images__color__name__iexact=selected_color) |
+            Q(color__name__iexact=selected_color)
+        ).distinct()
 
     # Apply size filter
     if selected_size:
@@ -374,6 +437,7 @@ def search_view(request):
 
     products, pagination_query = _paginate_queryset(request, products)
     _apply_product_rating_display(products)
+    _apply_product_media(products, selected_color=selected_color)
 
     context = {
         "products": products,

@@ -13,7 +13,6 @@ from iwm.models import (
     Category,
     Color,
     FeatureReason,
-    MoreImages,
     Order,
     OrderItem,
     Product,
@@ -67,8 +66,6 @@ class PerformanceQueryTests(TestCase):
             brand=cls.brand,
         )
         cls.product.tags.add(cls.tag_one, cls.tag_two)
-        MoreImages.objects.create(product=cls.product, image=image_file('main-extra-1.jpg'))
-        MoreImages.objects.create(product=cls.product, image=image_file('main-extra-2.jpg'))
         Review.objects.create(product=cls.product, user=cls.review_user, rating=5, comment='Excellent')
         Review.objects.create(product=cls.product, user=cls.review_user, rating=4, comment='Great')
 
@@ -166,7 +163,6 @@ class PerformanceQueryTests(TestCase):
         product = response.context['product']
         with self.assertNumQueries(0):
             list(product.tags.all())
-            list(product.more_images.all())
             [review.user.username for review in product.reviews.all()]
 
     def test_admin_alerts_queries(self):

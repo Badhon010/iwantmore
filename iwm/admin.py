@@ -13,11 +13,14 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Sum, Count, Q, F, DecimalField
+from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper
+from django.db.models.functions import Cast, TruncDate
 from django.utils import timezone
 from django import forms
+from django.forms.models import BaseInlineFormSet
 from django.conf import settings
 from datetime import timedelta, datetime, time
+from decimal import Decimal
 import json
 import csv
 
@@ -34,7 +37,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.sites import UnfoldAdminSite
 
 from .models import (
-    Product, Review, Tag, MoreImages, NewsletterSubscriber,
+    Product, ProductColorImage, Review, Tag, NewsletterSubscriber,
     Category, SubCategory, FeatureReason, Order, OrderItem,
     Address, Coupon, Color, Size, Brand, AdminAlert,PromoBanner
 )
@@ -67,6 +70,153 @@ def _validation_error_message(exc):
         return str(exc.messages[0])
 
     return str(exc)
+
+
+def _money_output_field():
+    return DecimalField(max_digits=12, decimal_places=2)
+
+
+def _order_item_profit_expression():
+    buying_price = Cast(F('product__buying_price'), output_field=_money_output_field())
+    return ExpressionWrapper(
+        F('quantity') * (F('product_price') - buying_price),
+        output_field=_money_output_field(),
+    )
+
+
+def _parse_filter_date(raw_value):
+    if not raw_value:
+        return None
+
+    try:
+        return datetime.strptime(raw_value, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
+
+def _resolve_date_range(request, *, default_days=30):
+    today = timezone.localdate()
+    preset = (request.GET.get('range') or '').strip()
+    default_start = today - timedelta(days=default_days - 1)
+
+    start_date = _parse_filter_date(request.GET.get('start_date'))
+    end_date = _parse_filter_date(request.GET.get('end_date'))
+
+    preset_days = {
+        'today': 1,
+        '7': 7,
+        '30': 30,
+        '90': 90,
+        '365': 365,
+    }
+
+    if start_date or end_date:
+        start_date = start_date or default_start
+        end_date = end_date or today
+        selected_range = 'custom'
+    else:
+        selected_range = preset if preset in preset_days else str(default_days)
+        days = preset_days.get(selected_range, default_days)
+        start_date = today - timedelta(days=days - 1)
+        end_date = today
+
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    if end_date > today:
+        end_date = today
+
+    if start_date > today:
+        start_date = today
+
+    return {
+        'selected_range': selected_range,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+
+def _period_bounds(start_date, end_date):
+    start_at, _ = _day_range(start_date)
+    _, end_at = _day_range(end_date)
+    return start_at, end_at
+
+
+def _calculate_profit(start_date, end_date):
+    start_at, end_at = _period_bounds(start_date, end_date)
+    profit = OrderItem.objects.filter(
+        order__created_at__range=(start_at, end_at),
+        order__payment_state__in=CAPTURED_PAYMENT_STATES,
+        product__isnull=False,
+    ).aggregate(total=Sum(_order_item_profit_expression()))['total']
+    return profit or Decimal('0.00')
+
+
+def _summarize_orders(start_date, end_date):
+    start_at, end_at = _period_bounds(start_date, end_date)
+    summary = Order.objects.filter(created_at__range=(start_at, end_at)).aggregate(
+        order_count=Count('id'),
+        revenue=Sum('total_price', filter=Q(payment_state__in=CAPTURED_PAYMENT_STATES)),
+        paid_orders=Count('id', filter=Q(payment_state__in=CAPTURED_PAYMENT_STATES)),
+        pending_orders=Count('id', filter=Q(payment_state__in=FOLLOW_UP_PAYMENT_STATES)),
+        delivered_orders=Count('id', filter=Q(order_status='delivered')),
+        cancelled_orders=Count('id', filter=Q(order_status='cancelled')),
+        total_customers=Count('email', filter=~Q(email=''), distinct=True),
+    )
+    summary['revenue'] = summary['revenue'] or Decimal('0.00')
+    summary['profit'] = _calculate_profit(start_date, end_date)
+    summary['avg_order_value'] = (
+        summary['revenue'] / summary['paid_orders']
+        if summary['paid_orders']
+        else Decimal('0.00')
+    )
+    return summary
+
+
+def _build_financial_chart_data(start_date, end_date):
+    start_at, end_at = _period_bounds(start_date, end_date)
+    points = {}
+    current = start_date
+
+    while current <= end_date:
+        points[current.isoformat()] = {
+            'label': current.strftime('%b %d'),
+            'revenue': 0.0,
+            'profit': 0.0,
+        }
+        current += timedelta(days=1)
+
+    revenue_rows = Order.objects.filter(
+        created_at__range=(start_at, end_at),
+        payment_state__in=CAPTURED_PAYMENT_STATES,
+    ).annotate(day=TruncDate('created_at')).values('day').annotate(
+        revenue=Sum('total_price')
+    ).order_by('day')
+
+    profit_rows = OrderItem.objects.filter(
+        order__created_at__range=(start_at, end_at),
+        order__payment_state__in=CAPTURED_PAYMENT_STATES,
+        product__isnull=False,
+    ).annotate(day=TruncDate('order__created_at')).values('day').annotate(
+        profit=Sum(_order_item_profit_expression())
+    ).order_by('day')
+
+    for row in revenue_rows:
+        day = row['day']
+        if day:
+            points[day.isoformat()]['revenue'] = int(round(float(row['revenue'] or 0)))
+
+    for row in profit_rows:
+        day = row['day']
+        if day:
+            points[day.isoformat()]['profit'] = int(round(float(row['profit'] or 0)))
+
+    ordered_points = list(points.values())
+    return {
+        'labels': [point['label'] for point in ordered_points],
+        'revenue': [point['revenue'] for point in ordered_points],
+        'profit': [point['profit'] for point in ordered_points],
+    }
 
 
 # ========================
@@ -380,6 +530,181 @@ class IWMAdminSite(UnfoldAdminSite):
         
         return super().index(request, extra_context)
 
+    def revenue_chart_view(self, request):
+        """Generate interactive revenue and profit trend chart"""
+        range_data = _resolve_date_range(request, default_days=30)
+        chart_data = _build_financial_chart_data(
+            range_data['start_date'],
+            range_data['end_date'],
+        )
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=chart_data['labels'],
+            y=chart_data['revenue'],
+            mode='lines+markers',
+            name='Revenue',
+            line=dict(color='#ff6f91', width=3),
+            marker=dict(size=8, color='#ff6f91')
+        ))
+        fig.add_trace(go.Scatter(
+            x=chart_data['labels'],
+            y=chart_data['profit'],
+            mode='lines+markers',
+            name='Profit',
+            line=dict(color='#22c55e', width=3),
+            marker=dict(size=7, color='#22c55e')
+        ))
+
+        fig.update_layout(
+            title=f"Revenue & Profit Trend ({range_data['start_date']} to {range_data['end_date']})",
+            xaxis_title="Date",
+            yaxis_title="Amount (Tk)",
+            template="plotly_dark",
+            hovermode='x unified',
+            height=500
+        )
+
+        chart_html = plot(fig, output_type='div', include_plotlyjs='cdn')
+
+        context = {**self.each_context(request),
+            'chart': chart_html,
+            'title': 'Revenue & Profit Trend Chart'
+        }
+        return TemplateResponse(request, 'admin/revenue_chart.html', context)
+
+    def analytics_view(self, request):
+        """Comprehensive analytics dashboard"""
+        check_and_create_alerts()
+
+        today = timezone.localdate()
+        selected_range = _resolve_date_range(request, default_days=30)
+        selected_start = selected_range['start_date']
+        selected_end = selected_range['end_date']
+        selected_start_at, selected_end_at = _period_bounds(selected_start, selected_end)
+
+        today_summary = _summarize_orders(today, today)
+        week_summary = _summarize_orders(today - timedelta(days=6), today)
+        month_summary = _summarize_orders(today - timedelta(days=29), today)
+        selected_summary = _summarize_orders(selected_start, selected_end)
+        financial_chart_data = _build_financial_chart_data(selected_start, selected_end)
+
+        selected_orders = Order.objects.filter(created_at__range=(selected_start_at, selected_end_at))
+        payment_counts_map = {state: 0 for state, _label in Order.PAYMENT_STATE_CHOICES}
+        for row in selected_orders.values('payment_state').annotate(count=Count('id')):
+            payment_counts_map[row['payment_state']] = row['count']
+        payment_chart_data = {
+            'labels': [label for _state, label in Order.PAYMENT_STATE_CHOICES],
+            'values': [payment_counts_map[state] for state, _label in Order.PAYMENT_STATE_CHOICES],
+        }
+
+        category_data = list(OrderItem.objects.filter(
+            order__created_at__range=(selected_start_at, selected_end_at)
+        ).exclude(
+            product__category__name__isnull=True
+        ).values('product__category__name').annotate(
+            count=Count('id')
+        ).order_by('-count')[:10])
+
+        if category_data:
+            fig = px.pie(
+                names=[item['product__category__name'] for item in category_data],
+                values=[item['count'] for item in category_data],
+                title="Orders by Category",
+                template="plotly_dark"
+            )
+            fig.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
+            category_chart = plot(fig, output_type='div', include_plotlyjs=True)
+        else:
+            category_chart = format_html(
+                '<div style="padding: 2rem; text-align: center; color: #9ca3af;">No category data available for the selected period.</div>'
+            )
+
+        repeat_customers = selected_orders.exclude(email='').values('email').annotate(order_count=Count('id')).filter(order_count__gt=1).count()
+        top_products = OrderItem.objects.filter(order__created_at__range=(selected_start_at, selected_end_at)).values('product_name').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('-total_quantity')[:5]
+
+        context = {**self.each_context(request),
+            'today_orders': today_summary['order_count'],
+            'week_orders': week_summary['order_count'],
+            'month_orders': month_summary['order_count'],
+            'today_revenue': today_summary['revenue'],
+            'today_profit': today_summary['profit'],
+            'week_revenue': week_summary['revenue'],
+            'week_profit': week_summary['profit'],
+            'month_revenue': month_summary['revenue'],
+            'month_profit': month_summary['profit'],
+            'selected_orders': selected_summary['order_count'],
+            'selected_revenue': selected_summary['revenue'],
+            'selected_profit': selected_summary['profit'],
+            'selected_range': selected_range['selected_range'],
+            'selected_start_date': selected_start.isoformat(),
+            'selected_end_date': selected_end.isoformat(),
+            'paid_orders': selected_summary['paid_orders'],
+            'pending_orders': selected_summary['pending_orders'],
+            'payment_chart_data': payment_chart_data,
+            'financial_chart_data': financial_chart_data,
+            'category_chart': category_chart,
+            'avg_order_value': selected_summary['avg_order_value'],
+            'repeat_customers': repeat_customers,
+            'total_customers': selected_summary['total_customers'],
+            'delivered_orders': selected_summary['delivered_orders'],
+            'cancelled_orders': selected_summary['cancelled_orders'],
+            'top_products': top_products,
+            'title': 'Advanced Analytics Dashboard'
+        }
+
+        return TemplateResponse(request, 'admin/analytics_dashboard.html', context)
+
+    def index(self, request, extra_context=None):
+        """Enhanced dashboard with alerts, revenue, and profit summaries"""
+        extra_context = extra_context or {}
+
+        check_and_create_alerts()
+
+        today = timezone.localdate()
+        today_summary = _summarize_orders(today, today)
+        overview_range = _resolve_date_range(request, default_days=14)
+        overview_summary = _summarize_orders(
+            overview_range['start_date'],
+            overview_range['end_date'],
+        )
+        overview_chart_data = _build_financial_chart_data(
+            overview_range['start_date'],
+            overview_range['end_date'],
+        )
+
+        total_products = Product.objects.count()
+        out_of_stock = Product.objects.filter(stock=0).count()
+        low_stock = Product.objects.filter(stock__gt=0, stock__lt=10).count()
+        total_subscribers = NewsletterSubscriber.objects.count()
+        active_subscribers = NewsletterSubscriber.objects.filter(is_active=True).count()
+        alerts = AdminAlert.objects.filter(is_read=False).order_by('-severity', '-created_at')[:5]
+        unread_alerts = AdminAlert.objects.filter(is_read=False).count()
+
+        extra_context.update({
+            'today_orders': today_summary['order_count'],
+            'today_revenue': today_summary['revenue'],
+            'today_profit': today_summary['profit'],
+            'total_products': total_products,
+            'out_of_stock': out_of_stock,
+            'low_stock': low_stock,
+            'total_subscribers': total_subscribers,
+            'active_subscribers': active_subscribers,
+            'unread_alerts': unread_alerts,
+            'recent_alerts': alerts,
+            'overview_orders': overview_summary['order_count'],
+            'overview_revenue': overview_summary['revenue'],
+            'overview_profit': overview_summary['profit'],
+            'overview_range': overview_range['selected_range'],
+            'overview_start_date': overview_range['start_date'].isoformat(),
+            'overview_end_date': overview_range['end_date'].isoformat(),
+            'overview_chart_data': overview_chart_data,
+        })
+
+        return super().index(request, extra_context)
+
 
 # ========================
 # INSTANTIATE CUSTOM ADMIN SITE FIRST
@@ -424,20 +749,74 @@ class FeatureReasonAdmin(ModelAdmin):
 # PRODUCT ADMIN (WITH EXPORTS)
 # ========================
 
-class MoreImagesInline(TabularInline):
-    model = MoreImages
+class ProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        color = cleaned_data.get('color')
+
+        if color and self.instance.pk and self.instance.color_images.exists():
+            self.add_error(
+                'color',
+                'Use this only when the product has no color-specific images.',
+            )
+
+        return cleaned_data
+
+
+class ProductColorImageInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        active_colors = set()
+        has_color_images = False
+
+        for form in self.forms:
+            if not hasattr(form, 'cleaned_data') or form.cleaned_data.get('DELETE'):
+                continue
+
+            color = form.cleaned_data.get('color')
+            image = form.cleaned_data.get('image')
+            if not color and not image:
+                continue
+
+            if not color or not image:
+                raise ValidationError('Each color image row must include both color and image.')
+
+            color_key = color.pk
+            if color_key in active_colors:
+                raise ValidationError('Each color can only have one image per product.')
+
+            active_colors.add(color_key)
+            has_color_images = True
+
+        if has_color_images and self.instance.color_id:
+            raise ValidationError(
+                'Main image color is optional only when no color-specific images are added.'
+            )
+
+
+class ProductColorImageInline(TabularInline):
+    model = ProductColorImage
+    formset = ProductColorImageInlineFormSet
     extra = 1
-    fields = ('image',)
+    fields = ('color', 'image',)
+    verbose_name = "Color Image"
+    verbose_name_plural = "Color Images"
 
 
 class ProductAdmin(ExportActionMixin, ModelAdmin):
     resource_class = ProductResource
+    form = ProductAdminForm
     
     list_display = ('product_name_with_image', 'get_price_display', 'stock_status', 'subcategory', 'is_featured', 'get_colors', 'created_at')
     search_fields = ('name', 'description', 'slug')
-    list_filter = ('price', 'tags', 'subcategory', 'is_featured', 'color', 'size', 'brand', 'created_at')
+    list_filter = ('price', 'tags', 'subcategory', 'is_featured', 'size', 'brand', 'created_at')
     filter_horizontal = ('tags',)
-    inlines = [MoreImagesInline]
+    inlines = [ProductColorImageInline]
     readonly_fields = ('slug', 'discount_percentage_display', 'created_at')
     
     fieldsets = (
@@ -465,6 +844,9 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('color_images__color')
     
     def product_name_with_image(self, obj):
         if obj.image:
@@ -493,9 +875,8 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
     stock_status.short_description = "Stock"
     
     def get_colors(self, obj):
-        if obj.color:
-            return obj.color.name
-        return "-"
+        color_names = obj.get_available_color_names()
+        return ', '.join(color_names) if color_names else '-'
     get_colors.short_description = "Color"
     
     # Image preview removed — Unfold admin provides an automatic preview
@@ -530,7 +911,9 @@ class ColorAdmin(ModelAdmin):
     search_fields = ('name',)
     
     def products_count(self, obj):
-        count = obj.product_set.count()
+        count = Product.objects.filter(
+            Q(color=obj) | Q(color_images__color=obj)
+        ).distinct().count()
         return format_html(f'<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{count}</span>')
     products_count.short_description = "Products"
 
@@ -572,10 +955,10 @@ class TagAdmin(ModelAdmin):
     products_count.short_description = "Products"
 
 
-class MoreImagesAdmin(ModelAdmin):
-    list_display = ('product',)
-    list_filter = ('product',)
-    search_fields = ('product__name',)
+class ProductColorImageAdmin(ModelAdmin):
+    list_display = ('product', 'color')
+    list_filter = ('color', 'product')
+    search_fields = ('product__name', 'color__name')
 
 
 # ========================
@@ -1226,7 +1609,7 @@ admin_site.register(Color, ColorAdmin)
 admin_site.register(Size, SizeAdmin)
 admin_site.register(Brand, BrandAdmin)
 admin_site.register(Tag, TagAdmin)
-admin_site.register(MoreImages, MoreImagesAdmin)
+admin_site.register(ProductColorImage, ProductColorImageAdmin)
 admin_site.register(NewsletterSubscriber, NewsletterSubscriberAdmin)
 admin_site.register(Order, OrderAdmin)
 admin_site.register(OrderItem, OrderItemAdmin)

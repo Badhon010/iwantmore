@@ -18,17 +18,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Thumbnail images
     const thumbnails = document.querySelectorAll('.thumbnail');
     const mainImage = document.getElementById('mainImage');
+    const colorImageTriggers = document.querySelectorAll('.color-image-trigger');
     
     // ========================================
     // Thumbnail Image Switching
     // ========================================
+    function setActiveImage(imageUrl) {
+        if (!mainImage || !imageUrl) {
+            return;
+        }
+
+        mainImage.src = imageUrl;
+        thumbnails.forEach((thumb) => {
+            const thumbUrl = thumb.dataset.imageUrl || thumb.querySelector('img')?.src;
+            thumb.classList.toggle('active', thumbUrl === imageUrl);
+        });
+        colorImageTriggers.forEach((trigger) => {
+            trigger.classList.toggle('active', trigger.dataset.imageUrl === imageUrl);
+        });
+    }
+
     thumbnails.forEach(thumb => {
         thumb.addEventListener('click', function() {
-            const imgSrc = this.querySelector('img').src;
-            mainImage.src = imgSrc;
-            
-            thumbnails.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
+            const imgSrc = this.dataset.imageUrl || this.querySelector('img').src;
+            setActiveImage(imgSrc);
+        });
+    });
+
+    colorImageTriggers.forEach((trigger) => {
+        trigger.addEventListener('click', function() {
+            setActiveImage(this.dataset.imageUrl);
         });
     });
     
