@@ -100,6 +100,7 @@
             <div class="product-details">
               <h4>${item.name}</h4>
               <p class="product-id">Product ID: ${item.id}</p>
+              ${item.color ? `<p class="product-id">Color: ${item.color}</p>` : ''}
             </div>
           </td>
           <td class="product-price">৳${item.price}</td>

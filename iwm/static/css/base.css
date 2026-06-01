@@ -845,9 +845,9 @@ header .nav1 a:hover,
 /* Header Images Component */
 .page-header-image {
     position: relative;
-    height: 300px;
+    height: 400px;
     overflow: hidden;
-    margin-bottom: 30px;
+    margin-bottom: 50px;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
@@ -970,7 +970,7 @@ header .nav1 a:hover,
 /* Responsive Styles for Header Images */
 @media (max-width: 768px) {
     .page-header-image {
-        height: 200px;
+        height: 300px;
     }
     
     .page-header-content h1 {
@@ -994,7 +994,7 @@ header .nav1 a:hover,
 
 @media (max-width: 480px) {
     .page-header-image {
-        height: 180px;
+        height: 250px;
     }
     
     .page-header-content h1 {

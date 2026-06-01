@@ -101,13 +101,14 @@
                 <h3>Order Items</h3>
                 {% for item in order.items.all %}
                 <div class="order-item">
-                    {% if item.product and item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                    {% if item.product and item.product.get_primary_image %}
+                        <img src="{{ item.product.get_primary_image.url }}" alt="{{ item.product_name }}">
                     {% else %}
                         <div class="no-image">No Image</div>
                     {% endif %}
                     <div class="item-details">
                         <h4>{{ item.product_name }}</h4>
+                        {% if item.product_color %}<p>Color: {{ item.product_color }}</p>{% endif %}
                         <p>Quantity: {{ item.quantity }}</p>
                         <p class="price">৳{{ item.product_price }}</p>
                     </div>

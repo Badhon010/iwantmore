@@ -100,6 +100,7 @@
           <div class="order-item">
             <div class="item-details">
               <div class="item-name">{{ item.product_name }}</div>
+              {% if item.product_color %}<div class="item-price">Color: {{ item.product_color }}</div>{% endif %}
               <div class="item-price">৳{{ item.product_price }} × {{ item.quantity }}</div>
             </div>
             <div class="item-total">৳{{ item.line_total }}</div>

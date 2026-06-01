@@ -72,7 +72,8 @@ function getCartItemsPayload() {
     return cartItems
         .map(item => ({
             id: Number(item.id),
-            quantity: Number(item.quantity || 1)
+            quantity: Number(item.quantity || 1),
+            color: (item.color || '').trim()
         }))
         .filter(item => Number.isFinite(item.id) && item.id > 0 && Number.isFinite(item.quantity) && item.quantity > 0);
 }
@@ -104,6 +105,7 @@ function renderSummaryItems(items) {
             </div>
             <div class="item-details">
                 <div class="item-name">${item.name}</div>
+                ${item.color ? `<div class="item-meta">Color: ${item.color}</div>` : ''}
                 <div class="item-price">${formatCurrency(item.unit_price)} <span class="item-quantity">x ${item.quantity}</span></div>
             </div>
         </div>
@@ -434,7 +436,7 @@ function showOrderPreview() {
     const orderItemsContainer = document.getElementById('preview-order-items');
     orderItemsContainer.innerHTML = currentCheckoutItems.map(item => `
         <div class="detail-row">
-            <div class="detail-label">${item.name} x ${item.quantity}</div>
+            <div class="detail-label">${item.name}${item.color ? ` (${item.color})` : ''} x ${item.quantity}</div>
             <div class="detail-value">${formatCurrency(item.line_total)}</div>
         </div>
     `).join('');

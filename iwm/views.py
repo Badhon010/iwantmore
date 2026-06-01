@@ -118,12 +118,7 @@ def _apply_product_media(products, *, selected_color='', include_gallery=False):
 
     for product in products:
         color_images = _get_prefetched_related_list(product, 'color_images')
-        main_color_name = product.color.name if product.color and not color_images else ''
-        gallery_images = [{
-            'url': product.image.url,
-            'label': main_color_name or 'Main',
-            'color_name': main_color_name,
-        }]
+        gallery_images = []
         available_colors = []
         seen_colors = set()
 
@@ -141,13 +136,21 @@ def _apply_product_media(products, *, selected_color='', include_gallery=False):
                 })
                 seen_colors.add(color_name.lower())
 
-        if not color_images and product.color and product.color.name.lower() not in seen_colors:
+        if product.image:
+            main_color_name = product.color.name if product.color and not color_images else ''
+            gallery_images.append({
+                'url': product.image.url,
+                'label': main_color_name or 'Main',
+                'color_name': main_color_name,
+            })
+
+        if product.color and product.image and product.color.name.lower() not in seen_colors:
             available_colors.append({
                 'name': product.color.name,
                 'image_url': product.image.url,
             })
 
-        selected_image = product.image.url
+        selected_image = gallery_images[0]['url'] if gallery_images else ''
         if normalized_selected_color:
             matched_color_image = product.get_color_image(normalized_selected_color)
             if matched_color_image:
@@ -156,6 +159,7 @@ def _apply_product_media(products, *, selected_color='', include_gallery=False):
         product.card_image_url = selected_image
         product.gallery_images = gallery_images
         product.available_colors = available_colors
+        product.requires_color_selection = len(available_colors) > 1
 
 
 def _paginate_queryset(request, queryset, per_page=16):
@@ -956,17 +960,25 @@ def _build_pricing_summary(resolved_items, shipping_state, coupon=None):
 
 
 def _serialize_checkout_items(resolved_items):
-    return [
-        {
+    serialized_items = []
+    for item in resolved_items:
+        selected_image = None
+        if item['product_color']:
+            selected_color_image = item['product'].get_color_image(item['product_color'])
+            selected_image = selected_color_image.image if selected_color_image else None
+        if not selected_image:
+            selected_image = item['product'].get_primary_image()
+
+        serialized_items.append({
             'id': item['product_id'],
             'name': item['product_name'],
+            'color': item['product_color'],
             'quantity': item['quantity'],
             'unit_price': float(item['unit_price']),
             'line_total': float(item['line_total']),
-            'image': item['product'].image.url if item['product'].image else '',
-        }
-        for item in resolved_items
-    ]
+            'image': selected_image.url if selected_image else '',
+        })
+    return serialized_items
 
 
 def _serialize_pricing_summary(pricing):
@@ -1085,6 +1097,7 @@ def order_confirmation(request):
 
             items.append({
                 'product_name': item.product_name,
+                'product_color': item.product_color,
                 'product_price': item.product_price,
                 'quantity': item.quantity,
                 'line_total': line_total,

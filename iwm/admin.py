@@ -754,25 +754,13 @@ class ProductAdminForm(forms.ModelForm):
         model = Product
         fields = '__all__'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        color = cleaned_data.get('color')
-
-        if color and self.instance.pk and self.instance.color_images.exists():
-            self.add_error(
-                'color',
-                'Use this only when the product has no color-specific images.',
-            )
-
-        return cleaned_data
-
 
 class ProductColorImageInlineFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
         active_colors = set()
-        has_color_images = False
+        image_count = 0
 
         for form in self.forms:
             if not hasattr(form, 'cleaned_data') or form.cleaned_data.get('DELETE'):
@@ -780,23 +768,22 @@ class ProductColorImageInlineFormSet(BaseInlineFormSet):
 
             color = form.cleaned_data.get('color')
             image = form.cleaned_data.get('image')
-            if not color and not image:
+            if not image:
+                if color:
+                    raise ValidationError('Add an image for each color row, or leave the row empty.')
                 continue
 
-            if not color or not image:
-                raise ValidationError('Each color image row must include both color and image.')
+            image_count += 1
 
-            color_key = color.pk
-            if color_key in active_colors:
-                raise ValidationError('Each color can only have one image per product.')
+            if color:
+                color_key = color.pk
+                if color_key in active_colors:
+                    raise ValidationError('Each color can only have one image per product.')
 
-            active_colors.add(color_key)
-            has_color_images = True
+                active_colors.add(color_key)
 
-        if has_color_images and self.instance.color_id:
-            raise ValidationError(
-                'Main image color is optional only when no color-specific images are added.'
-            )
+        if image_count < 1:
+            raise ValidationError('Add at least one product image.')
 
 
 class ProductColorImageInline(TabularInline):
@@ -804,8 +791,8 @@ class ProductColorImageInline(TabularInline):
     formset = ProductColorImageInlineFormSet
     extra = 1
     fields = ('color', 'image',)
-    verbose_name = "Color Image"
-    verbose_name_plural = "Color Images"
+    verbose_name = "Product Image"
+    verbose_name_plural = "Product Images"
 
 
 class ProductAdmin(ExportActionMixin, ModelAdmin):
@@ -821,7 +808,7 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
     
     fieldsets = (
         ('Product Information', {
-            'fields': ('name', 'slug', 'description', 'image')
+            'fields': ('name', 'slug', 'description')
         }),
         ('Pricing & Stock', {
             'fields': ('price', 'buying_price', 'discount_price', 'discount_percentage_display', 'stock')
@@ -830,7 +817,7 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
             'fields': ('subcategory', 'tags')
         }),
         ('Product Attributes', {
-            'fields': ('color', 'size', 'brand')
+            'fields': ('size', 'brand')
         }),
         ('Featured', {
             'fields': ('is_featured', 'feature_reason')
@@ -849,10 +836,11 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
         return super().get_queryset(request).prefetch_related('color_images__color')
     
     def product_name_with_image(self, obj):
-        if obj.image:
+        primary_image = obj.get_primary_image()
+        if primary_image:
             return format_html(
                 '<div style="display: flex; align-items: center;"><img src="{}" style="height: 40px; border-radius: 5px; margin-right: 10px;" /><strong>{}</strong></div>',
-                obj.image.url, obj.name
+                primary_image.url, obj.name
             )
         return obj.name
     product_name_with_image.short_description = "Product"
@@ -956,9 +944,15 @@ class TagAdmin(ModelAdmin):
 
 
 class ProductColorImageAdmin(ModelAdmin):
-    list_display = ('product', 'color')
+    list_display = ('product', 'color', 'image_preview')
     list_filter = ('color', 'product')
     search_fields = ('product__name', 'color__name')
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height: 40px; border-radius: 3px;" />', obj.image.url)
+        return '-'
+    image_preview.short_description = "Image"
 
 
 # ========================
@@ -1100,7 +1094,7 @@ class OrderAdminForm(forms.ModelForm):
 class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ['product', 'product_name', 'product_price', 'quantity']
+    readonly_fields = ['product', 'product_name', 'product_color', 'product_price', 'quantity']
     can_delete = False
     
     def has_add_permission(self, request, obj=None):

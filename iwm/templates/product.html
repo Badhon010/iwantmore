@@ -3,7 +3,7 @@
 {% block title %}{{ product.meta_title|default:product.name }} - I Want More{% endblock %}
 {% block og_title %}{{ product.meta_title|default:product.name }}{% endblock %}
 {% block og_description %}{{ product.meta_description|default:product.description|striptags|truncatechars:160 }}{% endblock %}
-{% block og_image %}{{ product.image.url }}{% endblock %}
+{% block og_image %}{{ product.card_image_url }}{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/product.css' %}">
     <link rel="stylesheet" href="{% static 'css/item_cart.css' %}">
@@ -20,7 +20,7 @@
                 {% elif product.is_featured %}
                     <div class="product-badge featured">FEATURED</div>
                 {% endif %}
-                <img id="mainImage" src="{% firstof product.card_image_url product.image.url %}" alt="{{ product.name }}">
+                <img id="mainImage" src="{{ product.card_image_url }}" alt="{{ product.name }}">
             </div>
             
             <!-- Thumbnail Images -->
@@ -59,7 +59,7 @@
                         <i class="fas fa-check-circle"></i> In Stock: {{ product.stock }} items
                     {% endif %}
                 </div>
-                <button class="wishlist-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.image.url }}">
+                <button class="wishlist-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.card_image_url }}">
                     <i class="far fa-heart"></i>
                     <span>Add to Wishlist</span>
                 </button>
@@ -94,14 +94,14 @@
                 {% if product.available_colors %}
                 <div class="detail-item">
                     <span class="label">Colors:</span>
-                    <span class="value color-choice-list">
+                    <span class="value color-choice-list" data-requires-color="{% if product.requires_color_selection %}true{% else %}false{% endif %}">
                         {% for color_option in product.available_colors %}
                             <button
                                 type="button"
                                 class="color-image-trigger"
                                 data-image-url="{{ color_option.image_url }}"
                                 data-color-name="{{ color_option.name }}"
-                                aria-label="Show {{ color_option.name }} image"
+                                aria-label="Select {{ color_option.name }}"
                             >
                                 <span class="color-swatch" style="background-color: {{ color_option.name }};"></span>
                                 <span>{{ color_option.name }}</span>

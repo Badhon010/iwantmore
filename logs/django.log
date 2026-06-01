@@ -7893,3 +7893,594 @@ INFO 2026-05-28 20:20:37,969 django.server "GET /admin/iwm/review/ HTTP/1.1" 200
 INFO 2026-05-28 20:20:38,158 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
 INFO 2026-05-28 20:20:42,868 django.server "GET /admin/iwm/productcolorimage/ HTTP/1.1" 200 63378
 INFO 2026-05-28 20:20:42,951 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:01:32,372 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:04:19,759 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 18:04:20,300 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:20,347 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 18:04:20,368 django.server "GET /static/css/home.css HTTP/1.1" 200 15095
+INFO 2026-06-01 18:04:20,887 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 18:04:20,991 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 8719
+INFO 2026-06-01 18:04:20,992 django.server "GET /media/category_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:20,993 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 18:04:20,999 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9827
+INFO 2026-06-01 18:04:21,039 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_Uo7IRwo.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:21,066 django.server "GET /media/promo_banners/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent__ivMYTSx.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:21,075 django.server "GET /static/js/home.js HTTP/1.1" 200 2615
+INFO 2026-06-01 18:04:21,081 django.server "GET /media/brands/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:21,299 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-06-01 18:04:21,517 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-06-01 18:04:24,355 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:25,361 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:25,519 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:25,622 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:25,729 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:25,955 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:26,144 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:26,698 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:26,790 django.server "GET /static/css/home.css HTTP/1.1" 200 15095
+INFO 2026-06-01 18:04:26,797 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9827
+INFO 2026-06-01 18:04:26,797 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 18:04:26,799 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 18:04:26,828 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:26,834 django.server "GET /static/js/home.js HTTP/1.1" 200 2615
+INFO 2026-06-01 18:04:26,845 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 8719
+INFO 2026-06-01 18:04:26,851 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 18:04:26,852 django.server - Broken pipe from ('127.0.0.1', 64650)
+INFO 2026-06-01 18:04:26,858 django.server - Broken pipe from ('127.0.0.1', 49671)
+INFO 2026-06-01 18:04:26,861 django.server - Broken pipe from ('127.0.0.1', 52281)
+INFO 2026-06-01 18:04:26,937 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 18:04:26,946 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 18:04:26,947 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 18:04:26,948 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9827
+INFO 2026-06-01 18:04:26,949 django.server "GET /static/css/home.css HTTP/1.1" 200 15095
+INFO 2026-06-01 18:04:26,962 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 18:04:26,969 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 8719
+INFO 2026-06-01 18:04:26,984 django.server "GET /static/js/home.js HTTP/1.1" 200 2615
+INFO 2026-06-01 18:04:26,998 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_Uo7IRwo.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:27,003 django.server "GET /media/brands/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:27,016 django.server "GET /media/category_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:27,021 django.server "GET /media/promo_banners/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent__ivMYTSx.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:27,054 django.server "GET /home/ HTTP/1.1" 200 19203
+INFO 2026-06-01 18:04:27,125 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 18:04:27,126 django.server "GET /static/css/item_cart.css HTTP/1.1" 200 9827
+INFO 2026-06-01 18:04:27,127 django.server "GET /static/css/home.css HTTP/1.1" 200 15095
+INFO 2026-06-01 18:04:27,129 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 18:04:27,132 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 18:04:27,179 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 18:04:27,180 django.server "GET /static/js/home.js HTTP/1.1" 200 2615
+INFO 2026-06-01 18:04:27,181 django.server "GET /static/js/item_cart.js HTTP/1.1" 200 8719
+INFO 2026-06-01 18:04:27,187 django.server "GET /media/promo_banners/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent__ivMYTSx.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:27,194 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_Uo7IRwo.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:04:27,199 django.server "GET /media/category_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:27,204 django.server "GET /media/brands/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:27,337 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-06-01 18:04:27,364 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-06-01 18:04:27,368 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-06-01 18:04:27,959 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-06-01 18:04:36,310 django.server "GET /shop/ HTTP/1.1" 200 32222
+INFO 2026-06-01 18:04:36,394 django.server "GET /media/product_images/python_icon.ico HTTP/1.1" 200 28389
+INFO 2026-06-01 18:04:36,418 django.server "GET /media/product_images/how-to-set-up-a-chessboard-7_T2Ndw1o.jpg HTTP/1.1" 200 50352
+INFO 2026-06-01 18:04:36,429 django.server "GET /media/product_images/pdf.png HTTP/1.1" 200 1312
+INFO 2026-06-01 18:04:36,433 django.server "GET /static/css/shop.css HTTP/1.1" 200 23421
+INFO 2026-06-01 18:04:36,453 django.server "GET /static/js/shop.js HTTP/1.1" 200 21734
+INFO 2026-06-01 18:04:36,463 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_Gnub6b5.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:04:36,475 django.server "GET /media/product_images/box.webp HTTP/1.1" 200 111156
+INFO 2026-06-01 18:04:46,530 django.server "GET /admin/ HTTP/1.1" 302 0
+INFO 2026-06-01 18:04:46,953 django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 11550
+WARNING 2026-06-01 18:04:47,838 django.request Not Found: /favicon.ico
+WARNING 2026-06-01 18:04:47,839 django.server "GET /favicon.ico HTTP/1.1" 404 12045
+INFO 2026-06-01 18:04:51,695 django.server "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2026-06-01 18:04:52,348 django.server "GET /admin/ HTTP/1.1" 200 68565
+INFO 2026-06-01 18:04:52,698 django.server "GET /static/unfold/fonts/inter/Inter-Bold.woff2 HTTP/1.1" 200 114840
+INFO 2026-06-01 18:04:58,423 django.server "GET /admin/iwm/product/ HTTP/1.1" 200 103153
+INFO 2026-06-01 18:04:58,561 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:05:05,752 django.server "GET /admin/iwm/product/add/ HTTP/1.1" 200 106809
+INFO 2026-06-01 18:05:05,830 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:05:05,906 django.server "GET /static/admin/js/inlines.js HTTP/1.1" 200 15526
+INFO 2026-06-01 18:08:17,570 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 18:08:17,671 django.server "GET /home/ HTTP/1.1" 200 19345
+INFO 2026-06-01 18:08:18,203 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:23:11,223 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\models.py changed, reloading.
+INFO 2026-06-01 18:23:20,560 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:23:54,377 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\admin.py changed, reloading.
+INFO 2026-06-01 18:24:02,063 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:26:24,025 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\views.py changed, reloading.
+INFO 2026-06-01 18:26:33,253 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:28:15,021 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\models.py changed, reloading.
+INFO 2026-06-01 18:28:26,319 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:29:19,277 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\models.py changed, reloading.
+INFO 2026-06-01 18:29:36,084 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:30:21,147 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\migrations\0022_product_images_optional_color_orderitem_color.py changed, reloading.
+INFO 2026-06-01 18:30:29,862 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:33:36,397 django.utils.autoreload C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\admin.py changed, reloading.
+INFO 2026-06-01 18:33:45,265 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:36:19,422 django.server "GET /admin/iwm/product/add/ HTTP/1.1" 200 100786
+INFO 2026-06-01 18:36:19,523 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:38:19,721 django.server "POST /admin/iwm/product/add/ HTTP/1.1" 200 101650
+INFO 2026-06-01 18:38:19,826 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+ERROR 2026-06-01 18:38:52,152 django.request Internal Server Error: /admin/iwm/product/add/
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.IntegrityError: (1048, "Column 'color_id' cannot be null")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 718, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\sites.py", line 241, in inner
+    return view(request, *args, **kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 1961, in add_view
+    return self.changeform_view(request, None, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\unfold\mixins\base_model_admin.py", line 42, in changeform_view
+    return super().changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\unfold\mixins\action_model_admin.py", line 97, in changeform_view
+    return super().changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\unfold\mixins\dataset_model_admin.py", line 77, in changeform_view
+    return super().changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\unfold\mixins\nested_inlines_model_admin.py", line 62, in changeform_view
+    return super().changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\decorators.py", line 48, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\utils\decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 1820, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 1872, in _changeform_view
+    self.save_related(request, form, formsets, not add)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 1322, in save_related
+    self.save_formset(request, form, formset, change=change)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\unfold\mixins\nested_inlines_model_admin.py", line 71, in save_formset
+    super().save_formset(request, form, formset, change)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\admin\options.py", line 1310, in save_formset
+    formset.save()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\forms\models.py", line 796, in save
+    return self.save_existing_objects(commit) + self.save_new_objects(commit)
+                                                ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\forms\models.py", line 959, in save_new_objects
+    self.new_objects.append(self.save_new(form, commit=commit))
+                            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\forms\models.py", line 1157, in save_new
+    return super().save_new(form, commit=commit)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\forms\models.py", line 769, in save_new
+    return form.save(commit=commit)
+           ~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\forms\models.py", line 554, in save
+    self.instance.save()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\Desktop\User-Items\iwantmore\iwm\models.py", line 268, in save
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 892, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 998, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1161, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1202, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1847, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1836, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\MD Badhon Khan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+django.db.utils.IntegrityError: (1048, "Column 'color_id' cannot be null")
+ERROR 2026-06-01 18:38:52,206 django.server "POST /admin/iwm/product/add/ HTTP/1.1" 500 343778
+INFO 2026-06-01 18:43:43,509 django.utils.autoreload Watching for file changes with StatReloader
+INFO 2026-06-01 18:44:38,602 django.server "POST /admin/iwm/product/add/ HTTP/1.1" 200 101650
+INFO 2026-06-01 18:44:38,683 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:45:29,064 django.server "POST /admin/iwm/product/add/ HTTP/1.1" 302 0
+INFO 2026-06-01 18:45:29,296 django.server "GET /admin/iwm/product/ HTTP/1.1" 200 110040
+INFO 2026-06-01 18:45:29,403 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 200 9760
+INFO 2026-06-01 18:45:29,435 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:45:34,380 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 18:45:34,497 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 18:45:35,058 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:45:35,532 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:45:37,735 django.server "GET /shop/ HTTP/1.1" 200 34673
+INFO 2026-06-01 18:45:37,801 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:45:38,019 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:45:41,905 django.server "GET /product/next/ HTTP/1.1" 200 18927
+INFO 2026-06-01 18:45:41,966 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:45:41,969 django.server "GET /static/css/product.css HTTP/1.1" 200 12619
+INFO 2026-06-01 18:45:41,974 django.server "GET /static/js/product.js HTTP/1.1" 200 7102
+INFO 2026-06-01 18:45:42,136 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:45:44,861 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:45:44,920 django.server "GET /static/css/cart.css HTTP/1.1" 200 4408
+INFO 2026-06-01 18:45:45,028 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:45:45,042 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:45:57,100 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:45:57,261 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:45:57,273 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:01,790 django.server "GET /shop/ HTTP/1.1" 200 34673
+INFO 2026-06-01 18:46:01,870 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:46:01,972 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:04,158 django.server "GET /product/chess-board/ HTTP/1.1" 200 25073
+INFO 2026-06-01 18:46:04,246 django.server "GET /media/product_images/Leonardo_Phoenix_10_Design_a_modern_logo_for_a_digital_chess_g_0_CKvCXo6.jpg HTTP/1.1" 200 295574
+INFO 2026-06-01 18:46:04,268 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_NeqHGfm.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 18:46:04,285 django.server "GET /media/product_images/3d_green_walpaper_IwhhFxx.jpg HTTP/1.1" 200 1009730
+INFO 2026-06-01 18:46:04,354 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:11,671 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:46:11,896 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:46:11,936 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:20,135 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:46:20,311 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:46:20,316 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:44,381 django.server "GET /shop/ HTTP/1.1" 200 34673
+INFO 2026-06-01 18:46:44,445 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:46:44,605 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:46:56,892 django.server "GET /product/testing-product-2/ HTTP/1.1" 200 21834
+INFO 2026-06-01 18:46:56,997 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:46:57,085 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:47:02,920 django.server "GET /product/testing-product-1/ HTTP/1.1" 200 27445
+INFO 2026-06-01 18:47:03,139 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:47:23,129 django.server "GET /product/chess-board/ HTTP/1.1" 200 25073
+INFO 2026-06-01 18:47:23,207 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:47:23,210 django.server "GET /static/js/product.js HTTP/1.1" 304 0
+INFO 2026-06-01 18:47:23,273 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:47:35,269 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:47:35,568 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:47:35,587 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:47:56,905 django.server "GET /shop/ HTTP/1.1" 200 34673
+INFO 2026-06-01 18:47:56,995 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 18:47:57,124 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:47:59,221 django.server "GET /product/chess-board/ HTTP/1.1" 200 25073
+INFO 2026-06-01 18:47:59,420 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:48:37,298 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 18:48:37,499 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:48:39,324 django.server "GET /checkout/ HTTP/1.1" 200 33268
+INFO 2026-06-01 18:48:39,395 django.server "GET /static/imgs/nagad.svg HTTP/1.1" 200 4619
+INFO 2026-06-01 18:48:39,396 django.server "GET /static/imgs/bkash.svg HTTP/1.1" 200 2142
+INFO 2026-06-01 18:48:39,399 django.server "GET /static/css/checkout.css HTTP/1.1" 200 9901
+INFO 2026-06-01 18:48:39,442 django.server "GET /static/js/checkout.js HTTP/1.1" 200 23399
+INFO 2026-06-01 18:48:39,604 django.server "POST /checkout-totals/ HTTP/1.1" 200 366
+INFO 2026-06-01 18:48:39,618 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:49:15,254 django.server "POST /checkout-totals/ HTTP/1.1" 200 366
+INFO 2026-06-01 18:49:36,341 django.server "POST /place-order/ HTTP/1.1" 200 130
+INFO 2026-06-01 18:49:36,418 django.server "GET /order-confirmation/?order_id=5 HTTP/1.1" 200 11179
+INFO 2026-06-01 18:49:36,492 django.server "GET /static/css/order_confirmation.css HTTP/1.1" 200 4756
+INFO 2026-06-01 18:49:36,553 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 18:50:01,702 django.server "GET /admin/ HTTP/1.1" 200 68903
+WARNING 2026-06-01 18:50:02,776 django.request Not Found: /admin/core/category/
+WARNING 2026-06-01 18:50:02,778 django.server "GET /admin/core/category/ HTTP/1.1" 404 10802
+INFO 2026-06-01 18:50:06,099 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 18:50:13,081 django.server "GET /admin/iwm/order/ HTTP/1.1" 200 91331
+INFO 2026-06-01 18:50:13,165 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:50:17,412 django.server "GET /admin/iwm/order/5/change/ HTTP/1.1" 200 92275
+INFO 2026-06-01 18:50:17,475 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 18:50:17,529 django.server "GET /static/admin/js/calendar.js HTTP/1.1" 200 9141
+INFO 2026-06-01 18:50:17,552 django.server "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 200 19319
+INFO 2026-06-01 19:17:50,786 django.server "GET /admin/iwm/product/ HTTP/1.1" 200 109629
+INFO 2026-06-01 19:17:50,874 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:17:50,878 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 19:17:53,331 django.server "GET /admin/iwm/product/8/change/ HTTP/1.1" 200 115209
+INFO 2026-06-01 19:17:53,408 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:18:47,640 django.server "POST /admin/iwm/product/8/change/ HTTP/1.1" 200 125096
+INFO 2026-06-01 19:18:47,708 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:19:28,395 django.server "POST /admin/iwm/product/8/change/ HTTP/1.1" 302 0
+INFO 2026-06-01 19:19:28,585 django.server "GET /admin/iwm/product/ HTTP/1.1" 200 110050
+INFO 2026-06-01 19:19:28,690 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:19:33,477 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 19:19:33,547 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:19:33,970 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:19:35,150 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:19:35,440 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:19:38,537 django.server "GET /product/next/ HTTP/1.1" 200 21469
+INFO 2026-06-01 19:19:38,628 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_qhAhdnF.jpg HTTP/1.1" 200 181881
+INFO 2026-06-01 19:19:38,649 django.server "GET /static/js/product.js HTTP/1.1" 304 0
+INFO 2026-06-01 19:19:38,649 django.server "GET /media/product_images/logo.png HTTP/1.1" 200 1060116
+INFO 2026-06-01 19:19:38,763 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:13,033 django.server "GET /wishlist/ HTTP/1.1" 200 12649
+INFO 2026-06-01 19:20:13,107 django.server "GET /static/css/wishlist.css HTTP/1.1" 200 3670
+WARNING 2026-06-01 19:20:13,224 django.request Not Found: /media/product_images/photo_2024-09-20_16-38-23.webp
+WARNING 2026-06-01 19:20:13,229 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 404 12431
+INFO 2026-06-01 19:20:13,242 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:15,701 django.server "GET /wishlist/ HTTP/1.1" 200 12649
+WARNING 2026-06-01 19:20:15,835 django.request Not Found: /media/product_images/photo_2024-09-20_16-38-23.webp
+WARNING 2026-06-01 19:20:15,841 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 404 12431
+INFO 2026-06-01 19:20:15,842 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:16,525 django.server "GET /wishlist/ HTTP/1.1" 200 12649
+WARNING 2026-06-01 19:20:16,646 django.request Not Found: /media/product_images/photo_2024-09-20_16-38-23.webp
+WARNING 2026-06-01 19:20:16,649 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 404 12431
+INFO 2026-06-01 19:20:16,653 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:24,579 django.server "GET /my-orders/ HTTP/1.1" 200 12601
+INFO 2026-06-01 19:20:24,649 django.server "GET /static/css/my_orders.css HTTP/1.1" 200 2588
+INFO 2026-06-01 19:20:24,748 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:30,762 django.server "GET /wishlist/ HTTP/1.1" 200 12649
+WARNING 2026-06-01 19:20:30,935 django.request Not Found: /media/product_images/photo_2024-09-20_16-38-23.webp
+WARNING 2026-06-01 19:20:30,937 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 404 12431
+INFO 2026-06-01 19:20:30,951 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:34,072 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:20:34,359 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:37,508 django.server "GET /product/next/ HTTP/1.1" 200 21469
+INFO 2026-06-01 19:20:37,572 django.server "GET /media/product_images/logo.png HTTP/1.1" 304 0
+INFO 2026-06-01 19:20:37,578 django.server "GET /media/product_images/gpt-image-2_Luxury_Eid_Sale_banner_elegant_green_and_gold_colors_crescent_qhAhdnF.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 19:20:37,751 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:20:44,972 django.server "GET /cart/ HTTP/1.1" 200 15330
+INFO 2026-06-01 19:20:45,134 django.server "GET /media/product_images/logo.png HTTP/1.1" 304 0
+WARNING 2026-06-01 19:20:45,157 django.request Not Found: /media/product_images/photo_2024-09-20_16-38-23.webp
+INFO 2026-06-01 19:20:45,158 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+WARNING 2026-06-01 19:20:45,168 django.server "GET /media/product_images/photo_2024-09-20_16-38-23.webp HTTP/1.1" 404 12431
+INFO 2026-06-01 19:20:55,279 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 19:20:55,366 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:20:55,608 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:25:49,952 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:26:18,567 django.server "GET /admin/analytics/ HTTP/1.1" 200 4913225
+INFO 2026-06-01 19:26:23,880 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:26:26,141 django.server "GET /admin/analytics/ HTTP/1.1" 200 4913225
+INFO 2026-06-01 19:26:38,291 django.server "GET /admin/analytics/?range=90 HTTP/1.1" 200 4914425
+INFO 2026-06-01 19:27:34,638 django.server "GET /admin/analytics/?range=365 HTTP/1.1" 200 4919925
+INFO 2026-06-01 19:28:07,803 django.server "GET /admin/analytics/?start_date=2022-12-02&end_date=2026-06-01 HTTP/1.1" 200 4938176
+INFO 2026-06-01 19:28:38,608 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:28:46,356 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:29:31,718 django.server "GET /admin/iwm/order/ HTTP/1.1" 200 91331
+INFO 2026-06-01 19:29:31,806 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:29:34,530 django.server "GET /admin/iwm/order/5/change/ HTTP/1.1" 200 92275
+INFO 2026-06-01 19:29:34,605 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:29:57,495 django.server "GET /admin/iwm/order/ HTTP/1.1" 200 91331
+INFO 2026-06-01 19:29:57,615 django.server "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-06-01 19:29:59,793 django.server "GET /admin/iwm/order/5/change/ HTTP/1.1" 200 92275
+INFO 2026-06-01 19:30:07,690 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:30:32,119 django.server "GET /admin/ HTTP/1.1" 200 68903
+INFO 2026-06-01 19:30:35,825 django.server "GET / HTTP/1.1" 302 0
+INFO 2026-06-01 19:30:35,890 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:30:35,999 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 19:30:36,364 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:30:41,163 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:30:41,476 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:30:43,975 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:30:44,063 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:30:44,107 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:30:48,877 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:30:48,941 django.server "GET /static/css/contact.css HTTP/1.1" 200 11810
+INFO 2026-06-01 19:30:49,061 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:38,188 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:32:38,434 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:39,658 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:32:39,912 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:42,964 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:32:43,173 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:45,460 django.server "GET /faq/ HTTP/1.1" 200 30835
+INFO 2026-06-01 19:32:45,559 django.server "GET /static/imgs/faq-illustration.svg HTTP/1.1" 200 7545
+INFO 2026-06-01 19:32:45,560 django.server "GET /static/css/faq.css HTTP/1.1" 200 8618
+INFO 2026-06-01 19:32:45,660 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:47,838 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:32:48,024 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:51,637 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:32:51,706 django.server "GET /static/css/services.css HTTP/1.1" 200 21119
+INFO 2026-06-01 19:32:51,744 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:32:53,656 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:32:53,814 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:10,098 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:36:10,176 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:10,677 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:12,093 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:12,212 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:13,266 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:13,388 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:14,460 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:14,648 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:14,649 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:14,664 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:14,665 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:14,669 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:14,670 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:14,758 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:14,759 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:14,769 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:14,791 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:14,792 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:14,806 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:14,921 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:14,921 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:14,925 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:14,927 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:14,928 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:14,935 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:15,005 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:15,009 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:15,010 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:15,015 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:15,040 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:15,086 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:15,153 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:15,170 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:15,190 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:15,197 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:15,207 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:15,224 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:15,315 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:15,319 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:15,320 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:15,326 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:15,331 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:15,333 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:15,410 django.server "GET /static/css/base.css HTTP/1.1" 200 26286
+INFO 2026-06-01 19:36:15,411 django.server "GET /static/css/about.css HTTP/1.1" 200 11308
+INFO 2026-06-01 19:36:15,412 django.server "GET /static/imgs/iwm.png HTTP/1.1" 200 11469
+INFO 2026-06-01 19:36:15,416 django.server "GET /static/css/fa/css/all.min.css HTTP/1.1" 200 73621
+INFO 2026-06-01 19:36:15,433 django.server "GET /static/js/main.js HTTP/1.1" 200 15132
+INFO 2026-06-01 19:36:15,603 django.server "GET /static/css/fa/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 25472
+INFO 2026-06-01 19:36:15,606 django.server "GET /static/css/fa/webfonts/fa-brands-400.woff2 HTTP/1.1" 200 118684
+INFO 2026-06-01 19:36:15,608 django.server "GET /static/css/fa/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2026-06-01 19:36:15,758 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:15,821 django.server "GET /static/imgs/logo.jpg HTTP/1.1" 200 8326
+INFO 2026-06-01 19:36:24,973 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:36:25,043 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:25,092 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:26,669 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:36:26,810 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:36,876 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:36:36,945 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:37,045 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:41,777 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:36:41,849 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:41,907 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:44,910 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:36:44,983 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:45,046 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:48,914 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:36:49,032 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:36:49,157 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:36:50,462 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:36:50,590 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:40:15,790 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:40:15,883 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:40:16,296 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:40:18,108 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:40:18,315 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:40:19,757 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:40:19,911 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:40:23,657 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:40:23,868 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:41:03,897 django.server "GET /faq/ HTTP/1.1" 200 30835
+INFO 2026-06-01 19:41:04,015 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:41:04,168 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:41:05,688 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:41:05,987 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:41:10,449 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:41:10,574 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:41:12,686 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:41:12,795 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:41:15,371 django.server "GET /faq/ HTTP/1.1" 200 30835
+INFO 2026-06-01 19:41:15,523 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:44:43,238 django.server "GET /faq/ HTTP/1.1" 200 30835
+INFO 2026-06-01 19:44:43,314 django.server "GET /static/css/base.css HTTP/1.1" 304 0
+INFO 2026-06-01 19:44:43,539 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:44:44,762 django.server "GET /shop/ HTTP/1.1" 200 34732
+INFO 2026-06-01 19:44:44,831 django.server "GET /media/product_images/python_icon_yCm5S6m.jpg HTTP/1.1" 304 0
+INFO 2026-06-01 19:44:44,986 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:44:46,970 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:44:47,214 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:44:54,674 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:44:54,812 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:01,625 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:45:01,795 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:03,904 django.server "GET /about/ HTTP/1.1" 200 19248
+INFO 2026-06-01 19:45:04,022 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:05,387 django.server "GET /services/ HTTP/1.1" 200 22593
+INFO 2026-06-01 19:45:05,514 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:07,186 django.server "GET /contact/ HTTP/1.1" 200 13507
+INFO 2026-06-01 19:45:07,319 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:14,043 django.server "GET /faq/ HTTP/1.1" 200 30835
+INFO 2026-06-01 19:45:14,237 django.server "GET /api/order-count/ HTTP/1.1" 200 12
+INFO 2026-06-01 19:45:17,522 django.server "GET /home/ HTTP/1.1" 200 21654
+INFO 2026-06-01 19:45:17,748 django.server "GET /api/order-count/ HTTP/1.1" 200 12

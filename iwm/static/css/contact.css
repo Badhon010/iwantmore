@@ -82,26 +82,7 @@ body {
     animation-delay: 4s;
 }
 
-/* Page Header Image */
-.page-header-image {
-    position: relative;
-    height: 400px;
-    overflow: hidden;
-    margin-bottom: 50px;
-}
-
-.page-header-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scale(1.1);
-    transition: transform 0.5s ease;
-}
-
-.page-header-image:hover img {
-    transform: scale(1.2);
-}
-
+/* Header Shapes */
 .header-shape {
     position: absolute;
     background: linear-gradient(135deg, var(--btn-bg) 0%, #ff9eb7 100%);
@@ -126,26 +107,6 @@ body {
     animation: float 15s infinite ease-in-out reverse;
 }
 
-.page-header-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-}
-
-.page-header-content h1 {
-    font-size: 3.5rem;
-}
-
-.page-header-content p {
-    font-size: 1.2rem;
-    max-width: 600px;
-    animation-fill-mode: forwards;
-}
 
 /* Contact Grid */
 .contact-grid {
@@ -548,14 +509,6 @@ textarea.form-control {
     .map-section {
         height: 350px;
     }
-    
-    .page-header-image {
-        height: 300px;
-    }
-    
-    .page-header-content h1 {
-        font-size: 2.5rem;
-    }
 }
 
 @media (max-width: 768px) {
@@ -583,15 +536,7 @@ textarea.form-control {
     .map-section {
         height: 300px;
     }
-    
-    .page-header-image {
-        height: 250px;
-    }
-    
-    .page-header-content h1 {
-        font-size: 2rem;
-    }
-    
+
     .contact-grid {
         grid-template-columns: auto;
     }
@@ -619,17 +564,5 @@ textarea.form-control {
     
     .map-section {
         height: 250px;
-    }
-    
-    .page-header-image {
-        height: 200px;
-    }
-    
-    .page-header-content h1 {
-        font-size: 1.8rem;
-    }
-    
-    .page-header-content p {
-        font-size: 1rem;
     }
 }

@@ -80,7 +80,7 @@ class Product(models.Model):
     price = models.PositiveIntegerField()
     buying_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(null=True, blank=True)
-    image = models.ImageField(upload_to='product_images/')
+    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)  
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField('Tag', related_name="products", blank=True)  
@@ -93,7 +93,7 @@ class Product(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="Optional color for the main image. Leave empty when using color-specific images.",
+        help_text="Legacy fallback only. Use product images below for new products.",
     )
     size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
@@ -107,14 +107,6 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)  
         super().save(*args, **kwargs)
-
-    def clean(self):
-        super().clean()
-
-        if self.color_id and self.pk and self.color_images.exists():
-            raise ValidationError({
-                'color': 'Main image color is only for products without color-specific images.'
-            })
 
     def __str__(self):
         return self.name  
@@ -160,6 +152,12 @@ class Product(models.Model):
 
         return None
 
+    def get_primary_image(self):
+        first_color_image = next(iter(self.get_prefetched_color_images()), None)
+        if first_color_image and first_color_image.image:
+            return first_color_image.image
+        return self.image
+
     def get_available_color_names(self):
         color_names = []
         seen = set()
@@ -173,6 +171,9 @@ class Product(models.Model):
             color_names.append(self.color.name)
 
         return color_names
+
+    def requires_color_selection(self):
+        return len(self.get_available_color_names()) > 1
 
     def update_stock(self, quantity_change):
         """
@@ -241,7 +242,9 @@ class ProductColorImage(models.Model):
     )
     color = models.ForeignKey(
         Color,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='product_images',
     )
     image = models.ImageField(upload_to='product_images/')
@@ -256,15 +259,8 @@ class ProductColorImage(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.product.name} - {self.color.name}"
-
-    def clean(self):
-        super().clean()
-
-        if self.product_id and self.product.color_id:
-            raise ValidationError(
-                'Remove the product main color before adding color-specific images.'
-            )
+        label = self.color.name if self.color else 'Image'
+        return f"{self.product.name} - {label}"
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -512,6 +508,7 @@ class Order(models.Model):
             cls._raise_checkout_error(error_cls, 'Invalid cart data.')
 
         quantities = {}
+        ordered_items = []
         ordered_product_ids = []
 
         for raw_item in raw_items:
@@ -527,16 +524,23 @@ class Order(models.Model):
             if product_id <= 0 or quantity <= 0:
                 cls._raise_checkout_error(error_cls, 'Invalid cart item.')
 
-            if product_id not in quantities:
-                ordered_product_ids.append(product_id)
-                quantities[product_id] = 0
+            selected_color = cls._normalize_optional_text(raw_item.get('color'))
+            item_key = (product_id, selected_color.lower())
 
-            quantities[product_id] += quantity
+            if item_key not in quantities:
+                ordered_items.append((product_id, selected_color, item_key))
+                quantities[item_key] = 0
+                if product_id not in ordered_product_ids:
+                    ordered_product_ids.append(product_id)
+
+            quantities[item_key] += quantity
 
         if not ordered_product_ids:
             cls._raise_checkout_error(error_cls, 'Cart is empty.')
 
-        product_queryset = Product.objects.filter(id__in=ordered_product_ids).order_by('id')
+        product_queryset = Product.objects.filter(id__in=ordered_product_ids).prefetch_related(
+            'color_images__color',
+        ).order_by('id')
         if lock_for_update:
             product_queryset = product_queryset.select_for_update()
 
@@ -547,12 +551,30 @@ class Order(models.Model):
 
         resolved_items = []
         subtotal = Decimal('0.00')
+        product_quantity_totals = {}
 
-        for product_id in ordered_product_ids:
+        for product_id, selected_color, item_key in ordered_items:
             product = products[product_id]
-            quantity = quantities[product_id]
+            quantity = quantities[item_key]
+
+            available_colors = product.get_available_color_names()
+            available_color_lookup = {color.lower(): color for color in available_colors}
+            if len(available_colors) > 1:
+                if not selected_color:
+                    cls._raise_checkout_error(error_cls, f'Please select a color for {product.name}.')
+                if selected_color.lower() not in available_color_lookup:
+                    cls._raise_checkout_error(error_cls, f'Selected color is not available for {product.name}.')
+                selected_color = available_color_lookup[selected_color.lower()]
+            elif selected_color:
+                if available_colors and selected_color.lower() not in available_color_lookup:
+                    cls._raise_checkout_error(error_cls, f'Selected color is not available for {product.name}.')
+                selected_color = available_color_lookup.get(selected_color.lower(), selected_color)
 
             if product.stock < quantity:
+                cls._raise_checkout_error(error_cls, f'Not enough stock for {product.name}.')
+
+            product_quantity_totals[product_id] = product_quantity_totals.get(product_id, 0) + quantity
+            if product.stock < product_quantity_totals[product_id]:
                 cls._raise_checkout_error(error_cls, f'Not enough stock for {product.name}.')
 
             unit_price = cls._to_money(product.get_final_price())
@@ -561,6 +583,7 @@ class Order(models.Model):
                 'product_id': product.id,
                 'product': product,
                 'product_name': product.name,
+                'product_color': selected_color,
                 'quantity': quantity,
                 'unit_price': unit_price,
                 'line_total': line_total,
@@ -796,6 +819,7 @@ class Order(models.Model):
                     order=order,
                     product=item['product'],
                     product_name=item['product_name'],
+                    product_color=item['product_color'],
                     product_price=item['unit_price'],
                     quantity=item['quantity'],
                 )
@@ -1203,6 +1227,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='order_items')
     product_name = models.CharField(max_length=255)
+    product_color = models.CharField(max_length=120, blank=True, default='')
     product_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     quantity = models.PositiveIntegerField(default=1)
     
