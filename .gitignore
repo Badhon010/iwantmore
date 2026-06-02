@@ -1,5 +1,7 @@
+# Ignore the environment variables file
 .env
-**/logs/
-**/media/
-**/staticfiles/
-**/.qoder/
+
+# Ignore these folders and everything inside them, wherever they are
+logs/
+media/
+staticfiles/

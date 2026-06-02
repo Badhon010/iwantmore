@@ -386,3 +386,61 @@ LOGGING = {
         },
     },
 }
+
+
+
+"""
+DEVELOPER DOCUMENTATION: ENVIRONMENT VARIABLES & SETUP
+-------------------------------------------------------------------------
+This project relies on environment variables for sensitive configurations 
+(Database credentials, Secret Keys, API tokens). 
+
+The actual '.env' file containing production/local secrets is excluded 
+from the Git repository via '.gitignore' to protect credentials.
+
+HOW TO SET UP LOCAL ENVIRONMENT VARIABLES:
+1. Locate the '.env.example' file in the root directory.
+2. Duplicate or rename a copy of that file to exactly '.env'.
+3. Open '.env' and replace the placeholder values (e.g., your_gemini_api_key) 
+   with your actual local credentials.
+4. Ensure your local '.env' file is NEVER staged or committed to Git.
+
+Dependencies used to parse these variables:
+- django-environ (or python-dotenv)
+-------------------------------------------------------------------------
+
+# ==============================================================================
+# ENVIRONMENT VARIABLES TEMPLATE (.env.example)
+# Duplicate this file, rename it to '.env', and fill in your local credentials.
+# DO NOT commit the actual '.env' file to version control.
+# ==============================================================================
+
+# Database Configuration
+DB_NAME=your_database_name
+DB_USER=root
+DB_PASSWORD=your_database_password
+DB_HOST=localhost
+DB_PORT=3306
+
+# Django Security & Core Settings
+SECRET_KEY=django-insecure-generate-a-unique-secret-key-for-production
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+PRODUCTION=False
+SECURE_SSL_REDIRECT=False
+
+# Email Configuration (SMTP)
+EMAIL_HOST_USER=your_email@example.com
+EMAIL_HOST_PASSWORD=your_email_app_password
+
+# Google OAuth Credentials
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Facebook OAuth Credentials
+FACEBOOK_CLIENT_ID=your_facebook_app_id
+FACEBOOK_CLIENT_SECRET=your_facebook_app_secret
+
+# AI & Third-Party APIs
+GEMINI_API_KEY=your_gemini_api_key
+"""

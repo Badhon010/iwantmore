@@ -85,12 +85,7 @@ label {
   color: var(--dark-color);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="number"],
-select,
-textarea {
+input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="password"],select,textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-color);
