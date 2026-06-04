@@ -142,71 +142,107 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Show loading indicator
-      suggestionsContainer.innerHTML = `<div class="empty-suggestions">Searching...</div>`;
+      suggestionsContainer.innerHTML = '';
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'empty-suggestions';
+      loadingDiv.textContent = 'Searching...';
+      suggestionsContainer.appendChild(loadingDiv);
       suggestionsContainer.classList.add("active");
 
       fetch(`/autocomplete/?q=${encodeURIComponent(query)}`)
         .then((response) => response.json())
         .then((data) => {
           if (data.length === 0) {
-            suggestionsContainer.innerHTML = `<div class="empty-suggestions">No results found for "${query}"</div>`;
+            suggestionsContainer.innerHTML = '';
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-suggestions';
+            emptyDiv.textContent = `No results found for "${query}"`;
+            suggestionsContainer.appendChild(emptyDiv);
             return;
           }
 
-          let suggestionsHtml = "";
+          suggestionsContainer.innerHTML = '';
           data.forEach((item) => {
-            let icon = '';
-            let detailsHtml = '';
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'suggestion-item';
+            const a = document.createElement('a');
+            a.href = item.url;
             
-            // Choose appropriate icon and details based on suggestion type
+            const icon = document.createElement('i');
             if (item.type === "product") {
-              icon = '<i class="fas fa-tag"></i>';
-              
-              // Format the price with currency
+                icon.className = 'fas fa-tag';
+            } else if (item.type === "category") {
+                icon.className = 'fas fa-folder';
+            } else if (item.type === "tag") {
+                icon.className = 'fas fa-hashtag';
+            }
+            a.appendChild(icon);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.style.width = '100%';
+            
+            const nameSpan = document.createElement('span');
+            const lowerName = (item.name || '').toLowerCase();
+            const lowerQuery = (query || '').toLowerCase();
+            const matchIndex = lowerName.indexOf(lowerQuery);
+            
+            if (matchIndex >= 0 && query.length > 0) {
+                const before = item.name.substring(0, matchIndex);
+                const match = item.name.substring(matchIndex, matchIndex + query.length);
+                const after = item.name.substring(matchIndex + query.length);
+                
+                nameSpan.appendChild(document.createTextNode(before));
+                const strong = document.createElement('strong');
+                strong.style.color = 'var(--btn-bg)';
+                strong.textContent = match;
+                nameSpan.appendChild(strong);
+                nameSpan.appendChild(document.createTextNode(after));
+            } else {
+                nameSpan.textContent = item.name;
+            }
+            
+            contentDiv.appendChild(nameSpan);
+            
+            if (item.type === "product") {
               const formattedPrice = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'BDT',
                 minimumFractionDigits: 0
               }).format(item.price);
               
-              // Add details for product type
-              detailsHtml = `
-                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-top: 3px;">
-                  <span>${item.category}</span>
-                  <span style="color: var(--btn-bg); font-weight: 500;">${formattedPrice}</span>
-                </div>`;
+              const detailsDiv = document.createElement('div');
+              detailsDiv.style.display = 'flex';
+              detailsDiv.style.justifyContent = 'space-between';
+              detailsDiv.style.fontSize = '12px';
+              detailsDiv.style.color = '#666';
+              detailsDiv.style.marginTop = '3px';
               
-            } else if (item.type === "category") {
-              icon = '<i class="fas fa-folder"></i>';
-            } else if (item.type === "tag") {
-              icon = '<i class="fas fa-hashtag"></i>';
+              const catSpan = document.createElement('span');
+              catSpan.textContent = item.category;
+              
+              const priceSpan = document.createElement('span');
+              priceSpan.style.color = 'var(--btn-bg)';
+              priceSpan.style.fontWeight = '500';
+              priceSpan.textContent = formattedPrice;
+              
+              detailsDiv.appendChild(catSpan);
+              detailsDiv.appendChild(priceSpan);
+              contentDiv.appendChild(detailsDiv);
             }
             
-            // Create suggestion item with appropriate styling
-            suggestionsHtml += `
-            <div class="suggestion-item">
-            <a href="${item.url}">
-                ${icon}
-                <div style="width: 100%;">
-                  <span>${highlightMatch(item.name, query)}</span>
-                  ${detailsHtml}
-                </div>
-              </a>
-              </div>`;
+            a.appendChild(contentDiv);
+            itemDiv.appendChild(a);
+            suggestionsContainer.appendChild(itemDiv);
           });
-          
-          suggestionsContainer.innerHTML = suggestionsHtml;
         })
         .catch((error) => {
           console.error("Error fetching suggestions:", error);
-          suggestionsContainer.innerHTML = `<div class="empty-suggestions">Error loading suggestions</div>`;
+          suggestionsContainer.innerHTML = '';
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'empty-suggestions';
+          errorDiv.textContent = 'Error loading suggestions';
+          suggestionsContainer.appendChild(errorDiv);
         });
-    }
-
-    // Highlight the matching part of the suggestion
-    function highlightMatch(text, query) {
-      const regex = new RegExp(`(${query})`, 'gi');
-      return text.replace(regex, '<strong style="color: var(--btn-bg);">$1</strong>');
     }
 
     // Show/hide suggestions based on input focus

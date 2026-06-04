@@ -98,18 +98,46 @@ function renderSummaryItems(items) {
         placeOrderButton.disabled = false;
     }
 
-    summaryItemsContainer.innerHTML = items.map(item => `
-        <div class="summary-item" data-id="${item.id}">
-            <div class="item-image">
-                <img src="${item.image}" alt="${item.name}">
-            </div>
-            <div class="item-details">
-                <div class="item-name">${item.name}</div>
-                ${item.color ? `<div class="item-meta">Color: ${item.color}</div>` : ''}
-                <div class="item-price">${formatCurrency(item.unit_price)} <span class="item-quantity">x ${item.quantity}</span></div>
-            </div>
-        </div>
-    `).join('');
+    summaryItemsContainer.innerHTML = '';
+    items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'summary-item';
+        itemDiv.dataset.id = item.id;
+        
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'item-image';
+        const img = document.createElement('img');
+        img.src = item.image;
+        img.alt = item.name;
+        imgDiv.appendChild(img);
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'item-details';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'item-name';
+        nameDiv.textContent = item.name;
+        detailsDiv.appendChild(nameDiv);
+        
+        if (item.color) {
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'item-meta';
+            metaDiv.textContent = `Color: ${item.color}`;
+            detailsDiv.appendChild(metaDiv);
+        }
+        
+        const priceDiv = document.createElement('div');
+        priceDiv.className = 'item-price';
+        priceDiv.textContent = formatCurrency(item.unit_price) + ' ';
+        const qtySpan = document.createElement('span');
+        qtySpan.className = 'item-quantity';
+        qtySpan.textContent = `x ${item.quantity}`;
+        priceDiv.appendChild(qtySpan);
+        
+        itemDiv.appendChild(imgDiv);
+        itemDiv.appendChild(detailsDiv);
+        summaryItemsContainer.appendChild(itemDiv);
+    });
 }
 
 function setupAddressSelect() {
@@ -418,28 +446,51 @@ function showOrderPreview() {
     const shippingLocationDescription = document.getElementById('shipping-location-description').value;
     const shippingCountry = document.getElementById('shipping-country').value;
 
-    let shippingAddressHTML = `${fullName}<br>${shippingAddressLine1}`;
+    const container = document.getElementById('preview-shipping-address');
+    container.innerHTML = '';
+    
+    container.appendChild(document.createTextNode(fullName));
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode(shippingAddressLine1));
+    
     if (shippingDistrict) {
-        shippingAddressHTML += `<br>District: ${shippingDistrict}`;
+        container.appendChild(document.createElement('br'));
+        container.appendChild(document.createTextNode(`District: ${shippingDistrict}`));
     }
     if (shippingLocationDescription) {
-        shippingAddressHTML += `<br>${shippingLocationDescription}`;
+        container.appendChild(document.createElement('br'));
+        container.appendChild(document.createTextNode(shippingLocationDescription));
     }
-    shippingAddressHTML += `<br>${shippingCountry}`;
-    document.getElementById('preview-shipping-address').innerHTML = shippingAddressHTML;
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode(shippingCountry));
 
     const paymentMethodRadio = document.querySelector('.payment-method input[type="radio"]:checked');
     const paymentMethodLabel = paymentMethodRadio.closest('.payment-method').querySelector('.payment-label').textContent.trim();
-    let paymentMethodHTML = `${paymentMethodLabel}<br>Our team will call you to confirm payment and delivery details.`;
-    document.getElementById('preview-payment-method').innerHTML = paymentMethodHTML;
+    
+    const paymentContainer = document.getElementById('preview-payment-method');
+    paymentContainer.innerHTML = '';
+    paymentContainer.appendChild(document.createTextNode(paymentMethodLabel));
+    paymentContainer.appendChild(document.createElement('br'));
+    paymentContainer.appendChild(document.createTextNode('Our team will call you to confirm payment and delivery details.'));
 
     const orderItemsContainer = document.getElementById('preview-order-items');
-    orderItemsContainer.innerHTML = currentCheckoutItems.map(item => `
-        <div class="detail-row">
-            <div class="detail-label">${item.name}${item.color ? ` (${item.color})` : ''} x ${item.quantity}</div>
-            <div class="detail-value">${formatCurrency(item.line_total)}</div>
-        </div>
-    `).join('');
+    orderItemsContainer.innerHTML = '';
+    currentCheckoutItems.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        
+        const label = document.createElement('div');
+        label.className = 'detail-label';
+        label.textContent = `${item.name}${item.color ? ` (${item.color})` : ''} x ${item.quantity}`;
+        
+        const val = document.createElement('div');
+        val.className = 'detail-value';
+        val.textContent = formatCurrency(item.line_total);
+        
+        row.appendChild(label);
+        row.appendChild(val);
+        orderItemsContainer.appendChild(row);
+    });
 
     const subtotal = Number(document.getElementById('order-subtotal').value || 0);
     const shipping = Number(document.getElementById('order-shipping').value || 0);

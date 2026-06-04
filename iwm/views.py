@@ -1,4 +1,4 @@
-﻿from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, ProductColorImage, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand, PromoBanner
 from .forms import ReviewForm
 from django.db.models import Q, Avg, Count, Prefetch
@@ -21,7 +21,9 @@ from django.conf import settings
 from django.db import models, IntegrityError
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.cache import cache
 import json
+import threading
 import time
 from django.utils import timezone
 import google.generativeai as genai
@@ -32,6 +34,22 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from decouple import config
 
 logger = logging.getLogger(__name__)
+
+def _send_email_in_background(email_message):
+    def send():
+        try:
+            email_message.send()
+        except Exception:
+            logger.exception("Background email failed to send.")
+    threading.Thread(target=send, daemon=True).start()
+
+def _send_mail_in_background(subject, message, from_email, recipient_list, fail_silently=False):
+    def send():
+        try:
+            send_mail(subject, message, from_email, recipient_list, fail_silently=fail_silently)
+        except Exception:
+            logger.exception("Background email failed to send.")
+    threading.Thread(target=send, daemon=True).start()
 
 BANGLADESH_DISTRICTS = [
     'Bagerhat', 'Bandarban', 'Barguna', 'Barishal', 'Bhola', 'Bogura', 'Brahmanbaria',
@@ -220,7 +238,7 @@ def contact(request):
         
         # Send email
         try:
-            send_mail(
+            _send_mail_in_background(
                 f'Contact Form: {subject}',
                 f'Name: {name}\nEmail: {email}\n\nMessage:\n{message}',
                 settings.DEFAULT_FROM_EMAIL,
@@ -643,7 +661,7 @@ def signup(request):
             email_message.attach_alternative(message, "text/html")
 
             try:
-                email_message.send()
+                _send_email_in_background(email_message)
             except Exception:
                 logger.exception('Account activation email failed to send for user %s.', user.pk)
                 error = 'Your account was created, but we could not send the verification email right now. Please contact support.'
@@ -759,7 +777,7 @@ def subscribe_newsletter(request):
             
             # Send confirmation email to subscriber
             try:
-                send_mail(
+                _send_mail_in_background(
                     'Thank you for subscribing to I Want More Newsletter',
                     f'Dear Subscriber,\n\nThank you for subscribing to the I Want More newsletter. '
                     f'You will now receive the latest updates, offers, and news from us.\n\n'
@@ -772,7 +790,7 @@ def subscribe_newsletter(request):
                 
                 # Send notification to admin
                 admin_email = settings.ADMIN_EMAIL if hasattr(settings, 'ADMIN_EMAIL') else 'iwantmore.bd999@gmail.com'
-                send_mail(
+                _send_mail_in_background(
                     'New Newsletter Subscription',
                     f'A new user has subscribed to the newsletter:\n\nEmail: {email}\nSource: {source or "Not specified"}\nDate: {subscriber.subscribed_at}',
                     settings.DEFAULT_FROM_EMAIL,
@@ -1461,91 +1479,97 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 def build_site_context(request):
-    parts = []
+    cache_key = 'gemini_site_context_v1'
+    context_text = cache.get(cache_key)
 
-    # --- Website Name ---
-    parts.append("Website Name: I Want More (IWM)")
+    if not context_text:
+        parts = []
 
-    # --- Basic site/domain ---
-    try:
-        from django.contrib.sites.models import Site
-        domain = Site.objects.get_current(request).domain
-        parts.append(f"Site domain: {domain}")
-    except Exception:
-        pass
+        # --- Website Name ---
+        parts.append("Website Name: I Want More (IWM)")
 
-    # --- Products & Categories ---
-    try:
-        from .models import Product, Category, SubCategory, Brand, Color, Size, Coupon, Review, OrderItem
+        # --- Basic site/domain ---
+        try:
+            from django.contrib.sites.models import Site
+            domain = Site.objects.get_current().domain
+            parts.append(f"Site domain: {domain}")
+        except Exception:
+            pass
 
-        # Recent products
-        products = Product.objects.all().order_by("-created_at")[:10]
-        if products:
-            parts.append("\nProducts:")
-            for p in products:
-                parts.append(
-                    f"- {getattr(p, 'name', 'N/A')} (Taka {getattr(p, 'price', 'N/A')}) "
-                    f"[Category: {getattr(p.category, 'name', 'N/A')}, "
-                    f"SubCategory: {getattr(p.subcategory, 'name', 'N/A')}, "
-                    f"Brand: {getattr(p.brand, 'name', 'N/A')}, "
-                    f"Color: {getattr(p.color, 'name', 'N/A')}, "
-                    f"Size: {getattr(p.size, 'name', 'N/A')}]"
-                )
+        # --- Products & Categories ---
+        try:
+            from .models import Product, Category, SubCategory, Brand, Color, Size, Coupon, Review, OrderItem
 
-        # Categories & Subcategories
-        categories = Category.objects.all()[:5]
-        if categories:
-            parts.append("\nCategories:")
-            for c in categories:
-                parts.append(f"- {c.name}")
-                subcats = SubCategory.objects.filter(category=c)[:5]
-                for sc in subcats:
-                    parts.append(f"  - {sc.name}")
+            # Recent products
+            products = Product.objects.all().order_by("-created_at")[:10]
+            if products:
+                parts.append("\nProducts:")
+                for p in products:
+                    parts.append(
+                        f"- {getattr(p, 'name', 'N/A')} (Taka {getattr(p, 'price', 'N/A')}) "
+                        f"[Category: {getattr(p.category, 'name', 'N/A')}, "
+                        f"SubCategory: {getattr(p.subcategory, 'name', 'N/A')}, "
+                        f"Brand: {getattr(p.brand, 'name', 'N/A')}, "
+                        f"Color: {getattr(p.color, 'name', 'N/A')}, "
+                        f"Size: {getattr(p.size, 'name', 'N/A')}]"
+                    )
 
-        # Brands
-        brands = Brand.objects.all()[:5]
-        if brands:
-            parts.append("\nBrands:")
-            for b in brands:
-                parts.append(f"- {b.name}")
+            # Categories & Subcategories
+            categories = Category.objects.all()[:5]
+            if categories:
+                parts.append("\nCategories:")
+                for c in categories:
+                    parts.append(f"- {c.name}")
+                    subcats = SubCategory.objects.filter(category=c)[:5]
+                    for sc in subcats:
+                        parts.append(f"  - {sc.name}")
 
-        # Colors & Sizes
-        colors = Color.objects.all()[:5]
-        if colors:
-            parts.append("\nColors: " + ", ".join([c.name for c in colors]))
-        sizes = Size.objects.all()[:5]
-        if sizes:
-            parts.append("\nSizes: " + ", ".join([s.name for s in sizes]))
+            # Brands
+            brands = Brand.objects.all()[:5]
+            if brands:
+                parts.append("\nBrands:")
+                for b in brands:
+                    parts.append(f"- {b.name}")
 
-        # Popular products (by sold quantity)
-        popular = OrderItem.objects.values("product__name").annotate(count=Count("id")).order_by("-count")[:5]
-        if popular:
-            parts.append("\nPopular Products:")
-            for p in popular:
-                parts.append(f"- {p['product__name']} (sold {p['count']} times)")
+            # Colors & Sizes
+            colors = Color.objects.all()[:5]
+            if colors:
+                parts.append("\nColors: " + ", ".join([c.name for c in colors]))
+            sizes = Size.objects.all()[:5]
+            if sizes:
+                parts.append("\nSizes: " + ", ".join([s.name for s in sizes]))
 
-        # Coupons
-        coupons = Coupon.objects.all()[:5]
-        if coupons:
-            parts.append("\nCoupons:")
-            for c in coupons:
-                parts.append(f"- {c.code}: {getattr(c, 'discount', 'N/A')}% off")
+            # Popular products (by sold quantity)
+            popular = OrderItem.objects.values("product__name").annotate(count=Count("id")).order_by("-count")[:5]
+            if popular:
+                parts.append("\nPopular Products:")
+                for p in popular:
+                    parts.append(f"- {p['product__name']} (sold {p['count']} times)")
 
-        # Recent Reviews
-        reviews = Review.objects.select_related("product").order_by("-created_at")[:5]
-        if reviews:
-            parts.append("\nRecent Reviews:")
-            for r in reviews:
-                parts.append(f"- {r.product.name}: {r.text[:100]}")  # first 100 chars
-    except Exception:
-        pass
+            # Coupons
+            coupons = Coupon.objects.all()[:5]
+            if coupons:
+                parts.append("\nCoupons:")
+                for c in coupons:
+                    parts.append(f"- {c.code}: {getattr(c, 'discount', 'N/A')}% off")
+
+            # Recent Reviews
+            reviews = Review.objects.select_related("product").order_by("-created_at")[:5]
+            if reviews:
+                parts.append("\nRecent Reviews:")
+                for r in reviews:
+                    parts.append(f"- {r.product.name}: {getattr(r, 'comment', '')[:100]}")  # first 100 chars
+        except Exception:
+            pass
+        
+        context_text = "\n".join(parts)
+        cache.set(cache_key, context_text, 600)  # Cache for 10 minutes
 
     # --- Optional: User info ---
-    if request.user.is_authenticated:
-        parts.append(f"\nUser: {request.user.get_username()} (authenticated)")
+    if request and request.user.is_authenticated:
+        context_text += f"\nUser: {request.user.get_username()} (authenticated)"
 
     # --- Limit context length ---
-    context_text = "\n".join(parts)
     return context_text[:8000]  # truncate to avoid token overflow
 
 def format_history(history):
