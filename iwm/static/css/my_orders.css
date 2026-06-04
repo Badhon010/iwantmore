@@ -110,6 +110,8 @@
 .details-btn {
     background: #007BFF;
     color: white;
+    cursor: pointer;
+    border: none;
 }
 
 .track-btn {

@@ -1068,18 +1068,18 @@ def checkout_totals(request):
 
 
 def order_confirmation(request):
-    order_id = request.GET.get('order_id')
+    order_number = request.GET.get('order_id') or request.GET.get('order_number')
 
     order = None
-    if order_id:
+    if order_number:
         try:
             order = Order.objects.select_related(
                 'shipping_address',
                 'billing_address',
                 'user',
-            ).prefetch_related('items__product').get(id=order_id)
+            ).prefetch_related('items__product').get(order_number=order_number)
             has_account_access = request.user.is_authenticated and order.user == request.user
-            has_lookup_access = request.session.get('guest_order_id') == str(order_id) or order.id in _authorized_order_ids(request)
+            has_lookup_access = request.session.get('guest_order_id') == str(order_number) or order.id in _authorized_order_ids(request)
             if not has_account_access and not has_lookup_access:
                 order = None
         except Order.DoesNotExist:
@@ -1363,10 +1363,10 @@ def place_order(request):
             'message': 'Could not process your order right now. Please try again.',
         }, status=500)
 
-def track_order(request, order_id):
+def track_order(request, order_number):
     order = get_object_or_404(
         Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product'),
-        id=order_id,
+        order_number=order_number,
     )
 
     has_account_access = request.user.is_authenticated and order.user == request.user
@@ -1380,10 +1380,10 @@ def track_order(request, order_id):
 
 
 @require_POST
-def cancel_order(request, order_id):
+def cancel_order(request, order_number):
     order = get_object_or_404(
         Order.objects.select_related('user'),
-        id=order_id,
+        order_number=order_number,
     )
 
     has_account_access = request.user.is_authenticated and order.user == request.user
@@ -1399,7 +1399,7 @@ def cancel_order(request, order_id):
         messages.error(request, _validation_error_message(exc))
         return redirect('my_orders')
 
-    messages.success(request, f"Order #{order.id} has been cancelled successfully.")
+    messages.success(request, f"Order #{order.order_number} has been cancelled successfully.")
     return redirect('my_orders')
 
 def my_orders(request):

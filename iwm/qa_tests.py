@@ -211,7 +211,7 @@ class QAAuditTests(TransactionTestCase):
         session['authorized_order_ids'] = [order.id]
         session.save()
         
-        self.client.post(reverse('cancel_order', args=[order.id]))
+        self.client.post(reverse('cancel_order', args=[order.order_number]))
         order.refresh_from_db()
         # Should still be pending because no PIN
         self.assertEqual(order.order_status, 'pending')
@@ -222,6 +222,6 @@ class QAAuditTests(TransactionTestCase):
         session['authorized_order_ids'] = [order.id]
         session.save()
         
-        self.client.post(reverse('cancel_order', args=[order.id]))
+        self.client.post(reverse('cancel_order', args=[order.order_number]))
         order.refresh_from_db()
         self.assertEqual(order.order_status, 'cancelled')

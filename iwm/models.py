@@ -10,6 +10,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.urls import reverse
 import json
+import random
+import string
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -416,7 +418,7 @@ class Order(models.Model):
         'failed': {'payment_submitted', 'paid', 'refunded'},
         'refunded': set(),
     }
-
+    order_number = models.CharField(max_length=25, unique=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     idempotency_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
@@ -1024,6 +1026,11 @@ class Order(models.Model):
             raise ValidationError(errors)
         
     def save(self, *args, **kwargs):
+        if not self.order_number:
+            timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+            random_suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+            self.order_number = f"ORD{timestamp}{random_suffix}"
+        
         state_mutation_allowed = getattr(self, '_allow_state_mutation', False)
         if self.pk and not state_mutation_allowed:
             previous = type(self).objects.filter(pk=self.pk).values(

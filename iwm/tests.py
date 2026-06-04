@@ -243,11 +243,11 @@ class OrderWorkflowTests(TestCase):
         session['authorized_order_ids'] = [pinned_order.id, no_pin_order.id]
         session.save()
 
-        self.client.post(reverse('cancel_order', args=[no_pin_order.id]))
+        self.client.post(reverse('cancel_order', args=[no_pin_order.order_number]))
         no_pin_order.refresh_from_db()
         self.assertEqual(no_pin_order.order_status, 'pending')
 
-        self.client.post(reverse('cancel_order', args=[pinned_order.id]))
+        self.client.post(reverse('cancel_order', args=[pinned_order.order_number]))
         pinned_order.refresh_from_db()
         self.assertEqual(pinned_order.order_status, 'cancelled')
 

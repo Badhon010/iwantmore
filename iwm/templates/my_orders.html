@@ -46,7 +46,7 @@
                 {% for order in orders %}
                 <div class="order">
                     <div class="order-header">
-                        <span class="order-id">Order #{{ order.id }}</span>
+                        <span class="order-id">Order #{{ order.order_number }}</span>
                         <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
                     </div>
                     <div class="order-items">
@@ -68,12 +68,12 @@
                         {% endfor %}
                     </div>
                     <div class="order-actions">
-                        <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn details-btn">View Details</a>
+                        <a href="{% url 'order_confirmation' %}?order_id={{ order.order_number }}" class="btn details-btn">View Details</a>
                         {% if order.order_status != 'cancelled' %}
-                            <a href="{% url 'track_order' order.id %}" class="btn track-btn">Track Order</a>
+                            <a href="{% url 'track_order' order.order_number %}" class="btn track-btn">Track Order</a>
                         {% endif %}
                         {% if order.order_status == 'pending' %}
-                            <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
+                            <form method=\"post\" action=\"{% url 'cancel_order' order.order_number %}\" style=\"display: inline;\">
                                 {% csrf_token %}
                                 <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
                             </form>
@@ -97,7 +97,7 @@
                 {% for order in lookup_orders %}
                 <div class="order">
                     <div class="order-header">
-                        <span class="order-id">Order #{{ order.id }}</span>
+                        <span class="order-id">Order #{{ order.order_number }}</span>
                         <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
                     </div>
                     <div class="order-items">
@@ -119,10 +119,10 @@
                         {% endfor %}
                     </div>
                     <div class="order-actions">
-                        <a href="{% url 'track_order' order.id %}" class="btn details-btn">View Order</a>
-                        <a href="{% url 'order_confirmation' %}?order_id={{ order.id }}" class="btn track-btn">Order Summary</a>
+                        <a href="{% url 'track_order' order.order_number %}" class="btn details-btn">View Order</a>
+                        <a href="{% url 'order_confirmation' %}?order_id={{ order.order_number }}" class="btn track-btn">Order Summary</a>
                         {% if order.order_status == 'pending' and order.access_pin_hash %}
-                            <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
+                            <form method="post" action="{% url 'cancel_order' order.order_number %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
                             </form>

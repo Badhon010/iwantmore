@@ -12,7 +12,7 @@
     {% if order %}
         <div class="order-details">
             <div class="order-header">
-                <span class="order-id">Order #{{ order.id }}</span>
+                <span class="order-id">Order #{{ order.order_number }}</span>
                 <span class="order-date">Placed on: {{ order.created_at|date:"F d, Y" }}</span>
             </div>
             
@@ -119,7 +119,7 @@
             <div class="order-actions">
                 <a href="{% url 'my_orders' %}" class="btn back-btn">Back to My Orders</a>
                 {% if user.is_authenticated and order.order_status == 'pending' %}
-                    <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;">
+                    <form method="post" action="{% url 'cancel_order' order.order_number %}" style="display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
                     </form>
