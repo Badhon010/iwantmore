@@ -77,6 +77,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -108,10 +109,15 @@ WSGI_APPLICATION = "iwantmore.wsgi.application"
 
 
 DB_ENGINE = config("DB_ENGINE", default="django.db.backends.mysql")
+if "sqlite3" in DB_ENGINE:
+    db_name = BASE_DIR / config("DB_NAME", default="db.sqlite3")
+else:
+    db_name = config("DB_NAME", default="db")
+
 DATABASES = {
     "default": {
         "ENGINE": DB_ENGINE,
-        "NAME": config("DB_NAME", default="db"),
+        "NAME": db_name,
         "USER": config("DB_USER", default="root"),
         "PASSWORD": config("DB_PASSWORD", default=""),
         "HOST": config("DB_HOST", default="localhost"),
