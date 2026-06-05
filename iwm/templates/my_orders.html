@@ -19,8 +19,8 @@
                 {% csrf_token %}
                 <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 1 1 180px;">
-                        <label for="lookup-order-id">Order ID (optional)</label>
-                        <input id="lookup-order-id" type="text" name="order_id" value="{{ lookup_order_id }}" placeholder="Order number">
+                        <label for="lookup-order-id">Order Number (optional)</label>
+                        <input id="lookup-order-id" type="text" name="order_number" value="{{ lookup_order_number }}" placeholder="Order number">
                     </div>
                     <div class="form-group" style="flex: 1 1 240px;">
                         <label for="lookup-contact">Email or Phone</label>
@@ -32,10 +32,10 @@
                     </div>
                 </div>
                 <div class="order-actions" style="margin-top: 16px;">
-                    <button type="submit" class="btn details-btn">Find Orders</button>
+                    <button type="submit" class="btn details-btn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: 600;">Find Orders</button>
                 </div>
             </form>
-            <p style="margin-top: 12px;">We do not show guest orders from email or phone alone. If you checked out without a PIN, our support team must handle changes manually.</p>
+            <p style="margin-top: 15px; font-size: 13.5px; color: #6c757d; text-align: center;">We do not show guest orders from email or phone alone. If you checked out without a PIN, our support team must handle changes manually.</p>
         </div>
     </div>
 
@@ -68,7 +68,7 @@
                         {% endfor %}
                     </div>
                     <div class="order-actions">
-                        <a href="{% url 'order_confirmation' %}?order_id={{ order.order_number }}" class="btn details-btn">View Details</a>
+                        <a href="{% url 'order_confirmation' %}?order_number={{ order.order_number }}" class="btn details-btn">View Details</a>
                         {% if order.order_status != 'cancelled' %}
                             <a href="{% url 'track_order' order.order_number %}" class="btn track-btn">Track Order</a>
                         {% endif %}
@@ -120,7 +120,7 @@
                     </div>
                     <div class="order-actions">
                         <a href="{% url 'track_order' order.order_number %}" class="btn details-btn">View Order</a>
-                        <a href="{% url 'order_confirmation' %}?order_id={{ order.order_number }}" class="btn track-btn">Order Summary</a>
+                        <a href="{% url 'order_confirmation' %}?order_number={{ order.order_number }}" class="btn track-btn">Order Summary</a>
                         {% if order.order_status == 'pending' and order.access_pin_hash %}
                             <form method="post" action="{% url 'cancel_order' order.order_number %}" style="display: inline;">
                                 {% csrf_token %}

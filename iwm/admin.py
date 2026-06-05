@@ -1136,7 +1136,7 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
         ('Payment Information', {
             'fields': ['payment_method', 'payment_state', 'transaction_id', 'sender_number']
         }),
-        ('Manual Payment Workflow (NEW)', {
+        ('Manual Payment Workflow', {
             'fields': ['delivery_charge_paid', 'delivery_payment_method', 'delivery_sender_number', 'delivery_transaction_id'],
             'classes': ('collapse',)
         }),

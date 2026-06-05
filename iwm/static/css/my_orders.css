@@ -160,3 +160,46 @@
 .tracking-status.cancelled {
     background-color: #dc3545;
 }
+
+/* Form Styling */
+.checkout-form {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    margin-top: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #343a40;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: var(--btn-bg);
+    box-shadow: 0 0 0 0.2rem rgba(255, 111, 145, 0.25);
+    outline: none;
+}
+
+.orders-intro {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    font-size: 15px;
+}

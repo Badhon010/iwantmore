@@ -619,7 +619,7 @@ function submitOrder() {
                 updateCartCount();
             }
 
-            window.location.href = `/order-confirmation/?order_id=${data.order_id}`;
+            window.location.href = `/order-confirmation/?order_number=${data.order_number}`;
         } else {
             alert('Error: ' + data.message);
             document.getElementById('confirm-order-btn').disabled = false;

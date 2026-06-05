@@ -887,7 +887,7 @@ def _grant_order_access(request, order_ids):
     request.session[ORDER_ACCESS_SESSION_KEY] = authorized_ids[:50]
 
 
-def _lookup_orders_by_contact_and_pin(contact_value, access_pin, order_id=None):
+def _lookup_orders_by_contact_and_pin(contact_value, access_pin, order_number=None):
     normalized_contact = _normalized_contact(contact_value)
     normalized_phone = _normalize_phone(contact_value)
     if not normalized_contact or not access_pin:
@@ -895,9 +895,9 @@ def _lookup_orders_by_contact_and_pin(contact_value, access_pin, order_id=None):
 
     queryset = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').order_by('-created_at')
 
-    if order_id:
+    if order_number:
         try:
-            queryset = queryset.filter(id=int(order_id))
+            queryset = queryset.filter(order_number=order_number)
         except (TypeError, ValueError):
             return []
 
@@ -1348,6 +1348,7 @@ def place_order(request):
             'message': 'Order placed successfully. We will contact you to confirm payment and delivery.'
             if created else 'Order already received. We will continue with the same order.',
             'order_id': order.id,
+            'order_number': order.order_number,
         })
     except ValidationError as exc:
         if 'coupon' in getattr(exc, 'message_dict', {}):
@@ -1371,6 +1372,7 @@ def place_order(request):
                 'status': 'success',
                 'message': 'Order already received. We will continue with the same order.',
                 'order_id': existing_order.id,
+                'order_number': existing_order.order_number,
             })
 
         return JsonResponse({'status': 'error', 'message': 'Could not process your order. Please try again.'}, status=500)
@@ -1427,7 +1429,7 @@ def my_orders(request):
 
     lookup_contact = ''
     lookup_pin = ''
-    lookup_order_id = ''
+    lookup_order_number = ''
     lookup_orders = Order.objects.none()
     authorized_ids = _authorized_order_ids(request)
 
@@ -1439,14 +1441,14 @@ def my_orders(request):
     if request.method == 'POST':
         lookup_contact = (request.POST.get('contact') or '').strip()
         lookup_pin = (request.POST.get('access_pin') or '').strip()
-        lookup_order_id = (request.POST.get('order_id') or '').strip()
+        lookup_order_number = (request.POST.get('order_number') or request.POST.get('order_id') or '').strip()
 
         if not lookup_contact or not lookup_pin:
             messages.error(request, 'Enter the email or phone number and the order PIN you used at checkout. Orders without a PIN must be handled by our support team.')
         elif not lookup_pin.isdigit() or not 4 <= len(lookup_pin) <= 8:
             messages.error(request, 'Order PIN must be 4 to 8 digits.')
         else:
-            matched_orders = _lookup_orders_by_contact_and_pin(lookup_contact, lookup_pin, lookup_order_id)
+            matched_orders = _lookup_orders_by_contact_and_pin(lookup_contact, lookup_pin, lookup_order_number)
             if matched_orders:
                 _grant_order_access(request, [order.id for order in matched_orders])
                 lookup_orders = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').filter(
@@ -1461,7 +1463,7 @@ def my_orders(request):
         'lookup_orders': lookup_orders,
         'lookup_contact': lookup_contact,
         'lookup_pin': lookup_pin,
-        'lookup_order_id': lookup_order_id,
+        'lookup_order_number': lookup_order_number,
         'show_lookup_results': bool(lookup_contact or authorized_ids),
     })
 

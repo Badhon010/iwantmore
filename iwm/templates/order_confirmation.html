@@ -35,10 +35,10 @@
         </ul>
       </div>
     </div>
-    
+
     <div class="order-details">
       <h2>Order Details</h2>
-      
+
       <div class="detail-section">
         <h3>Shipping Information</h3>
         <div class="detail-content">
@@ -51,48 +51,48 @@
           <p><strong>Phone:</strong> {{ order.shipping_address.phone }}</p>
         </div>
       </div>
-      
+
       <div class="detail-section">
         <h3>Payment Information</h3>
         <div class="detail-content">
-          <p><strong>Method:</strong> 
+          <p><strong>Method:</strong>
             {% if order.payment_method == 'cash_on_delivery' %}
-              Cash on Delivery
+            Cash on Delivery
             {% elif order.payment_method == 'bkash' %}
-              bKash
+            bKash
             {% elif order.payment_method == 'nagad' %}
-              Nagad
+            Nagad
             {% else %}
-              {{ order.payment_method }}
+            {{ order.payment_method }}
             {% endif %}
           </p>
-          
+
           {% if order.sender_number %}
           <p><strong>Sender Number:</strong> {{ order.sender_number }}</p>
           {% endif %}
-          
+
           {% if order.transaction_id %}
           <p><strong>Transaction ID:</strong> {{ order.transaction_id }}</p>
           {% endif %}
-          
-          <p><strong>Status:</strong> 
+
+          <p><strong>Status:</strong>
             {% if order.payment_state == 'paid' %}
-              <span class="status-badge paid">Paid</span>
+            <span class="status-badge paid">Paid</span>
             {% elif order.payment_state == 'partially_paid' %}
-              <span class="status-badge pending">Partially Paid</span>
+            <span class="status-badge pending">Partially Paid</span>
             {% elif order.payment_state == 'payment_submitted' %}
-              <span class="status-badge pending">Payment Submitted</span>
+            <span class="status-badge pending">Payment Submitted</span>
             {% elif order.payment_state == 'failed' %}
-              <span class="status-badge pending">Payment Failed</span>
+            <span class="status-badge pending">Payment Failed</span>
             {% elif order.payment_state == 'refunded' %}
-              <span class="status-badge pending">Refunded</span>
+            <span class="status-badge pending">Refunded</span>
             {% else %}
-              <span class="status-badge pending">Awaiting Payment</span>
+            <span class="status-badge pending">Awaiting Payment</span>
             {% endif %}
           </p>
         </div>
       </div>
-      
+
       <div class="detail-section">
         <h3>Order Summary</h3>
         <div class="order-items">
@@ -107,7 +107,7 @@
           </div>
           {% endfor %}
         </div>
-        
+
         <div class="order-totals">
           <div class="total-row">
             <span>Subtotal</span>
@@ -130,7 +130,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="next-steps">
       <div class="contact-info">
         <h3>Need Help?</h3>
@@ -141,7 +141,7 @@
           <li>Phone: 16XXX (available 9AM-9PM)</li>
         </ul>
       </div>
-      
+
       <div class="action-buttons">
         <a href="{% url 'shop' %}" class="btn primary-btn">Continue Shopping</a>
         <a href="{% url "my_orders" %}" class="btn secondary-btn">View My Orders</a>
@@ -152,15 +152,15 @@
 
 <script>
   // If this page is loaded from local storage (after successful order placement)
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     // Clear the cart if order is successful
     localStorage.removeItem('cartItems');
-    
+
     // Get order ID from URL if available
     const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('order_id');
-    if (orderId) {
-      document.getElementById('order-id').textContent = orderId;
+    const orderNumber = urlParams.get('order_number') || urlParams.get('order_id');
+    if (orderNumber) {
+      document.getElementById('order-id').textContent = orderNumber;
     }
   });
 </script>
