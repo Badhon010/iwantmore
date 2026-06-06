@@ -5,7 +5,7 @@ django-ckeditor-5==0.2.20
 django-import-export==4.4.0
 django-auditlog==3.4.1
 django-allauth[socialaccount]==65.4.1
-django-unfold==0.87.0
+django-unfold==0.97.0
 openpyxl==3.1.5
 google-generativeai==0.8.6
 plotly==6.6.0
