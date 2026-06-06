@@ -109,12 +109,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "iwantmore.wsgi.application"
 
 
-DB_ENGINE = config("DB_ENGINE", default="django.db.backends.mysql")
-if "sqlite3" in DB_ENGINE:
-    db_name = BASE_DIR / config("DB_NAME", default="db.sqlite3")
-else:
-    db_name = config("DB_NAME", default="db")
-
 DATABASE_URL = config("DATABASE_URL", default="")
 
 if DATABASE_URL:
@@ -131,12 +125,6 @@ else:
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
-    }
-
-if not DATABASE_URL and "mysql" in DB_ENGINE:
-    DATABASES["default"]["OPTIONS"] = {
-        "charset": "utf8mb4",
-        "init_command": "SET time_zone='+06:00'",
     }
 
 
@@ -158,7 +146,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if PRODUCTION else "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 WHITENOISE_MANIFEST_STRICT = False
@@ -401,7 +389,6 @@ LOGGING = {
     },
 }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 """
 DEVELOPER DOCUMENTATION: ENVIRONMENT VARIABLES & SETUP
