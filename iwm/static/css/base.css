@@ -545,7 +545,7 @@ header .nav1 a:hover,
 .sticky-footer button {
     text-decoration: none;
     color: var(--text-color);
-    font-size: 10px;
+    font-size: 10px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
