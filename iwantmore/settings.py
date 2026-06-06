@@ -6,6 +6,7 @@ from pathlib import Path
 
 from decouple import config
 import pymysql
+import dj_database_url
 
 
 pymysql.install_as_MySQLdb()
@@ -114,19 +115,25 @@ if "sqlite3" in DB_ENGINE:
 else:
     db_name = config("DB_NAME", default="db")
 
-DATABASES = {
-    "default": {
-        "ENGINE": DB_ENGINE,
-        "NAME": db_name,
-        "USER": config("DB_USER", default="root"),
-        "PASSWORD": config("DB_PASSWORD", default=""),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="3306"),
-        "CONN_MAX_AGE": config("DB_CONN_MAX_AGE", cast=int, default=60),
-    }
-}
+DATABASE_URL = config("DATABASE_URL", default="")
 
-if "mysql" in DB_ENGINE:
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=60,
+        )
+    }
+else:
+    # SAFE LOCAL FALLBACK ONLY
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+if not DATABASE_URL and "mysql" in DB_ENGINE:
     DATABASES["default"]["OPTIONS"] = {
         "charset": "utf8mb4",
         "init_command": "SET time_zone='+06:00'",
@@ -149,11 +156,12 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = (
-    "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
-    if not DEBUG
-    else "django.contrib.staticfiles.storage.StaticFilesStorage"
-)
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+WHITENOISE_MANIFEST_STRICT = False
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/login/"
@@ -393,7 +401,7 @@ LOGGING = {
     },
 }
 
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 """
 DEVELOPER DOCUMENTATION: ENVIRONMENT VARIABLES & SETUP
