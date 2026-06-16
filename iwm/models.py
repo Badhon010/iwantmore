@@ -527,7 +527,7 @@ class Order(models.Model):
                 cls._raise_checkout_error(error_cls, 'Invalid cart item.')
 
             selected_color = cls._normalize_optional_text(raw_item.get('color'))
-            item_key = (product_id, selected_color.lower())
+            item_key = (product_id, selected_color.lower() if selected_color else None)
 
             if item_key not in quantities:
                 ordered_items.append((product_id, selected_color, item_key))
@@ -606,7 +606,7 @@ class Order(models.Model):
         if not coupon:
             return Decimal('0.00')
 
-        if coupon.discount_amount > 0:
+        if coupon.discount_amount and coupon.discount_amount > 0:
             discount_amount = cls._to_money(coupon.discount_amount)
         else:
             discount_amount = cls._to_money(subtotal * Decimal(coupon.discount_percent) / Decimal('100'))
@@ -821,7 +821,7 @@ class Order(models.Model):
                     order=order,
                     product=item['product'],
                     product_name=item['product_name'],
-                    product_color=item['product_color'],
+                    product_color=item['product_color'] or '',
                     product_price=item['unit_price'],
                     quantity=item['quantity'],
                 )

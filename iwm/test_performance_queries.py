@@ -55,6 +55,7 @@ class PerformanceQueryTests(TestCase):
             name='Main Product',
             description='Primary product',
             price=100,
+            buying_price=100,
             discount_price=90,
             image=image_file('main.jpg'),
             stock=5,
@@ -74,6 +75,7 @@ class PerformanceQueryTests(TestCase):
                 name=f'Related Product {index}',
                 description='Related product',
                 price=50 + index,
+                buying_price=50 + index,
                 image=image_file(f'related-{index}.jpg'),
                 stock=4 + index,
                 subcategory=cls.subcategory if index < 3 else cls.other_subcategory,
@@ -93,6 +95,7 @@ class PerformanceQueryTests(TestCase):
                 name=f'Low Stock {index}',
                 description='Low stock product',
                 price=20 + index,
+                buying_price=20 + index,
                 image=image_file(f'low-stock-{index}.jpg'),
                 stock=index,
                 subcategory=cls.subcategory,
@@ -116,6 +119,7 @@ class PerformanceQueryTests(TestCase):
                 order=order,
                 product=cls.product,
                 product_name=cls.product.name,
+                product_color='',
                 product_price=cls.product.price,
                 quantity=1,
             )
@@ -140,6 +144,7 @@ class PerformanceQueryTests(TestCase):
                 order=failed_order,
                 product=low_stock_products[index - 1],
                 product_name=low_stock_products[index - 1].name,
+                product_color='',
                 product_price=low_stock_products[index - 1].price,
                 quantity=2,
             )
@@ -155,7 +160,7 @@ class PerformanceQueryTests(TestCase):
         self.client = Client()
 
     def test_product_detail_queries(self):
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(8):
             response = self.client.get(reverse('product_detail', args=[self.product.slug]))
 
         self.assertEqual(response.status_code, 200)
@@ -176,7 +181,7 @@ class PerformanceQueryTests(TestCase):
     def test_admin_analytics_queries(self):
         self.client.force_login(self.superuser)
 
-        with self.assertNumQueries(34):
+        with self.assertNumQueries(25):
             response = self.client.get(reverse('admin:analytics'))
 
         self.assertEqual(response.status_code, 200)

@@ -32,6 +32,7 @@ class QAAuditTests(TransactionTestCase):
             name=name,
             description=f'{name} description',
             price=price,
+            buying_price=price,
             image=SimpleUploadedFile(f'{name}.jpg', b'filecontent', content_type='image/jpeg'),
             stock=stock,
             subcategory=self.subcategory,

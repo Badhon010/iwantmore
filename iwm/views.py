@@ -1097,7 +1097,7 @@ def order_confirmation(request):
                 'user',
             ).prefetch_related('items__product').get(order_number=order_number)
             has_account_access = request.user.is_authenticated and order.user == request.user
-            has_lookup_access = request.session.get('guest_order_id') == str(order_number) or order.id in _authorized_order_ids(request)
+            has_lookup_access = request.session.get('guest_order_id') == str(order.id) or order.id in _authorized_order_ids(request)
             if not has_account_access and not has_lookup_access:
                 order = None
         except Order.DoesNotExist:
