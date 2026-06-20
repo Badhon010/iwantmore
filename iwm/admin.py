@@ -47,6 +47,16 @@ FOLLOW_UP_PAYMENT_STATES = ['awaiting_payment', 'payment_submitted']
 logger = logging.getLogger(__name__)
 
 
+def _unread_alerts_badge(request):
+    count = AdminAlert.objects.filter(is_read=False).count()
+    return str(count) if count else None
+
+
+def _low_stock_badge(request):
+    count = Product.objects.filter(stock__gt=0, stock__lt=10).count()
+    return str(count) if count else None
+
+
 def _as_local_aware(value):
     if timezone.is_aware(timezone.now()) and timezone.is_naive(value):
         return timezone.make_aware(value, timezone.get_current_timezone())
@@ -728,10 +738,16 @@ class CategoryAdmin(ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     inlines = [SubCategoryInline]
     
+    list_per_page = 25
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_subcategory_count=Count('subcategories', distinct=True))
+
     def subcategories_count(self, obj):
-        count = obj.subcategories.count()
-        return format_html(f'<span style="background-color: #ff6f91; color: white; padding: 3px 8px; border-radius: 3px;">{count}</span>')
+        count = obj._subcategory_count
+        return format_html('<span style="background-color: #ff6f91; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>', count)
     subcategories_count.short_description = "Subcategories"
+    subcategories_count.admin_order_field = '_subcategory_count'
 
 
 class SubCategoryAdmin(ModelAdmin):
@@ -739,10 +755,13 @@ class SubCategoryAdmin(ModelAdmin):
     list_filter = ('category',)
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'category__name')
+    list_select_related = ['category']
+    list_per_page = 25
 
 
 class FeatureReasonAdmin(ModelAdmin):
     list_display = ('Reason',)
+    list_per_page = 25
 
 
 # ========================
@@ -801,10 +820,15 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
     
     list_display = ('product_name_with_image', 'get_price_display', 'stock_status', 'subcategory', 'is_featured', 'get_colors', 'created_at')
     search_fields = ('name', 'description', 'slug')
-    list_filter = ('price', 'tags', 'subcategory', 'is_featured', 'size', 'brand', 'created_at')
+    list_filter = ('tags', 'subcategory', 'is_featured', 'size', 'brand', 'created_at')
     filter_horizontal = ('tags',)
     inlines = [ProductColorImageInline]
     readonly_fields = ('slug', 'discount_percentage_display', 'created_at')
+    list_per_page = 25
+    list_display_links = ['product_name_with_image']
+    ordering = ['-created_at']
+    show_full_result_count = False
+    save_as = True
     
     fieldsets = (
         ('Product Information', {
@@ -880,11 +904,21 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
 
 
 class ReviewAdmin(ModelAdmin):
-    list_display = ('product', 'user', 'get_rating_display', 'created_at')
+    list_display = ('product', 'user', 'get_rating_display', 'comment_preview', 'created_at')
+    list_display_links = ['product']
     list_filter = ('rating', 'created_at', 'product')
     search_fields = ('product__name', 'user__username', 'comment')
     readonly_fields = ('created_at',)
-    
+    list_per_page = 25
+    ordering = ['-created_at']
+    list_select_related = ['product', 'user']
+
+    def comment_preview(self, obj):
+        if len(obj.comment) > 60:
+            return obj.comment[:60] + '\u2026'
+        return obj.comment
+    comment_preview.short_description = "Comment"
+
     def get_rating_display(self, obj):
         stars = '⭐' * obj.rating
         return format_html('<span style="font-size: 18px;">{}</span> <strong>{}/5</strong>', stars, obj.rating)
@@ -897,7 +931,8 @@ class ReviewAdmin(ModelAdmin):
 class ColorAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
-    
+    list_per_page = 25
+
     def products_count(self, obj):
         count = Product.objects.filter(
             Q(color=obj) | Q(color_images__color=obj)
@@ -909,17 +944,23 @@ class ColorAdmin(ModelAdmin):
 class SizeAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
-    
+    list_per_page = 25
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_product_count=Count('product', distinct=True))
+
     def products_count(self, obj):
-        count = obj.product_set.count()
-        return format_html(f'<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{count}</span>')
+        count = obj._product_count
+        return format_html('<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>', count)
     products_count.short_description = "Products"
+    products_count.admin_order_field = '_product_count'
 
 
 class BrandAdmin(ModelAdmin):
     list_display = ('name', 'brand_logo', 'products_count')
     search_fields = ('name',)
     readonly_fields = ('brand_logo',)
+    list_per_page = 25
     
     def brand_logo(self, obj):
         if obj.image:
@@ -936,17 +977,24 @@ class BrandAdmin(ModelAdmin):
 class TagAdmin(ModelAdmin):
     list_display = ('name', 'products_count')
     search_fields = ('name',)
-    
+    list_per_page = 25
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_product_count=Count('products', distinct=True))
+
     def products_count(self, obj):
-        count = obj.products.count()
-        return format_html(f'<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{count}</span>')
+        count = obj._product_count
+        return format_html('<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>', count)
     products_count.short_description = "Products"
+    products_count.admin_order_field = '_product_count'
 
 
 class ProductColorImageAdmin(ModelAdmin):
     list_display = ('product', 'color', 'image_preview')
     list_filter = ('color', 'product')
     search_fields = ('product__name', 'color__name')
+    list_select_related = ['product', 'color']
+    list_per_page = 25
 
     def image_preview(self, obj):
         if obj.image:
@@ -974,6 +1022,8 @@ class NewsletterSubscriberAdmin(ExportActionMixin, ModelAdmin):
     date_hierarchy = 'subscribed_at'
     actions = ['mark_active', 'mark_inactive', 'send_email_to_selected']
     readonly_fields = ('subscribed_at',)
+    list_display_links = ['email']
+    list_per_page = 50
     
     fieldsets = (
         ('Subscriber Information', {
@@ -1125,6 +1175,11 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
                       'coupon_usage_released_at', 'created_at', 'updated_at']
     list_select_related = ['user', 'shipping_address', 'billing_address', 'coupon']
     date_hierarchy = 'created_at'
+    list_per_page = 25
+    list_display_links = ['order_id']
+    ordering = ['-created_at']
+    show_full_result_count = False
+    actions_on_bottom = True
 
     fieldsets = [
         ('Order Information', {
@@ -1342,7 +1397,8 @@ class OrderItemAdmin(ModelAdmin):
     list_filter = ('order__order_status', 'order__created_at')
     search_fields = ('product_name', 'order__id')
     readonly_fields = ('order', 'product', 'product_name', 'product_price', 'quantity')
-    
+    list_per_page = 25
+
     def get_price_display(self, obj):
         return format_html('৳{}', obj.product_price)
     get_price_display.short_description = "Unit Price"
@@ -1369,7 +1425,9 @@ class AddressAdmin(ModelAdmin):
     search_fields = ['full_name', 'address_line1', 'city', 'phone', 'user__username']
     readonly_fields = ['created_at']
     date_hierarchy = 'created_at'
-    
+    list_select_related = ['user']
+    list_per_page = 25
+
     fieldsets = [
         ('Personal Information', {
             'fields': ['user', 'full_name', 'phone']
@@ -1400,7 +1458,9 @@ class CouponAdmin(ModelAdmin):
     list_filter = ('is_active', 'valid_from', 'valid_to')
     search_fields = ('code',)
     readonly_fields = ('used_count', 'is_valid_display')
-    
+    list_per_page = 25
+    ordering = ['-valid_to']
+
     fieldsets = (
         ("Coupon Information", {
             'fields': ('code', 'is_active', 'is_valid_display')
@@ -1456,7 +1516,14 @@ class AdminAlertAdmin(ModelAdmin):
     search_fields = ('title', 'message')
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'created_at'
-    
+    list_per_page = 25
+    actions = ['mark_all_as_read']
+
+    def mark_all_as_read(self, request, queryset):
+        updated = queryset.filter(is_read=False).update(is_read=True, read_by=request.user)
+        self.message_user(request, f'{updated} alert(s) marked as read.')
+    mark_all_as_read.short_description = "Mark selected alerts as read"
+
     fieldsets = (
         ('Alert Information', {
             'fields': ('title', 'message', 'alert_type', 'severity')
@@ -1542,6 +1609,8 @@ class PromoBannerAdmin(ModelAdmin):
         'title_2',
         'description',
     )
+
+    list_per_page = 25
 
     fieldsets = (
         ('Banner Content', {

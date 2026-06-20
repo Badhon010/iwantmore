@@ -207,10 +207,14 @@
   </div>
 </section>
 
+<form id="logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
+  {% csrf_token %}
+</form>
+
 <script>
   function confirmLogout() {
     if (confirm("Are you sure you want to logout?")) {
-      window.location.href = "{% url 'logout' %}";
+      document.getElementById('logout-form').submit();
     }
   }
 </script>

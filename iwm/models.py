@@ -234,6 +234,7 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=['created_at']),
             models.Index(fields=['stock']),
+            models.Index(fields=['is_featured']),
         ]
 
 class ProductColorImage(models.Model):
@@ -281,6 +282,12 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.reviewer_name()} for {self.product.name} - {self.rating}★"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['product', 'created_at']),
+        ]
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True)
@@ -311,6 +318,9 @@ class NewsletterSubscriber(models.Model):
         ordering = ['-subscribed_at']
         verbose_name = "Newsletter Subscriber"
         verbose_name_plural = "Newsletter Subscribers"
+        indexes = [
+            models.Index(fields=['is_active']),
+        ]
     
     def __str__(self):
         return self.email
@@ -1257,6 +1267,9 @@ class Coupon(models.Model):
 
     class Meta:
         ordering = ['-id']
+        indexes = [
+            models.Index(fields=['is_active', 'valid_to']),
+        ]
 
     def __str__(self):
         if self.discount_amount:

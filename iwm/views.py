@@ -51,6 +51,25 @@ def _send_mail_in_background(subject, message, from_email, recipient_list, fail_
             logger.exception("Background email failed to send.")
     threading.Thread(target=send, daemon=True).start()
 
+
+def _validate_image_upload(file_obj, max_mb=5):
+    """Raise ValidationError if the uploaded file is not a safe image or exceeds the size cap."""
+    allowed_extensions = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+    name = file_obj.name or ''
+    ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    if ext not in allowed_extensions:
+        raise ValidationError('Only JPG, PNG, WebP, and GIF images are allowed.')
+    if file_obj.size > max_mb * 1024 * 1024:
+        raise ValidationError(f'Image must be smaller than {max_mb} MB.')
+    try:
+        from PIL import Image
+        img = Image.open(file_obj)
+        img.verify()
+        file_obj.seek(0)
+    except Exception:
+        raise ValidationError('Uploaded file is not a valid image.')
+
+
 BANGLADESH_DISTRICTS = [
     'Bagerhat', 'Bandarban', 'Barguna', 'Barishal', 'Bhola', 'Bogura', 'Brahmanbaria',
     'Chandpur', 'Chattogram', "Cox's Bazar", 'Cumilla', 'Dhaka', 'Dinajpur', 'Faridpur',
@@ -258,6 +277,7 @@ def services(request):
     featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
     return render(request, 'services.html', {'featured_reviews': featured_reviews})
 
+@login_required
 def profile(request):
     try:
         profile = UserProfile.objects.get(user=request.user)
@@ -278,8 +298,14 @@ def edit_profile(request):
         
         # Handling Profile Picture upload
         if request.FILES.get('profile_picture'):
-            profile.profile_picture = request.FILES['profile_picture']
-        
+            pic = request.FILES['profile_picture']
+            try:
+                _validate_image_upload(pic)
+                profile.profile_picture = pic
+            except ValidationError as exc:
+                messages.error(request, exc.message)
+                return render(request, 'edit_profile.html', {'profile': profile})
+
         profile.save()
         return redirect('profile')  # Redirect to the profile page after saving the changes
 
@@ -492,7 +518,12 @@ def autocomplete_suggestions(request):
     query = request.GET.get("q", "").strip()
     suggestions = []
     
-    if query:
+    if len(query) >= 2:
+        cache_key = f"autocomplete:{query[:50].lower()}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return JsonResponse(cached, safe=False)
+
         # 1. Search in product name
         name_matches = list(Product.objects.filter(name__icontains=query).distinct())
         
@@ -564,7 +595,9 @@ def autocomplete_suggestions(request):
                     "type": "tag",
                     "match_type": "tag"
                 })
-    
+
+        cache.set(cache_key, suggestions, 60)
+
     return JsonResponse(suggestions, safe=False)
 
 def submit_review(request, product_slug):
@@ -607,7 +640,14 @@ def submit_review(request, product_slug):
         rating = request.POST.get('rating')
 
         if review_text and rating:
-            review = Review(product=product,comment=review_text,rating=rating)
+            try:
+                rating = int(rating)
+                if not 1 <= rating <= 5:
+                    raise ValueError
+            except (ValueError, TypeError):
+                messages.error(request, 'Rating must be a number between 1 and 5.')
+                return redirect('product_detail', slug=product.slug)
+            review = Review(product=product, comment=review_text, rating=rating)
             if request.user.is_authenticated:
                 review.user = request.user
             review.save()
@@ -616,6 +656,7 @@ def submit_review(request, product_slug):
 
     return redirect('product_detail',slug=product.slug)
 
+@require_POST
 def logout_view(request):
     logout(request)
     return redirect('home')
@@ -712,7 +753,12 @@ def complete_profile(request):
             profile, created = UserProfile.objects.get_or_create(user=user)
             profile.phone_number = phone_number
             if profile_picture:
-                profile.profile_picture = profile_picture
+                try:
+                    _validate_image_upload(profile_picture)
+                    profile.profile_picture = profile_picture
+                except ValidationError as exc:
+                    messages.error(request, exc.message)
+                    return render(request, 'complete_profile.html')
             profile.save()
 
         return redirect('home')

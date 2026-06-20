@@ -214,7 +214,7 @@ if FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET:
         "secret": FACEBOOK_CLIENT_SECRET,
     }
 
-SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_LOGIN_ON_GET = False
 
 ACCOUNT_LOGIN_METHODS = {"username", "email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
@@ -312,30 +312,199 @@ IMPORT_EXPORT_USE_TRANSACTIONS = True
 IMPORT_EXPORT_FORMATS = ["xlsx", "csv", "json"]
 
 
+def environment_callback(request):
+    from django.conf import settings as _s
+    if _s.DEBUG:
+        return ["Development", "danger"]
+    return ["Production", "success"]
+
+
 UNFOLD = {
-    "SITE_TITLE": "I Want More Admin",
-    "SITE_HEADER": "I Want More",
+    "SITE_TITLE": "IWantMore",
+    "SITE_HEADER": "IWantMore Admin",
     "SITE_SYMBOL": "shopping_bag",
+    "SITE_URL": "/",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
+    "ENVIRONMENT": "iwantmore.settings.environment_callback",
     "COLORS": {
         "primary": {
             "50": "255 242 245",
-            "100": "255 224 231",
-            "200": "255 194 207",
-            "300": "255 153 174",
-            "400": "255 112 141",
+            "100": "255 226 233",
+            "200": "255 196 210",
+            "300": "255 162 182",
+            "400": "255 127 163",
             "500": "255 111 145",
-            "600": "255 78 106",
-            "700": "230 46 76",
-            "800": "191 38 63",
-            "900": "153 31 51",
-            "950": "77 15 25",
+            "600": "235 79 114",
+            "700": "204 46 80",
+            "800": "166 32 62",
+            "900": "131 22 47",
+            "950": "77 10 26",
         },
     },
     "SIDEBAR": {
-        "show_search": True,  # This enables the global search bar
-        "show_all_applications": True,
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Dashboard",
+                "separator": False,
+                "items": [
+                    {
+                        "title": "Overview",
+                        "icon": "dashboard",
+                        "link": "/admin/",
+                    },
+                    {
+                        "title": "Analytics",
+                        "icon": "bar_chart",
+                        "link": "/admin/analytics/",
+                    },
+                    {
+                        "title": "Revenue & Profit",
+                        "icon": "trending_up",
+                        "link": "/admin/revenue-chart/",
+                    },
+                    {
+                        "title": "Alerts",
+                        "icon": "notifications_active",
+                        "link": "/admin/alerts/",
+                        "badge": "iwm.admin._unread_alerts_badge",
+                    },
+                ],
+            },
+            {
+                "title": "Catalog",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Products",
+                        "icon": "inventory_2",
+                        "link": "/admin/iwm/product/",
+                        "badge": "iwm.admin._low_stock_badge",
+                    },
+                    {
+                        "title": "Categories",
+                        "icon": "category",
+                        "link": "/admin/iwm/category/",
+                    },
+                    {
+                        "title": "Subcategories",
+                        "icon": "folder_open",
+                        "link": "/admin/iwm/subcategory/",
+                    },
+                    {
+                        "title": "Brands",
+                        "icon": "local_offer",
+                        "link": "/admin/iwm/brand/",
+                    },
+                    {
+                        "title": "Colors",
+                        "icon": "palette",
+                        "link": "/admin/iwm/color/",
+                    },
+                    {
+                        "title": "Sizes",
+                        "icon": "straighten",
+                        "link": "/admin/iwm/size/",
+                    },
+                    {
+                        "title": "Tags",
+                        "icon": "sell",
+                        "link": "/admin/iwm/tag/",
+                    },
+                ],
+            },
+            {
+                "title": "Orders",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "All Orders",
+                        "icon": "shopping_cart",
+                        "link": "/admin/iwm/order/",
+                    },
+                    {
+                        "title": "Order Items",
+                        "icon": "receipt_long",
+                        "link": "/admin/iwm/orderitem/",
+                    },
+                    {
+                        "title": "Addresses",
+                        "icon": "location_on",
+                        "link": "/admin/iwm/address/",
+                    },
+                ],
+            },
+            {
+                "title": "Customers & Marketing",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Users",
+                        "icon": "people",
+                        "link": "/admin/auth/user/",
+                    },
+                    {
+                        "title": "Newsletter",
+                        "icon": "email",
+                        "link": "/admin/iwm/newslettersubscriber/",
+                    },
+                    {
+                        "title": "Coupons",
+                        "icon": "discount",
+                        "link": "/admin/iwm/coupon/",
+                    },
+                    {
+                        "title": "Promo Banners",
+                        "icon": "campaign",
+                        "link": "/admin/iwm/promobanner/",
+                    },
+                ],
+            },
+            {
+                "title": "Content",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Reviews",
+                        "icon": "star_rate",
+                        "link": "/admin/iwm/review/",
+                    },
+                    {
+                        "title": "Feature Reasons",
+                        "icon": "auto_awesome",
+                        "link": "/admin/iwm/featurereason/",
+                    },
+                    {
+                        "title": "Product Images",
+                        "icon": "photo_library",
+                        "link": "/admin/iwm/productcolorimage/",
+                    },
+                ],
+            },
+            {
+                "title": "System",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Admin Alerts",
+                        "icon": "warning_amber",
+                        "link": "/admin/iwm/adminalert/",
+                    },
+                    {
+                        "title": "Groups",
+                        "icon": "shield",
+                        "link": "/admin/auth/group/",
+                    },
+                ],
+            },
+        ],
     },
 }
 
