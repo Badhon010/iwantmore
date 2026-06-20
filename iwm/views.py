@@ -229,6 +229,10 @@ def home(request):
 
 def shop(request):
     products = _base_product_queryset(include_color_images=True).order_by('-created_at')
+
+    from django.db.models import Min, Max
+    price_stats = products.aggregate(min_price=Min("price"), max_price=Max("price"))
+
     paginated_products, pagination_query = _paginate_queryset(request, products)
     _apply_product_rating_display(paginated_products)
     _apply_product_media(paginated_products)
@@ -241,6 +245,10 @@ def shop(request):
         'colors': Color.objects.all(),
         'sizes': Size.objects.all(),
         'brands': Brand.objects.all(),
+        'available_min_price': price_stats['min_price'] or 0,
+        'available_max_price': price_stats['max_price'] or 0,
+        'min_price': request.GET.get('min_price', ''),
+        'max_price': request.GET.get('max_price', ''),
     })
 
 
@@ -401,6 +409,12 @@ def search_view(request):
             if subcategory_obj:
                 products = products.filter(subcategory=subcategory_obj)
 
+    # Calculate available price range BEFORE applying price filter
+    from django.db.models import Min, Max
+    price_stats = products.aggregate(min_price=Min("price"), max_price=Max("price"))
+    available_min_price = price_stats["min_price"] or 0
+    available_max_price = price_stats["max_price"] or 0
+
     # Apply price range filter
     if min_price:
         try:
@@ -506,6 +520,8 @@ def search_view(request):
         "selected_color": selected_color,
         "selected_size": selected_size,
         "selected_brand": selected_brand,
+        "available_min_price": available_min_price,
+        "available_max_price": available_max_price,
     }
     
     # If it's an AJAX request, return only the product grid

@@ -65,11 +65,13 @@ function ensureProductIds() {
 function initFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     
-    // Set price range from URL
+    // Set price range from URL (elements may not exist when no products are available)
     const minPrice = urlParams.get('min_price');
     const maxPrice = urlParams.get('max_price');
-    if (minPrice) document.getElementById('priceMin').value = minPrice;
-    if (maxPrice) document.getElementById('priceMax').value = maxPrice;
+    const priceMinEl = document.getElementById('priceMin');
+    const priceMaxEl = document.getElementById('priceMax');
+    if (minPrice && priceMinEl) priceMinEl.value = minPrice;
+    if (maxPrice && priceMaxEl) priceMaxEl.value = maxPrice;
     
     // Set category filters from URL
     const category = urlParams.get('category');
@@ -136,10 +138,10 @@ function initPriceRange() {
     
     if (!minPriceSlider || !maxPriceSlider || !minPriceInput || !maxPriceInput) return;
     
-    const minPrice = 0;
-    const maxPrice = 10000;
-    let currentMinPrice = parseInt(minPriceInput.value || minPrice);
-    let currentMaxPrice = parseInt(maxPriceInput.value || maxPrice);
+    const minPrice = parseInt(minPriceSlider.min);
+    const maxPrice = parseInt(minPriceSlider.max);
+    let currentMinPrice = parseInt(minPriceSlider.value || minPrice);
+    let currentMaxPrice = parseInt(maxPriceSlider.value || maxPrice);
     
     // Set initial z-index
     minPriceSlider.style.zIndex = "5";
@@ -150,7 +152,7 @@ function initPriceRange() {
     
     function updatePriceRange() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (currentMinPrice > 0) urlParams.set('min_price', currentMinPrice);
+        if (currentMinPrice > minPrice) urlParams.set('min_price', currentMinPrice);
         else urlParams.delete('min_price');
         
         if (currentMaxPrice < maxPrice) urlParams.set('max_price', currentMaxPrice);
@@ -248,10 +250,16 @@ function initPriceRange() {
     
     function updateSliderRange() {
         if (!sliderRange) return;
-        const minPercent = (currentMinPrice / maxPrice) * 100;
-        const maxPercent = (currentMaxPrice / maxPrice) * 100;
-        sliderRange.style.left = minPercent + '%';
-        sliderRange.style.width = (maxPercent - minPercent) + '%';
+        const range = maxPrice - minPrice || 1;
+        // The thumb is 22px wide (see CSS). The thumb CENTER travels from
+        // 11px (left edge) to containerWidth-11px (right edge), not 0%–100%.
+        // Using calc() mixes % and px to match the browser's actual thumb position.
+        const thumbHalf = 11;
+        const minRatio = (currentMinPrice - minPrice) / range;
+        const maxRatio = (currentMaxPrice - minPrice) / range;
+        const widthRatio = maxRatio - minRatio;
+        sliderRange.style.left  = `calc(${minRatio * 100}% + ${thumbHalf * (1 - minRatio * 2)}px)`;
+        sliderRange.style.width = `calc(${widthRatio * 100}% - ${widthRatio * 2 * thumbHalf}px)`;
     }
     
     // Initialize displays

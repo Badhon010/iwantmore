@@ -84,34 +84,51 @@ today!{% endblock dis %}
           <h4 class="filter-title">Price Range</h4>
 
           <div class="filter-group price-range">
+            {% if available_min_price == 0 and available_max_price == 0 %}
+            <p class="price-no-products">No products available</p>
+            {% else %}
             <div class="dual-range-container">
               <div class="price-slider-values">
-                <span class="price-min-value">৳0</span>
-                <span class="price-max-value">৳10000</span>
+                <span class="price-min-value">৳{{ available_min_price }}</span>
+                <span class="price-max-value">৳{{ available_max_price }}</span>
               </div>
 
               <div class="price-slider-track">
                 <div class="slider-track"></div>
                 <div class="slider-range"></div>
-                <input type="range" min="0" max="10000" value="0" class="price-slider min-slider" id="priceSliderMin">
-                <input type="range" min="0" max="10000" value="10000" class="price-slider max-slider"
-                  id="priceSliderMax">
+                <input type="range"
+                  min="{{ available_min_price }}"
+                  max="{{ available_max_price }}"
+                  value="{% if min_price %}{{ min_price }}{% else %}{{ available_min_price }}{% endif %}"
+                  class="price-slider min-slider" id="priceSliderMin">
+                <input type="range"
+                  min="{{ available_min_price }}"
+                  max="{{ available_max_price }}"
+                  value="{% if max_price %}{{ max_price }}{% else %}{{ available_max_price }}{% endif %}"
+                  class="price-slider max-slider" id="priceSliderMax">
               </div>
               <div class="price-inputs-wrapper">
                 <div class="price-input-container">
                   <label class="price-label">Min Price</label>
                   <span class="price-currency">৳</span>
-                  <input type="number" id="priceMin" name="min_price" placeholder="0" min="0" max="10000">
+                  <input type="number" id="priceMin" name="min_price"
+                    placeholder="{{ available_min_price }}"
+                    min="{{ available_min_price }}" max="{{ available_max_price }}"
+                    value="{{ min_price }}">
                 </div>
 
                 <div class="price-input-container">
                   <label class="price-label">Max Price</label>
                   <span class="price-currency">৳</span>
-                  <input type="number" id="priceMax" name="max_price" placeholder="10000" min="0" max="10000">
+                  <input type="number" id="priceMax" name="max_price"
+                    placeholder="{{ available_max_price }}"
+                    min="{{ available_min_price }}" max="{{ available_max_price }}"
+                    value="{{ max_price }}">
                 </div>
               </div>
             </div>
             <button class="btn-apply-price" id="applyPriceFilter"><i class="fas fa-filter"></i> Apply Filter</button>
+            {% endif %}
           </div>
         </div>
 
