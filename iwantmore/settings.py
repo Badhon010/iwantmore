@@ -455,7 +455,7 @@ UNFOLD = {
                     },
                     {
                         "title": "Coupons",
-                        "icon": "discount",
+                        "icon": "confirmation_number",
                         "link": "/admin/iwm/coupon/",
                     },
                     {
