@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, ProductColorImage, Review, UserProfile, UserVerification, NewsletterSubscriber,Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, Brand, PromoBanner
+from .models import Product, ProductColorImage, Review, UserProfile, UserVerification, NewsletterSubscriber, Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, PromoBanner, Slider
 from .forms import ReviewForm
 from django.db.models import Q, Avg, Count, Prefetch
 from django.contrib.auth.decorators import login_required
@@ -32,6 +32,7 @@ import logging
 import textwrap
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from decouple import config
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,6 @@ def _base_product_queryset(*, include_tags=False, include_detail_relations=False
         'subcategory',
         'color',
         'size',
-        'brand',
         'feature_reason',
     ).annotate(
         avg_rating_value=Avg('reviews__rating'),
@@ -199,12 +199,14 @@ def _apply_product_media(products, *, selected_color='', include_gallery=False):
         product.requires_color_selection = len(available_colors) > 1
 
 
-def _paginate_queryset(request, queryset, per_page=16):
+def _paginate_queryset(request, queryset, per_page=16, excluded_query_keys=None):
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     query_params = request.GET.copy()
+    for key in excluded_query_keys or []:
+        query_params.pop(key, None)
     query_params.pop('page', None)
     pagination_query = query_params.urlencode()
 
@@ -215,19 +217,40 @@ def home(request):
     featured_products = _base_product_queryset(include_color_images=True).filter(is_featured=True).order_by('-created_at')[:8]
     _apply_product_rating_display(featured_products)
     _apply_product_media(featured_products)
-    brands = Brand.objects.all()
     promo = PromoBanner.objects.filter(is_active=True).first()
+    sliders = Slider.objects.filter(is_active=True)
     featured_reviews = Review.objects.select_related('user', 'product').order_by('-created_at')[:4]
     context = {
         'categories': categories,
         'featured_products': featured_products,
-        'brands': brands,
+        'sliders': sliders,
         'promo': promo,
         'featured_reviews': featured_reviews
     }
     return render(request, 'home.html', context)
 
 def shop(request):
+    legacy_category = request.GET.get('category')
+    if legacy_category:
+        category_obj = Category.objects.filter(slug=legacy_category).first()
+        if category_obj:
+            query_params = request.GET.copy()
+            query_params.pop('category', None)
+            query_string = query_params.urlencode()
+            url = reverse('category_products', kwargs={'category_slug': category_obj.slug})
+            return redirect(f"{url}?{query_string}" if query_string else url, permanent=True)
+
+        subcategory_obj = SubCategory.objects.select_related('category').filter(slug=legacy_category).first()
+        if subcategory_obj:
+            query_params = request.GET.copy()
+            query_params.pop('category', None)
+            query_string = query_params.urlencode()
+            url = reverse('subcategory_products', kwargs={
+                'category_slug': subcategory_obj.category.slug,
+                'subcategory_slug': subcategory_obj.slug,
+            })
+            return redirect(f"{url}?{query_string}" if query_string else url, permanent=True)
+
     products = _base_product_queryset(include_color_images=True).order_by('-created_at')
 
     from django.db.models import Min, Max
@@ -244,11 +267,12 @@ def shop(request):
         'categories': Category.objects.prefetch_related('subcategories').all(),
         'colors': Color.objects.all(),
         'sizes': Size.objects.all(),
-        'brands': Brand.objects.all(),
         'available_min_price': price_stats['min_price'] or 0,
         'available_max_price': price_stats['max_price'] or 0,
         'min_price': request.GET.get('min_price', ''),
         'max_price': request.GET.get('max_price', ''),
+        'current_category': '',
+        'current_subcategory': '',
     })
 
 
@@ -370,20 +394,20 @@ def product_detail(request, slug):
     
     return render(request, 'product.html', context)
 
-def search_view(request):
+def _catalog_listing_view(request, *, category_slug=None, subcategory_slug=None):
     query = request.GET.get("q", "").strip()
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
-    category = request.GET.get("category", "").strip()
+    category = (category_slug or request.GET.get("category", "")).strip()
     stock = request.GET.get("stock", "all")
     sort = request.GET.get("sort", "newest")
     discount = request.GET.get("discount", "false") == "true"
     featured = request.GET.get("featured", "false") == "true"
     selected_color = request.GET.get("color", "").strip()
     selected_size = request.GET.get("size", "").strip()
-    selected_brand = request.GET.get("brand", "").strip()
-    
     products = _base_product_queryset(include_color_images=True)
+    category_obj = None
+    subcategory_obj = None
 
     # Apply search filter
     if query:
@@ -392,21 +416,31 @@ def search_view(request):
         for word in query_words:
             query_filter |= Q(name__icontains=word)
             query_filter |= Q(description__icontains=word)
+            query_filter |= Q(long_description__icontains=word)
             query_filter |= Q(tags__name__icontains=word)
             query_filter |= Q(category__name__icontains=word)
             query_filter |= Q(subcategory__name__icontains=word)
         products = products.filter(query_filter).distinct()
 
     # Apply category filter
-    if category:
+    if subcategory_slug:
+        subcategory_obj = get_object_or_404(
+            SubCategory.objects.select_related('category'),
+            slug=subcategory_slug,
+            category__slug=category_slug,
+        )
+        category_obj = subcategory_obj.category
+        products = products.filter(subcategory=subcategory_obj)
+    elif category:
         # First try to find a category with this slug
         category_obj = Category.objects.filter(slug=category).first()
         if category_obj:
             products = products.filter(category=category_obj)
         else:
             # If not found as category, try to find as subcategory
-            subcategory_obj = SubCategory.objects.filter(slug=category).first()
+            subcategory_obj = SubCategory.objects.select_related('category').filter(slug=category).first()
             if subcategory_obj:
+                category_obj = subcategory_obj.category
                 products = products.filter(subcategory=subcategory_obj)
 
     # Calculate available price range BEFORE applying price filter
@@ -471,10 +505,6 @@ def search_view(request):
     if selected_size:
         products = products.filter(size__name__iexact=selected_size)
 
-    # Apply brand filter
-    if selected_brand:
-        products = products.filter(brand__name__iexact=selected_brand)
-    
     # Apply sorting
     if sort == "price-low":
         products = products.annotate(
@@ -497,7 +527,8 @@ def search_view(request):
     else:  # newest
         products = products.order_by('-created_at')
 
-    products, pagination_query = _paginate_queryset(request, products)
+    excluded_query_keys = ['category'] if category_slug or subcategory_slug else []
+    products, pagination_query = _paginate_queryset(request, products, excluded_query_keys=excluded_query_keys)
     _apply_product_rating_display(products)
     _apply_product_media(products, selected_color=selected_color)
 
@@ -509,6 +540,8 @@ def search_view(request):
         "min_price": min_price,
         "max_price": max_price,
         "category": category,
+        "current_category": category_obj,
+        "current_subcategory": subcategory_obj,
         "stock": stock,
         "sort": sort,
         "discount": discount,
@@ -516,10 +549,8 @@ def search_view(request):
         "categories": Category.objects.prefetch_related('subcategories').all(),
         "colors": Color.objects.all(),
         "sizes": Size.objects.all(),
-        "brands": Brand.objects.all(),
         "selected_color": selected_color,
         "selected_size": selected_size,
-        "selected_brand": selected_brand,
         "available_min_price": available_min_price,
         "available_max_price": available_max_price,
     }
@@ -529,6 +560,39 @@ def search_view(request):
         return render(request, "shop.html", context)
     
     return render(request, "shop.html", context)
+
+
+def search_view(request):
+    legacy_category = request.GET.get('category', '').strip()
+    if legacy_category and not request.GET.get('q'):
+        category_obj = Category.objects.filter(slug=legacy_category).first()
+        subcategory_obj = None if category_obj else SubCategory.objects.select_related('category').filter(slug=legacy_category).first()
+        query_params = request.GET.copy()
+        query_params.pop('category', None)
+        query_string = query_params.urlencode()
+        if category_obj:
+            url = reverse('category_products', kwargs={'category_slug': category_obj.slug})
+            return redirect(f"{url}?{query_string}" if query_string else url, permanent=True)
+        if subcategory_obj:
+            url = reverse('subcategory_products', kwargs={
+                'category_slug': subcategory_obj.category.slug,
+                'subcategory_slug': subcategory_obj.slug,
+            })
+            return redirect(f"{url}?{query_string}" if query_string else url, permanent=True)
+
+    return _catalog_listing_view(request)
+
+
+def category_products(request, category_slug):
+    return _catalog_listing_view(request, category_slug=category_slug)
+
+
+def subcategory_products(request, category_slug, subcategory_slug):
+    return _catalog_listing_view(
+        request,
+        category_slug=category_slug,
+        subcategory_slug=subcategory_slug,
+    )
 
 def autocomplete_suggestions(request):
     query = request.GET.get("q", "").strip()
@@ -550,7 +614,7 @@ def autocomplete_suggestions(request):
         words = query.split()
         q_desc = Q()
         for word in words:
-            q_desc &= Q(description__icontains=word)
+            q_desc &= Q(description__icontains=word) | Q(long_description__icontains=word)
         desc_matches = list(Product.objects.filter(q_desc).distinct())
         
         # 4. Search in categories
@@ -589,7 +653,7 @@ def autocomplete_suggestions(request):
             for category in category_matches[:2]:  # Limit to 2 categories
                 suggestions.append({
                     "name": f"Category: {category.name}",
-                    "url": f"{reverse('search')}?category={category.slug}",
+                    "url": reverse('category_products', kwargs={'category_slug': category.slug}),
                     "type": "category",
                     "match_type": "category"
                 })
@@ -949,41 +1013,19 @@ def _grant_order_access(request, order_ids):
     request.session[ORDER_ACCESS_SESSION_KEY] = authorized_ids[:50]
 
 
-def _lookup_orders_by_contact_and_pin(contact_value, access_pin, order_number=None):
-    normalized_contact = _normalized_contact(contact_value)
-    normalized_phone = _normalize_phone(contact_value)
-    if not normalized_contact or not access_pin:
-        return []
-
-    queryset = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').order_by('-created_at')
-
-    if order_number:
-        try:
-            queryset = queryset.filter(order_number=order_number)
-        except (TypeError, ValueError):
-            return []
-
-    candidates = []
-    seen_ids = set()
-
-    for order in queryset.filter(email__iexact=normalized_contact):
-        if order.id not in seen_ids:
-            candidates.append(order)
-            seen_ids.add(order.id)
-
-    if normalized_phone:
-        phone_hint = normalized_phone[-4:] if len(normalized_phone) >= 4 else normalized_phone
-        for order in queryset.filter(phone__icontains=phone_hint):
-            if order.id not in seen_ids:
-                candidates.append(order)
-                seen_ids.add(order.id)
-
-    matches = []
-    for order in candidates:
-        if _order_contact_matches(order, contact_value) and order.check_access_pin(access_pin):
-            matches.append(order)
-
-    return matches
+def _lookup_order_by_number(order_number):
+    """Look up a guest order by order number alone."""
+    if not order_number:
+        return None
+    try:
+        return (
+            Order.objects
+            .select_related('shipping_address', 'billing_address', 'user')
+            .prefetch_related('items__product')
+            .get(order_number=order_number)
+        )
+    except Order.DoesNotExist:
+        return None
 
 
 def _resolve_checkout_items(raw_items):
@@ -1071,18 +1113,15 @@ def _serialize_pricing_summary(pricing):
 
 def checkout(request):
     shipping_addresses = []
-    billing_addresses = []
 
     if request.user.is_authenticated:
         saved_addresses = list(
             Address.objects.filter(user=request.user).order_by('-default', '-created_at')
         )
         shipping_addresses = [address for address in saved_addresses if address.address_type == 'shipping']
-        billing_addresses = [address for address in saved_addresses if address.address_type == 'billing']
 
     return render(request, 'checkout.html', {
         'shipping_addresses': shipping_addresses,
-        'billing_addresses': billing_addresses,
         'bangladesh_districts': BANGLADESH_DISTRICTS,
     })
 
@@ -1243,20 +1282,13 @@ def place_order(request):
 
     personal_info = data.get('personal_info') or {}
     shipping_address_data = data.get('shipping_address') or {}
-    billing_address_data = data.get('billing_address') or {}
     payment_details = data.get('payment_details') or {}
     raw_items = data.get('items') or []
     additional_notes = (data.get('additional_notes') or '').strip()
-    same_billing_address = bool(data.get('same_billing_address', True))
     payment_method = _normalize_payment_method(data.get('payment_method'))
     idempotency_key = (data.get('idempotency_key') or '').strip()
-    access_pin = (data.get('access_pin') or personal_info.get('access_pin') or '').strip()
-
     if not idempotency_key:
         return JsonResponse({'status': 'error', 'message': 'Missing idempotency key.'}, status=400)
-
-    if access_pin and (not access_pin.isdigit() or not 4 <= len(access_pin) <= 8):
-        return JsonResponse({'status': 'error', 'message': 'Order access PIN must be 4 to 8 digits.'}, status=400)
 
     if payment_method is None:
         return JsonResponse({'status': 'error', 'message': 'Invalid payment method.'}, status=400)
@@ -1279,7 +1311,6 @@ def place_order(request):
 
     required_values = [
         (full_name, 'Full name'),
-        (email, 'Email'),
         (phone, 'Phone number'),
         (shipping_full_name, 'Shipping full name'),
         (shipping_address_line1, 'Shipping full address'),
@@ -1294,27 +1325,17 @@ def place_order(request):
         if not value:
             return JsonResponse({'status': 'error', 'message': f'{label} is required.'}, status=400)
 
-    billing_full_name = (billing_address_data.get('full_name') or full_name).strip()
-    billing_address_line1 = (billing_address_data.get('address_line1') or '').strip()
-    billing_address_line2 = (billing_address_data.get('address_line2') or '').strip()
-    billing_city = (billing_address_data.get('city') or '').strip()
-    billing_postal_code = (billing_address_data.get('postal_code') or '').strip()
-    billing_state = (billing_address_data.get('state') or '').strip()
-    billing_country = (billing_address_data.get('country') or 'Bangladesh').strip()
+    if email and not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        return JsonResponse({'status': 'error', 'message': 'Please enter a valid email address.'}, status=400)
 
-    if not same_billing_address:
-        billing_required_values = [
-            (billing_full_name, 'Billing full name'),
-            (billing_address_line1, 'Billing full address'),
-            (billing_address_line2, 'Billing location details'),
-            (billing_city, 'Billing district'),
-            (billing_postal_code, 'Billing postal code'),
-            (billing_state, 'Billing district'),
-            (billing_country, 'Billing country'),
-        ]
-        for value, label in billing_required_values:
-            if not value:
-                return JsonResponse({'status': 'error', 'message': f'{label} is required.'}, status=400)
+    # Billing address always mirrors shipping address
+    billing_full_name = shipping_full_name
+    billing_address_line1 = shipping_address_line1
+    billing_address_line2 = shipping_address_line2
+    billing_city = shipping_city
+    billing_postal_code = shipping_postal_code
+    billing_state = shipping_state
+    billing_country = shipping_country
 
     sender_number = (payment_details.get('sender_number') or '').strip()
     transaction_id = (payment_details.get('transaction_id') or '').strip().upper()
@@ -1385,7 +1406,7 @@ def place_order(request):
                 'state': billing_state,
                 'country': billing_country,
             },
-            same_billing_address=same_billing_address,
+            same_billing_address=True,
             payment_method=payment_method,
             sender_number=sender_number,
             transaction_id=transaction_id,
@@ -1394,7 +1415,6 @@ def place_order(request):
             delivery_transaction_id=delivery_transaction_id,
             notes=additional_notes,
             coupon_id=coupon_id,
-            access_pin=access_pin,
         )
 
         request.session.pop('coupon_id', None)
@@ -1402,8 +1422,7 @@ def place_order(request):
 
         if not request.user.is_authenticated and order.user is None:
             request.session['guest_order_id'] = str(order.id)
-        if access_pin and order.check_access_pin(access_pin):
-            _grant_order_access(request, [order.id])
+        _grant_order_access(request, [order.id])
 
         return JsonResponse({
             'status': 'success',
@@ -1428,8 +1447,7 @@ def place_order(request):
         if existing_order:
             if not request.user.is_authenticated and existing_order.user is None:
                 request.session['guest_order_id'] = str(existing_order.id)
-            if access_pin and existing_order.check_access_pin(access_pin):
-                _grant_order_access(request, [existing_order.id])
+            _grant_order_access(request, [existing_order.id])
             return JsonResponse({
                 'status': 'success',
                 'message': 'Order already received. We will continue with the same order.',
@@ -1469,9 +1487,9 @@ def cancel_order(request, order_number):
     )
 
     has_account_access = request.user.is_authenticated and order.user == request.user
-    has_pin_access = bool(order.access_pin_hash) and order.id in _authorized_order_ids(request)
+    has_lookup_access = order.id in _authorized_order_ids(request)
 
-    if not has_account_access and not has_pin_access:
+    if not has_account_access and not has_lookup_access:
         messages.error(request, "You don't have permission to cancel this order.")
         return redirect('my_orders')
 
@@ -1489,44 +1507,45 @@ def my_orders(request):
     if request.user.is_authenticated:
         account_orders = Order.objects.filter(user=request.user).prefetch_related('items__product').order_by('-created_at')
 
-    lookup_contact = ''
-    lookup_pin = ''
     lookup_order_number = ''
     lookup_orders = Order.objects.none()
     authorized_ids = _authorized_order_ids(request)
 
     if authorized_ids:
-        lookup_orders = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').filter(
+        qs = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').filter(
             id__in=authorized_ids
         ).order_by('-created_at')
+        # Exclude orders already shown in "Your Account Orders" to prevent duplication
+        if request.user.is_authenticated:
+            qs = qs.exclude(user=request.user)
+        lookup_orders = qs
 
     if request.method == 'POST':
-        lookup_contact = (request.POST.get('contact') or '').strip()
-        lookup_pin = (request.POST.get('access_pin') or '').strip()
         lookup_order_number = (request.POST.get('order_number') or request.POST.get('order_id') or '').strip()
 
-        if not lookup_contact or not lookup_pin:
-            messages.error(request, 'Enter the email or phone number and the order PIN you used at checkout. Orders without a PIN must be handled by our support team.')
-        elif not lookup_pin.isdigit() or not 4 <= len(lookup_pin) <= 8:
-            messages.error(request, 'Order PIN must be 4 to 8 digits.')
+        if not lookup_order_number:
+            messages.error(request, 'Please enter an order number.')
         else:
-            matched_orders = _lookup_orders_by_contact_and_pin(lookup_contact, lookup_pin, lookup_order_number)
-            if matched_orders:
-                _grant_order_access(request, [order.id for order in matched_orders])
-                lookup_orders = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').filter(
-                    id__in=[order.id for order in matched_orders]
-                ).order_by('-created_at')
+            matched_order = _lookup_order_by_number(lookup_order_number)
+            if matched_order:
+                _grant_order_access(request, [matched_order.id])
+                # If the found order belongs to the logged-in user, point them to account orders
+                if request.user.is_authenticated and matched_order.user == request.user:
+                    messages.info(request, 'This order is already in your account orders above.')
+                    lookup_orders = Order.objects.none()
+                else:
+                    lookup_orders = Order.objects.select_related('shipping_address', 'billing_address', 'user').prefetch_related('items__product').filter(
+                        id=matched_order.id
+                    ).order_by('-created_at')
             else:
                 lookup_orders = Order.objects.none()
-                messages.error(request, 'We could not find any orders with those details.')
+                messages.error(request, 'We could not find any order with that order number.')
 
     return render(request, 'my_orders.html', {
         'orders': account_orders,
         'lookup_orders': lookup_orders,
-        'lookup_contact': lookup_contact,
-        'lookup_pin': lookup_pin,
         'lookup_order_number': lookup_order_number,
-        'show_lookup_results': bool(lookup_contact or authorized_ids),
+        'show_lookup_results': bool(lookup_order_number or authorized_ids),
     })
 
 def order_count(request):
@@ -1562,7 +1581,7 @@ def build_site_context(request):
 
         # --- Products & Categories ---
         try:
-            from .models import Product, Category, SubCategory, Brand, Color, Size, Coupon, Review, OrderItem
+            from .models import Product, Category, SubCategory, Color, Size, Coupon, Review, OrderItem
 
             # Recent products
             products = Product.objects.all().order_by("-created_at")[:10]
@@ -1573,7 +1592,6 @@ def build_site_context(request):
                         f"- {getattr(p, 'name', 'N/A')} (Taka {getattr(p, 'price', 'N/A')}) "
                         f"[Category: {getattr(p.category, 'name', 'N/A')}, "
                         f"SubCategory: {getattr(p.subcategory, 'name', 'N/A')}, "
-                        f"Brand: {getattr(p.brand, 'name', 'N/A')}, "
                         f"Color: {getattr(p.color, 'name', 'N/A')}, "
                         f"Size: {getattr(p.size, 'name', 'N/A')}]"
                     )
@@ -1587,13 +1605,6 @@ def build_site_context(request):
                     subcats = SubCategory.objects.filter(category=c)[:5]
                     for sc in subcats:
                         parts.append(f"  - {sc.name}")
-
-            # Brands
-            brands = Brand.objects.all()[:5]
-            if brands:
-                parts.append("\nBrands:")
-                for b in brands:
-                    parts.append(f"- {b.name}")
 
             # Colors & Sizes
             colors = Color.objects.all()[:5]

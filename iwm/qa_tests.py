@@ -83,7 +83,6 @@ class QAAuditTests(TransactionTestCase):
             'delivery_transaction_id': overrides.pop('delivery_transaction_id', None),
             'notes': overrides.pop('notes', ''),
             'coupon_id': overrides.pop('coupon_id', None),
-            'access_pin': overrides.pop('access_pin', ''),
         }
         params.update(overrides)
         return Order.create_order(**params)
@@ -207,7 +206,7 @@ class QAAuditTests(TransactionTestCase):
 
     # PHASE 9: GUEST ORDER PIN RULES
     def test_guest_without_pin_cannot_cancel(self):
-        order, _ = self._create_order(user=None, access_pin='')
+        order, _ = self._create_order(user=None)
         session = self.client.session
         session['authorized_order_ids'] = [order.id]
         session.save()
@@ -218,7 +217,7 @@ class QAAuditTests(TransactionTestCase):
         self.assertEqual(order.order_status, 'pending')
 
     def test_guest_with_pin_can_cancel(self):
-        order, _ = self._create_order(user=None, access_pin='1234')
+        order, _ = self._create_order(user=None)
         session = self.client.session
         session['authorized_order_ids'] = [order.id]
         session.save()

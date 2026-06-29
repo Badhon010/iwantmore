@@ -47,7 +47,7 @@ today!{% endblock dis %}
           <h4 class="filter-title">Categories</h4>
           <div class="filter-group checkbox-group">
             <label class="checkbox-container">
-              <input type="checkbox" value="all" id="allCategories" checked>
+              <input type="checkbox" value="all" id="allCategories" {% if not current_category and not category %}checked{% endif %}>
               <span class="checkbox-checkmark"></span>
               <span class="checkbox-label">All Categories</span>
             </label>
@@ -61,14 +61,17 @@ today!{% endblock dis %}
                 <div class="subcategory-wrapper">
                   <label class="checkbox-container subcategory-item">
                     <input type="checkbox" value="{{ category.slug }}" class="category-checkbox"
-                      data-category="{{ category.slug }}">
+                      data-category="{{ category.slug }}" data-url="{% url 'category_products' category_slug=category.slug %}"
+                      {% if current_category.slug == category.slug and not current_subcategory %}checked{% endif %}>
                     <span class="checkbox-checkmark"></span>
                     <span class="checkbox-label">All {{ category.name }}</span>
                   </label>
                   {% for subcategory in category.subcategories.all %}
                   <label class="checkbox-container subcategory-item">
                     <input type="checkbox" value="{{ subcategory.slug }}" class="category-checkbox subcategory-checkbox"
-                      data-category="{{ subcategory.slug }}" data-parent="{{ category.slug }}">
+                      data-category="{{ subcategory.slug }}" data-parent="{{ category.slug }}"
+                      data-url="{% url 'subcategory_products' category_slug=category.slug subcategory_slug=subcategory.slug %}"
+                      {% if current_subcategory.slug == subcategory.slug %}checked{% endif %}>
                     <span class="checkbox-checkmark"></span>
                     <span class="checkbox-label">{{ subcategory.name }}</span>
                   </label>
@@ -157,14 +160,6 @@ today!{% endblock dis %}
               </select>
             </div>
 
-            <!-- Brand Filter (Select Option) -->
-            <div class="filter-item brand-filter">
-              <h4>Brand</h4>
-              <select name="brand" class="filter-sort">
-                <option value="all">All</option>
-                {% for brand in brands %}<option value="{{ brand.name }}">{{ brand.name }}</option>{% endfor %}
-              </select>
-            </div>
           </div>
         </div>
 

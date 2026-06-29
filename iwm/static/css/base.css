@@ -273,8 +273,8 @@ header .nav1 a:hover,
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Search Button */
-.search-btn,.account {
+/* Search Button and Header Icon Links */
+.search-btn,.account,.header-icon-link {
     width: 40px;
     height: 40px;
     background-color: var(--btn-bg);
@@ -288,9 +288,12 @@ header .nav1 a:hover,
     transition: 0.3s ease-in-out;
     box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
     font: inherit;
+    text-decoration: none;
+    position: relative;
 }
+.account span,.header-icon-link span{left: 28px;}
 
-.search-btn:hover,.account:hover {
+.search-btn:hover,.account:hover,.header-icon-link:hover {
     background-color: var(--btn-bg-hover);
 }
 
@@ -312,7 +315,7 @@ header .nav1 a:hover,
 }
 
 
-.cart {
+.cart,.header-nav-link {
     text-decoration: none;
     color: var(--btn-bg);
     font-size: 1.18rem;
@@ -323,17 +326,19 @@ header .nav1 a:hover,
     background: white;
     padding: 10px 15px;
 }
-.order_links nav div:first-child>.cart {
+.order_links nav div:first-child>.cart,
+.order_links nav div:first-child>.header-nav-link {
     border-radius: 6px 6px 0 0;
 }
 
-.order_links nav div:last-child>.cart {
+.order_links nav div:last-child>.cart,
+.order_links nav div:last-child>.header-nav-link {
     border-radius: 0 0 6px 6px;
 }   
-.cart:hover{
+.cart:hover,.header-nav-link:hover{
     background-color: #f5f5f5;
 }
-.cart p{
+.cart p,.header-nav-link p{
     margin: 0;
     font-size: 0.95rem;
     color: var(--text-color);
@@ -830,7 +835,8 @@ header .nav1 a:hover,
 @media screen and (max-width: 365px) {
 
     .search-btn,
-    .account {
+    .account,
+    .header-icon-link {
         width: 35px;
         height: 35px;
     }
@@ -1443,4 +1449,23 @@ header .nav1 a:hover,
         padding:25px;
     }
 
+}
+
+.messenger-icon{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:60px;
+    height:60px;
+    background:var(--btn-bg);
+    color: #fff;
+    text-decoration: none;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.5rem;
+    box-shadow:0 5px 15px rgba(0,0,0,.2);
+    cursor:pointer;
+    transition:.3s ease-in-out;
 }

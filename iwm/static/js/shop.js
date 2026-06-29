@@ -64,6 +64,9 @@ function ensureProductIds() {
 
 function initFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const pathCategory = pathParts[0] === 'category' ? pathParts[1] : null;
+    const pathSubcategory = pathParts[2] === 'subcategory' ? pathParts[3] : null;
     
     // Set price range from URL (elements may not exist when no products are available)
     const minPrice = urlParams.get('min_price');
@@ -74,7 +77,7 @@ function initFromURL() {
     if (maxPrice && priceMaxEl) priceMaxEl.value = maxPrice;
     
     // Set category filters from URL
-    const category = urlParams.get('category');
+    const category = pathSubcategory || pathCategory || urlParams.get('category');
     if (category) {
         const categoryCheckbox = document.querySelector(`.category-checkbox[value="${category}"]`);
         if (categoryCheckbox) categoryCheckbox.checked = true;
@@ -306,18 +309,11 @@ function initFilters() {
     if (allCategoriesCheckbox) {
         allCategoriesCheckbox.addEventListener('change', function() {
             if (this.checked) {
-                // Uncheck all other category checkboxes
-                categoryCheckboxes.forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                
-                // Update URL parameter
+                // Navigate directly to the shop base page, carrying over search queries if any
                 const urlParams = new URLSearchParams(window.location.search);
                 urlParams.delete('category');
-                updateURL(urlParams);
-            } else {
-                // Don't allow unchecking - if user tries to uncheck, keep it checked
-                this.checked = true;
+                const queryString = urlParams.toString();
+                window.location.href = '/shop/' + (queryString ? '?' + queryString : '');
             }
         });
     }
@@ -340,8 +336,7 @@ function initFilters() {
                     }
                 });
                 
-                // Set URL parameter
-                urlParams.set('category', this.value);
+                urlParams.delete('category');
             } else {
                 // If unchecked, check the "All Categories" checkbox
                 if (allCategoriesCheckbox) {
@@ -352,7 +347,8 @@ function initFilters() {
                 urlParams.delete('category');
             }
             
-            updateURL(urlParams);
+            const targetPath = this.checked ? (this.dataset.url || '/search/') : '/search/';
+            updateURL(urlParams, targetPath);
         });
     });
     
@@ -449,14 +445,13 @@ function initFilters() {
     }
 }
 
-function updateURL(urlParams) {
-    let currentPath = window.location.pathname;
+function updateURL(urlParams, targetPath) {
+    let currentPath = targetPath || window.location.pathname;
 
-    // Ensure we always redirect to /search/ when filters are applied
     if (currentPath.startsWith('/shop/')) {
-        currentPath = currentPath.replace('/shop/', '/search/');
-    } else if (!currentPath.startsWith('/search/')) {
-        currentPath = '/search/'; // Default to /search/ if not already there
+        currentPath = '/search/';
+    } else if (!currentPath.startsWith('/search/') && !currentPath.startsWith('/category/')) {
+        currentPath = '/search/';
     }
 
     const queryString = urlParams.toString();

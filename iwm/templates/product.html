@@ -38,6 +38,9 @@
         <!-- Product Info Section -->
         <div class="product-info">
             <h1>{{ product.name }}</h1>
+            {% if product.description %}
+            <p class="short-description">{{ product.description|striptags }}</p>
+            {% endif %}
             
             <!-- Price Section -->
             <div class="price-section">
@@ -56,19 +59,13 @@
                     {% if product.is_out_of_stock %}
                         <i class="fas fa-times-circle"></i> Out of Stock
                     {% else %}
-                        <i class="fas fa-check-circle"></i> In Stock: {{ product.stock }} items
+                        <i class="fas fa-check-circle"></i> In Stock
                     {% endif %}
                 </div>
                 <button class="wishlist-btn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.get_final_price }}" data-product-image="{{ product.card_image_url }}">
                     <i class="far fa-heart"></i>
                     <span>Add to Wishlist</span>
                 </button>
-            </div>
-
-            <!-- Description -->
-            <div class="description">
-                <h3>Description</h3>
-                <p>{{ product.description }}</p>
             </div>
 
             <!-- Product Details -->
@@ -85,12 +82,7 @@
                     <span class="value">{{ product.subcategory.name }}</span>
                 </div>
                 {% endif %}
-                {% if product.brand %}
-                <div class="detail-item">
-                    <span class="label">Brand:</span>
-                    <span class="value">{{ product.brand.name }}</span>
-                </div>
-                {% endif %}
+
                 {% if product.available_colors %}
                 <div class="detail-item">
                     <span class="label">Colors:</span>
@@ -165,6 +157,19 @@
             {% endif %}
         </div>
     </div>
+
+    {% if product.long_description or product.description %}
+    <div class="product-long-description">
+        <h2>Product Details</h2>
+        <div class="rich-description">
+            {% if product.long_description %}
+                {{ product.long_description|safe }}
+            {% else %}
+                {{ product.description|linebreaks }}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Reviews Section -->
     <div class="reviews-container">

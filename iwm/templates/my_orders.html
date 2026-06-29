@@ -7,37 +7,6 @@
 {% block content %}
 <div class="orders-container">
     <h2>My Orders</h2>
-    <p class="orders-intro">Signed-in users can see account orders here. Guests can unlock and cancel eligible orders with the email or phone number used at checkout plus the order PIN.</p>
-
-    <div class="order" style="margin-bottom: 24px;">
-        <div class="order-header">
-            <span class="order-id">Find Orders</span>
-            <span class="order-date">Secure lookup with contact + PIN</span>
-        </div>
-        <div class="order-items" style="display: block; padding: 20px;">
-            <form method="post" class="checkout-form">
-                {% csrf_token %}
-                <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1 1 180px;">
-                        <label for="lookup-order-id">Order Number (optional)</label>
-                        <input id="lookup-order-id" type="text" name="order_number" value="{{ lookup_order_number }}" placeholder="Order number">
-                    </div>
-                    <div class="form-group" style="flex: 1 1 240px;">
-                        <label for="lookup-contact">Email or Phone</label>
-                        <input id="lookup-contact" type="text" name="contact" value="{{ lookup_contact }}" required>
-                    </div>
-                    <div class="form-group" style="flex: 1 1 180px;">
-                        <label for="lookup-pin">Order PIN</label>
-                        <input id="lookup-pin" type="password" name="access_pin" inputmode="numeric" maxlength="8" required>
-                    </div>
-                </div>
-                <div class="order-actions" style="margin-top: 16px;">
-                    <button type="submit" class="btn details-btn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: 600;">Find Orders</button>
-                </div>
-            </form>
-            <p style="margin-top: 15px; font-size: 13.5px; color: #6c757d; text-align: center;">We do not show guest orders from email or phone alone. If you checked out without a PIN, our support team must handle changes manually.</p>
-        </div>
-    </div>
 
     {% if user.is_authenticated %}
         <div class="orders-section">
@@ -73,7 +42,7 @@
                             <a href="{% url 'track_order' order.order_number %}" class="btn track-btn">Track Order</a>
                         {% endif %}
                         {% if order.order_status == 'pending' %}
-                            <form method=\"post\" action=\"{% url 'cancel_order' order.order_number %}\" style=\"display: inline;\">
+                            <form method="post" action="{% url 'cancel_order' order.order_number %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
                             </form>
@@ -92,7 +61,7 @@
 
     {% if show_lookup_results %}
         <div class="orders-section">
-            <h3>Unlocked Orders</h3>
+            <h3>Found Orders</h3>
             {% if lookup_orders %}
                 {% for order in lookup_orders %}
                 <div class="order">
@@ -121,7 +90,7 @@
                     <div class="order-actions">
                         <a href="{% url 'track_order' order.order_number %}" class="btn details-btn">View Order</a>
                         <a href="{% url 'order_confirmation' %}?order_number={{ order.order_number }}" class="btn track-btn">Order Summary</a>
-                        {% if order.order_status == 'pending' and order.access_pin_hash %}
+                        {% if order.order_status == 'pending' %}
                             <form method="post" action="{% url 'cancel_order' order.order_number %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn cancel-btn" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
@@ -132,14 +101,33 @@
                 {% endfor %}
             {% else %}
                 <div class="no-orders">
-                    <p>No orders matched that contact and PIN.</p>
+                    <p>No order found with that order number. Please check and try again.</p>
                 </div>
             {% endif %}
         </div>
-    {% elif not user.is_authenticated %}
-        <div class="no-orders">
-            <p>Enter your email or phone number and the order PIN you created at checkout to see and manage guest orders.</p>
-        </div>
     {% endif %}
+
+    <!-- Find an Order — guest lookup -->
+    <div class="orders-section" style="margin-top: 40px; border-top: 2px solid #e9ecef; padding-top: 30px;">
+        <h3>Looking for a Guest Order?</h3>
+        <p style="color: #6c757d; margin-bottom: 16px;">Enter your order number to view and manage your guest order.</p>
+        <div class="order">
+            <div class="order-items" style="display: block; padding: 20px;">
+                <form method="post" class="checkout-form">
+                    {% csrf_token %}
+                    <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1 1 240px;">
+                            <label for="lookup-order-id">Order Number</label>
+                            <input id="lookup-order-id" type="text" name="order_number" value="{{ lookup_order_number }}" placeholder="e.g. ORD20260628..." required>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 auto;">
+                            <button type="submit" class="btn details-btn" style="padding: 10px 24px; font-size: 15px; font-weight: 600; margin-top: 0;">Find Order</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

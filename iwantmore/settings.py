@@ -35,7 +35,10 @@ PRODUCTION = config("PRODUCTION", cast=bool, default=False)
 DEBUG = config("DEBUG", cast=bool, default=not PRODUCTION)
 
 SITE_ID = config("SITE_ID", cast=int, default=1)
+GOOGLE_TAG_MANAGER_ID = config("GOOGLE_TAG_MANAGER_ID", default="")
 ALLOWED_HOSTS = sanitize_setting_values(csv_setting("ALLOWED_HOSTS", default="127.0.0.1,localhost"))
+if not PRODUCTION:
+    ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = sanitize_setting_values(csv_setting("CSRF_TRUSTED_ORIGINS"))
 
 EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
@@ -101,6 +104,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "iwm.context_processors.google_tag_manager",
             ],
         },
     },
@@ -395,9 +399,9 @@ UNFOLD = {
                         "link": "/admin/iwm/subcategory/",
                     },
                     {
-                        "title": "Brands",
-                        "icon": "local_offer",
-                        "link": "/admin/iwm/brand/",
+                        "title": "Homepage Sliders",
+                        "icon": "view_carousel",
+                        "link": "/admin/iwm/slider/",
                     },
                     {
                         "title": "Colors",
@@ -501,6 +505,11 @@ UNFOLD = {
                         "title": "Groups",
                         "icon": "shield",
                         "link": "/admin/auth/group/",
+                    },
+                    {
+                        "title": "Clear Cache",
+                        "icon": "delete_sweep",
+                        "link": "/admin/clear-cache/",
                     },
                 ],
             },
@@ -616,4 +625,7 @@ FACEBOOK_CLIENT_SECRET=your_facebook_app_secret
 
 # AI & Third-Party APIs
 GEMINI_API_KEY=your_gemini_api_key
+
+# Google Tag Manager
+GOOGLE_TAG_MANAGER_ID =GTM-XXXXXXX
 """

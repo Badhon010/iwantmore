@@ -23,37 +23,31 @@
     <hr>
     <div class="slider" id="mainSlider">
         <div class="slides">
-            <!-- Slide 1 -->
-            <div class="slide active">
-                <img src="{% static 'imgs/img1.jpeg' %}"
-                    alt="Summer Collection 2025">
-                <div class="caption">
-                    <h3>Summer Collection 2025</h3>
-                    <p>Discover the hottest trends</p>
-                    <a href="{% url 'shop' %}">Shop Now</a>
+            {% if sliders %}
+                {% for slide in sliders %}
+                <div class="slide {% if forloop.first %}active{% endif %}">
+                    <img src="{{ slide.image.url }}" alt="{{ slide.title|default:'Slide' }}">
+                    {% if slide.title or slide.subtitle or slide.button_text %}
+                    <div class="caption">
+                        {% if slide.title %}<h3>{{ slide.title }}</h3>{% endif %}
+                        {% if slide.subtitle %}<p>{{ slide.subtitle }}</p>{% endif %}
+                        {% if slide.button_text %}
+                            <a href="{{ slide.button_url|default:'#' }}">{{ slide.button_text }}</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
-            </div>
-
-            <!-- Slide 2 -->
-            <div class="slide">
-                <img src="{% static 'imgs/img2.jpeg' %}"
-                    alt="Premium Accessories">
-                <div class="caption">
-                    <h3>Premium Accessories</h3>
-                    <p>Complete your look</p>
-                    <a href="{% url 'shop' %}">Explore</a>
+                {% endfor %}
+            {% else %}
+                <div class="slide active">
+                    <img src="{% static 'imgs/slider.jpeg' %}" alt="Welcome to IWantMore">
+                    <div class="caption">
+                        <h3>Discover Your Style</h3>
+                        <p>Shop the latest collections</p>
+                        <a href="{% url 'shop' %}">Shop Now</a>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Slide 3 -->
-            <div class="slide">
-                <img src="{% static 'imgs/img3.jpeg' %}" alt="New Arrivals">
-                <div class="caption">
-                    <h3>New Arrivals</h3>
-                    <p>Latest collections</p>
-                    <a href="{% url 'shop' %}">View All</a>
-                </div>
-            </div>
+            {% endif %}
         </div>
 
         <!-- Arrows -->
@@ -61,10 +55,14 @@
         <button class="nav next" aria-label="Next slide">&#10095;</button>
 
         <!-- Dots -->
-        <div class="dots-container">
-            <button class="dot active" data-slide="0" aria-label="Go to slide 1"></button>
-            <button class="dot" data-slide="1" aria-label="Go to slide 2"></button>
-            <button class="dot" data-slide="2" aria-label="Go to slide 3"></button>
+        <div class="dots-container" id="sliderDots">
+            {% if sliders %}
+                {% for slide in sliders %}
+                <button class="dot {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}" aria-label="Go to slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            {% else %}
+                <button class="dot active" data-slide="0" aria-label="Go to slide 1"></button>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -125,24 +123,6 @@
 </div>
 
 
-<div class="brand-section">
-    <div class="container">
-        <h2>Our Trusted Brands</h2>
-        <div class="brand-slider">
-            {% for brand in brands %}
-            <a href="{% url 'search' %}?brand={{ brand.name|urlencode }}" class="brand-logo">
-                {% if brand.image %}
-                <img src="{{ brand.image.url }}" alt="{{ brand.name }}">
-                {% else %}
-                <div class="brand-placeholder">{{ brand.name }}</div>
-                {% endif %}
-            </a>
-            {% empty %}
-            <p>No brands available at the moment.</p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 
 {% include "components/review.html" %}
 

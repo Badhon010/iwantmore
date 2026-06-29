@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, RequestFactory, TestCase
+from django.test import Client, RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -78,7 +78,6 @@ class OrderWorkflowTests(TestCase):
             'items': [{'id': self.product.id, 'quantity': 2}],
             'additional_notes': '',
             'idempotency_key': 'checkout-1',
-            'access_pin': '',
         }
         payload.update(overrides)
         return payload
@@ -115,7 +114,6 @@ class OrderWorkflowTests(TestCase):
             'delivery_transaction_id': overrides.pop('delivery_transaction_id', None),
             'notes': overrides.pop('notes', ''),
             'coupon_id': overrides.pop('coupon_id', None),
-            'access_pin': overrides.pop('access_pin', ''),
         }
         params.update(overrides)
         return Order.create_order(**params)
@@ -136,7 +134,6 @@ class OrderWorkflowTests(TestCase):
         self.product.refresh_from_db()
 
         self.assertEqual(order.payment_method, 'cash_on_delivery')
-        self.assertEqual(order.access_pin_hash, '')
         self.assertEqual(self.product.stock, 3)
         self.assertEqual(self.client.session.get('guest_order_id'), str(order.id))
         self.assertEqual(self.client.session.get('authorized_order_ids'), None)
@@ -145,7 +142,6 @@ class OrderWorkflowTests(TestCase):
         coupon = self._valid_coupon()
         order, created = self._create_order(
             coupon_id=coupon.id,
-            access_pin='1234',
             idempotency_key='coupon-order',
         )
         self.assertTrue(created)
@@ -176,7 +172,7 @@ class OrderWorkflowTests(TestCase):
         self.assertEqual(coupon.used_count, 0)
 
     def test_admin_cancel_action_uses_transition_logic(self):
-        order, _ = self._create_order(idempotency_key='admin-cancel', access_pin='4321')
+        order, _ = self._create_order(idempotency_key='admin-cancel')
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock, 3)
 
@@ -228,29 +224,31 @@ class OrderWorkflowTests(TestCase):
                 raw_items=[{'id': self.product_two.id, 'quantity': 1}],
             )
 
-    def test_guest_cancel_requires_saved_pin(self):
-        pinned_order, _ = self._create_order(
-            idempotency_key='guest-cancel-pinned',
-            access_pin='5678',
+    def test_guest_cancel_requires_session_authorization(self):
+        """Guest cancellation requires the order id in the session authorized_order_ids list."""
+        authorized_order, _ = self._create_order(
+            idempotency_key='guest-cancel-authorized',
             raw_items=[{'id': self.product.id, 'quantity': 1}],
         )
-        no_pin_order, _ = self._create_order(
-            idempotency_key='guest-cancel-no-pin',
-            access_pin='',
+        unauthorized_order, _ = self._create_order(
+            idempotency_key='guest-cancel-unauthorized',
             raw_items=[{'id': self.product_two.id, 'quantity': 1}],
         )
 
+        # Only grant access to one order via session
         session = self.client.session
-        session['authorized_order_ids'] = [pinned_order.id, no_pin_order.id]
+        session['authorized_order_ids'] = [authorized_order.id]
         session.save()
 
-        self.client.post(reverse('cancel_order', args=[no_pin_order.order_number]))
-        no_pin_order.refresh_from_db()
-        self.assertEqual(no_pin_order.order_status, 'pending')
+        # Unauthorized order cannot be cancelled
+        self.client.post(reverse('cancel_order', args=[unauthorized_order.order_number]))
+        unauthorized_order.refresh_from_db()
+        self.assertEqual(unauthorized_order.order_status, 'pending')
 
-        self.client.post(reverse('cancel_order', args=[pinned_order.order_number]))
-        pinned_order.refresh_from_db()
-        self.assertEqual(pinned_order.order_status, 'cancelled')
+        # Authorized order can be cancelled
+        self.client.post(reverse('cancel_order', args=[authorized_order.order_number]))
+        authorized_order.refresh_from_db()
+        self.assertEqual(authorized_order.order_status, 'cancelled')
 
     def test_illegal_order_transition_is_blocked(self):
         order, _ = self._create_order(idempotency_key='illegal-transition')
@@ -260,3 +258,23 @@ class OrderWorkflowTests(TestCase):
 
         order.refresh_from_db()
         self.assertEqual(order.order_status, 'pending')
+
+
+class GoogleTagManagerTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    @override_settings(GOOGLE_TAG_MANAGER_ID='GTM-TEST1234')
+    def test_gtm_context_processor_with_id(self):
+        from iwm.context_processors import google_tag_manager
+        request = self.factory.get('/')
+        context = google_tag_manager(request)
+        self.assertEqual(context.get('GOOGLE_TAG_MANAGER_ID'), 'GTM-TEST1234')
+
+    @override_settings(GOOGLE_TAG_MANAGER_ID='')
+    def test_gtm_context_processor_without_id(self):
+        from iwm.context_processors import google_tag_manager
+        request = self.factory.get('/')
+        context = google_tag_manager(request)
+        self.assertEqual(context.get('GOOGLE_TAG_MANAGER_ID'), '')
+

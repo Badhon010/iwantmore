@@ -2,6 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% if GOOGLE_TAG_MANAGER_ID %}
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','{{ GOOGLE_TAG_MANAGER_ID }}');</script>
+  <!-- End Google Tag Manager -->
+  {% endif %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{% block dis %}{% endblock dis %}">
@@ -19,6 +28,12 @@
   {% block head %}{% endblock head %}
 </head>
 <body {% if user.is_authenticated %}class="logged-in"{% endif %}>
+  {% if GOOGLE_TAG_MANAGER_ID %}
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ GOOGLE_TAG_MANAGER_ID }}"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  {% endif %}
   <header>
     <div id="i-h">
       <div class="title">
@@ -48,61 +63,55 @@
       </nav>
       <nav class="right-nav">
         <div class="search-bar-btn"><button type="button" class="search-btn" id="searchToggle" aria-label="Open search" aria-expanded="false" aria-controls="search"><i class="fas fa-search"></i></button></div>
-        <div id="account">
-          {% if user.is_authenticated %}
-          <a href="{% url 'profile' %}" class="account">
-            {% if user.userprofile.profile_picture %}
-            <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile" style="width: 90%; height: 90%; border-radius: 50%; object-fit: cover;">
-            {% else %}
-            <i class="fa-solid fa-user"></i>
-            {% endif %}
-          </a>
-          {% else %}
-          <a class="account" href="{% url 'login' %}">
-            <i class="fa-solid fa-user"></i>
-          </a>
-          {% endif %}
-        </div>
+          <div class="header-cart-btn">
+            <a class="header-icon-link" href="{% url 'cart' %}">
+              <i class="fa-solid fa-cart-plus" style="margin-left:-2px"></i>
+              <span class="item-count cart-count">0</span>
+            </a>
+          </div>
         <div class="order_links">
 
-          <div>
-            <button type="button" class="account" id="store" aria-label="Open quick links" aria-expanded="false" aria-controls="orderMenu">
+          <div class="header-quicklinks-btn">
+            <button type="button" class="header-icon-link" id="store" aria-label="Open quick links" aria-expanded="false" aria-controls="orderMenu">
               <i class="fa-solid fa-store"></i>
             </button>
           </div>
 
-          <nav id="orderMenu">
-          <div id="wishlist">
-            <a class="cart" href="{% url 'wishlist' %}">
+        <nav id="orderMenu">
+
+          <div class="header-nav-item" id="nav-account">
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="header-nav-link">
+              {% if user.userprofile.profile_picture %}
+              <img src="{{ user.userprofile.profile_picture.url }}" alt="Profile" style="width: 90%; height: 90%; border-radius: 50%; object-fit: cover;">
+              {% else %}
+              <i class="fa-solid fa-user"></i>
+              {% endif %}
+              <p>{{ user.username }}</p>
+            </a>
+            {% else %}
+            <a class="header-nav-link" href="{% url 'login' %}">
+              <i class="fa-solid fa-user"></i>
+              <p>Login</p>
+            </a>
+            {% endif %}
+          </div>
+
+          <div class="header-nav-item" id="nav-wishlist">
+            <a class="header-nav-link" href="{% url 'wishlist' %}">
               <i class="fa-solid fa-heart"></i>
               <span class="item-count wishlist-count">0</span>
               <p>Wishlist</p>
             </a>
           </div>
 
-          <div id="cart">
-            <a class="cart" href="{% url 'cart' %}">
-              <i class="fa-solid fa-cart-plus" style="margin-left:-2px"></i>
-              <span class="item-count cart-count">0</span>
-              <p>Cart</p>
+          <div class="header-nav-item" id="nav-orders">
+            <a class="header-nav-link" href="{% url 'my_orders' %}">
+              <i class="fas fa-box"></i>
+              <span class="item-count order-count" id="order-count">0</span>
+              <p>My Orders</p>
             </a>
           </div>
-          {% if user.is_authenticated %}
-            <div id="my_orders">
-              <a class="cart" href="{% url 'my_orders' %}">
-                <i class="fas fa-box"></i> 
-                <span class="item-count order-count" id="order-count">0</span>
-                <p>My Orders</p>
-              </a>
-            </div>
-            {% else %}
-            <div>
-              <a class="cart" href="{% url 'my_orders' %}">
-                <i class="fas fa-box"></i>
-                <p>My Orders</p>
-              </a>
-            </div>
-          {% endif %}
 
         </nav>
         </div>
@@ -182,7 +191,7 @@
       <div class="footer-column">
         <h3>Follow Us</h3>
         <div class="social-icons">
-          <a href="https://web.facebook.com/iwantmoreonlineshop999?_rdc=1&_rdr#" aria-label="Facebook"
+          <a href="https://web.facebook.com/iwantmore.bd?_rdc=1&_rdr#" aria-label="Facebook"
             target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
           <a href="https://www.tiktok.com/@iwantmore.bd?_t=8pnL1P1Bfvz&_r=1" aria-label="Tiktok" target="_blank" rel="noopener noreferrer"><i
               class="fa-brands fa-tiktok"></i></a>
@@ -194,6 +203,8 @@
     </div>
     <p>&copy; 2025 I Want More. All rights reserved.</p>
   </footer>
+  <a href="https://m.me/iwantmore.bd?_rdc=1&_rdr#" aria-label="Messenger" class="messenger-icon"
+            target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-messenger"></i></a>
   <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

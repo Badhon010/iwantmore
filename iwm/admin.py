@@ -39,7 +39,7 @@ from unfold.sites import UnfoldAdminSite
 from .models import (
     Product, ProductColorImage, Review, Tag, NewsletterSubscriber,
     Category, SubCategory, FeatureReason, Order, OrderItem,
-    Address, Coupon, Color, Size, Brand, AdminAlert,PromoBanner
+    Address, Coupon, Color, Size, AdminAlert, PromoBanner, Slider
 )
 
 CAPTURED_PAYMENT_STATES = ['paid', 'partially_paid']
@@ -260,14 +260,13 @@ def check_and_create_alerts():
     today = timezone.localdate()
     today_start, today_end = _day_range(today)
 
-    # Low stock
+    # Low stock — one alert per product per day, regardless of read status
     low_stock_products = list(
         Product.objects.filter(stock__lt=10, stock__gt=0).only('id', 'name', 'stock')
     )
     existing_low_stock_alerts = set(
         AdminAlert.objects.filter(
             alert_type='low_stock',
-            is_read=False,
             created_at__range=(today_start, today_end),
             product_id__in=[product.id for product in low_stock_products],
         ).values_list('product_id', flat=True)
@@ -284,12 +283,11 @@ def check_and_create_alerts():
         if product.id not in existing_low_stock_alerts
     ])
     
-    # High orders
+    # High orders — one alert per day, regardless of read status
     today_orders = Order.objects.filter(created_at__range=(today_start, today_end)).count()
     if today_orders > 20:
         if not AdminAlert.objects.filter(
             alert_type='high_orders',
-            is_read=False,
             created_at__range=(today_start, today_end)
         ).exists():
             AdminAlert.objects.create(
@@ -299,7 +297,7 @@ def check_and_create_alerts():
                 message=f"Today has {today_orders} orders - significantly higher than usual."
             )
     
-    # Failed payments (pending > 24 hours)
+    # Failed payments (pending > 24 hours) — one alert per order, regardless of read status
     threshold = timezone.now() - timedelta(hours=24)
     failed_payments = Order.objects.filter(
         payment_state__in=FOLLOW_UP_PAYMENT_STATES,
@@ -309,7 +307,6 @@ def check_and_create_alerts():
     existing_failed_payment_alerts = set(
         AdminAlert.objects.filter(
             alert_type='failed_payment',
-            is_read=False,
             order_id__in=failed_payments.values_list('id', flat=True),
         ).values_list('order_id', flat=True)
     )
@@ -342,6 +339,7 @@ class IWMAdminSite(UnfoldAdminSite):
             path('revenue-chart/', self.admin_view(self.revenue_chart_view), name='revenue-chart'),
             path('analytics/', self.admin_view(self.analytics_view), name='analytics'),
             path('alerts/', self.admin_view(self.alerts_view), name='alerts'),
+            path('clear-cache/', self.admin_view(self.clear_cache_view), name='clear-cache'),
         ]
         return custom_urls + urls
     
@@ -481,17 +479,18 @@ class IWMAdminSite(UnfoldAdminSite):
     
     def alerts_view(self, request):
         """Alert management view"""
-        check_and_create_alerts()
-        
-        alerts = AdminAlert.objects.select_related('product', 'order', 'read_by').order_by('-created_at')
-        unread_count = alerts.filter(is_read=False).count()
-        
-        # Mark as read
+        # Mark as read first (PRG: redirect after POST so refresh doesn't re-submit)
         if request.method == 'POST':
             alert_id = request.POST.get('alert_id')
             if alert_id:
                 AdminAlert.objects.filter(id=alert_id).update(is_read=True, read_by=request.user)
-        
+            return HttpResponseRedirect(request.path)
+
+        check_and_create_alerts()
+
+        alerts = AdminAlert.objects.select_related('product', 'order', 'read_by').order_by('-created_at')
+        unread_count = alerts.filter(is_read=False).count()
+
         context = {**self.each_context(request),
             'alerts': alerts[:50],
             'unread_count': unread_count,
@@ -539,6 +538,13 @@ class IWMAdminSite(UnfoldAdminSite):
         })
         
         return super().index(request, extra_context)
+
+    def clear_cache_view(self, request):
+        """Clear all application cache"""
+        from django.core.cache import cache
+        cache.clear()
+        messages.success(request, "Application cache has been cleared successfully.")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin/'))
 
     def revenue_chart_view(self, request):
         """Generate interactive revenue and profit trend chart"""
@@ -769,6 +775,13 @@ class FeatureReasonAdmin(ModelAdmin):
 # ========================
 
 class ProductAdminForm(forms.ModelForm):
+
+    long_description = forms.CharField(
+        widget=CKEditor5Widget(config_name='default'),
+        required=False,
+        label="Long description",
+    )
+
     class Meta:
         model = Product
         fields = '__all__'
@@ -819,8 +832,8 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
     form = ProductAdminForm
     
     list_display = ('product_name_with_image', 'get_price_display', 'stock_status', 'subcategory', 'is_featured', 'get_colors', 'created_at')
-    search_fields = ('name', 'description', 'slug')
-    list_filter = ('tags', 'subcategory', 'is_featured', 'size', 'brand', 'created_at')
+    search_fields = ('name', 'description', 'long_description', 'slug')
+    list_filter = ('tags', 'subcategory', 'is_featured', 'size', 'created_at')
     filter_horizontal = ('tags',)
     inlines = [ProductColorImageInline]
     readonly_fields = ('slug', 'discount_percentage_display', 'created_at')
@@ -834,6 +847,9 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
         ('Product Information', {
             'fields': ('name', 'slug', 'description')
         }),
+        ('Product Details', {
+            'fields': ('long_description',)
+        }),
         ('Pricing & Stock', {
             'fields': ('price', 'buying_price', 'discount_price', 'discount_percentage_display', 'stock')
         }),
@@ -841,7 +857,7 @@ class ProductAdmin(ExportActionMixin, ModelAdmin):
             'fields': ('subcategory', 'tags')
         }),
         ('Product Attributes', {
-            'fields': ('size', 'brand')
+            'fields': ('size',)
         }),
         ('Featured', {
             'fields': ('is_featured', 'feature_reason')
@@ -954,24 +970,6 @@ class SizeAdmin(ModelAdmin):
         return format_html('<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>', count)
     products_count.short_description = "Products"
     products_count.admin_order_field = '_product_count'
-
-
-class BrandAdmin(ModelAdmin):
-    list_display = ('name', 'brand_logo', 'products_count')
-    search_fields = ('name',)
-    readonly_fields = ('brand_logo',)
-    list_per_page = 25
-    
-    def brand_logo(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="height: 40px; border-radius: 3px;" />', obj.image.url)
-        return "-"
-    brand_logo.short_description = "Logo"
-    
-    def products_count(self, obj):
-        count = obj.product_set.count()
-        return format_html(f'<span style="background-color: #667bc6; color: white; padding: 3px 8px; border-radius: 3px;">{count}</span>')
-    products_count.short_description = "Products"
 
 
 class TagAdmin(ModelAdmin):
@@ -1170,9 +1168,10 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
     list_display = ['order_id', 'get_customer_name', 'get_total_display', 'get_status_badge', 'get_payment_badge', 'created_at']
     list_filter = ['order_status', 'payment_state', 'payment_method', 'created_at']
     search_fields = ['id', 'user__username', 'full_name', 'email', 'phone']
-    readonly_fields = ['user', 'full_name', 'email', 'phone', 'original_price', 'shipping_cost', 
+    readonly_fields = ['user', 'order_number','full_name', 'email', 'phone', 'original_price', 'shipping_cost',
                       'discount_amount', 'total_price', 'coupon', 'inventory_restored_at',
-                      'coupon_usage_released_at', 'created_at', 'updated_at']
+                      'coupon_usage_released_at', 'created_at', 'updated_at',
+                      'billing_address', 'shipping_address','notes']
     list_select_related = ['user', 'shipping_address', 'billing_address', 'coupon']
     date_hierarchy = 'created_at'
     list_per_page = 25
@@ -1183,7 +1182,7 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
 
     fieldsets = [
         ('Order Information', {
-            'fields': ['order_status', 'user', 'full_name', 'email', 'phone', 'coupon', 'created_at', 'updated_at']
+            'fields': ['order_status', 'user', 'order_number', 'full_name', 'email', 'phone', 'coupon', 'created_at', 'updated_at']
         }),
         ('Addresses', {
             'fields': ['shipping_address', 'billing_address']
@@ -1318,32 +1317,46 @@ class OrderAdmin(ExportActionMixin, ModelAdmin):
         lifecycle_fields = {'order_status', 'payment_state', 'delivery_charge_paid'}
         non_lifecycle_fields = [field for field in form.changed_data if field not in lifecycle_fields]
 
-        with transaction.atomic():
-            locked_order = Order.objects.select_for_update().get(pk=obj.pk)
+        try:
+            with transaction.atomic():
+                locked_order = Order.objects.select_for_update().get(pk=obj.pk)
 
-            for field in non_lifecycle_fields:
-                setattr(locked_order, field, form.cleaned_data[field])
+                for field in non_lifecycle_fields:
+                    setattr(locked_order, field, form.cleaned_data[field])
 
-            if non_lifecycle_fields:
-                locked_order.save(update_fields=non_lifecycle_fields)
+                if non_lifecycle_fields:
+                    locked_order.save(update_fields=non_lifecycle_fields)
 
-            requested_status = form.cleaned_data.get('order_status', locked_order.order_status)
-            requested_payment_state = form.cleaned_data.get('payment_state', locked_order.payment_state)
-            requested_delivery_paid = form.cleaned_data.get('delivery_charge_paid', locked_order.delivery_charge_paid)
+                requested_status = form.cleaned_data.get('order_status', locked_order.order_status)
+                requested_payment_state = form.cleaned_data.get('payment_state', locked_order.payment_state)
+                requested_delivery_paid = form.cleaned_data.get('delivery_charge_paid', locked_order.delivery_charge_paid)
 
-            if requested_payment_state == 'refunded' and requested_payment_state != locked_order.payment_state:
-                locked_order._transition_payment_state_locked('refunded')
-            elif requested_status == 'refunded' and requested_status != locked_order.order_status:
-                locked_order._transition_order_status_locked('refunded')
-            else:
-                if requested_delivery_paid and not locked_order.delivery_charge_paid:
-                    locked_order._mark_delivery_charge_paid_locked()
+                if requested_payment_state == 'refunded' and requested_payment_state != locked_order.payment_state:
+                    locked_order._transition_payment_state_locked('refunded')
+                elif requested_status == 'refunded' and requested_status != locked_order.order_status:
+                    locked_order._transition_order_status_locked('refunded')
+                else:
+                    if requested_delivery_paid and not locked_order.delivery_charge_paid:
+                        locked_order._mark_delivery_charge_paid_locked()
 
-                if requested_payment_state != locked_order.payment_state:
-                    locked_order._transition_payment_state_locked(requested_payment_state)
+                    if requested_payment_state != locked_order.payment_state:
+                        locked_order._transition_payment_state_locked(requested_payment_state)
 
-                if requested_status != locked_order.order_status:
-                    locked_order._transition_order_status_locked(requested_status)
+                    if requested_status != locked_order.order_status:
+                        locked_order._transition_order_status_locked(requested_status)
+
+        except ValidationError as exc:
+            msg = _validation_error_message(exc)
+            self.message_user(request, f"Could not update order: {msg}", level=messages.ERROR)
+            # Signal response_change to skip the normal success redirect/message.
+            request._order_lifecycle_failed = True
+
+    def response_change(self, request, obj):
+        """Redirect back to the change form (no success message) when a lifecycle
+        transition failed during save_model."""
+        if getattr(request, '_order_lifecycle_failed', False):
+            return HttpResponseRedirect(request.path)
+        return super().response_change(request, obj)
 
     def mark_payment_submitted(self, request, queryset):
         self._run_order_action(request, queryset, payment_state='payment_submitted')
@@ -1466,15 +1479,15 @@ class CouponAdmin(ModelAdmin):
             'fields': ('code', 'is_active', 'is_valid_display')
         }),
         ("Discount Details", {
-            'fields': ('discount_amount', 'discount_percent', 'minimum_order_value')
+            'fields': ('discount_amount', 'discount_percent', 'max_discount_amount', 'minimum_order_value')
         }),
         ("Validity", {
-            'fields': ('valid_from', 'valid_to', 'usage_limit', 'used_count')
+            'fields': ('valid_from', 'valid_to', 'usage_limit', 'max_uses_per_phone', 'used_count')
         }),
     )
     
     def discount_display(self, obj):
-        if obj.discount_amount > 0:
+        if obj.discount_amount:
             return format_html('<strong style="color: #ff6f91;">৳{}</strong>', obj.discount_amount)
         return format_html('<strong style="color: #667bc6;">{}%</strong>', obj.discount_percent)
     discount_display.short_description = "Discount"
@@ -1593,6 +1606,76 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 class GroupAdmin(BaseGroupAdmin, ModelAdmin):
     pass
 
+class SliderAdmin(ModelAdmin):
+    change_list_template = 'admin/iwm/slider/change_list.html'
+
+    list_display = ('slide_preview', 'title', 'subtitle', 'order', 'status_badge')
+    list_display_links = ['slide_preview', 'title']
+    search_fields = ('title', 'subtitle')
+    list_filter = ('is_active',)
+    list_per_page = 25
+
+    fieldsets = (
+        ('Slide Image', {
+            'fields': ('image',)
+        }),
+        ('Content', {
+            'fields': ('title', 'subtitle', 'button_text', 'button_url')
+        }),
+        ('Display', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'reorder/',
+                self.admin_site.admin_view(self.reorder_view),
+                name='slider-reorder',
+            ),
+        ]
+        return custom_urls + urls
+
+    def reorder_view(self, request):
+        if request.method != 'POST':
+            return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+        try:
+            data = json.loads(request.body)
+            order_list = data.get('order', [])
+            with transaction.atomic():
+                for item in order_list:
+                    Slider.objects.filter(pk=item['id']).update(order=item['order'])
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['slides'] = Slider.objects.all().order_by('order')
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def slide_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="height: 50px; width: 90px; object-fit: cover; border-radius: 4px;" />',
+                obj.image.url
+            )
+        return "-"
+    slide_preview.short_description = "Preview"
+
+    def status_badge(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="background:#d4edda; color:#155724; padding:4px 10px; border-radius:20px; font-weight:bold;">ACTIVE</span>'
+            )
+        return format_html(
+            '<span style="background:#f8d7da; color:#721c24; padding:4px 10px; border-radius:20px; font-weight:bold;">INACTIVE</span>'
+        )
+    status_badge.short_description = "Status"
+
+
 class PromoBannerAdmin(ModelAdmin):
     list_display = (
         'title_1',
@@ -1670,7 +1753,6 @@ admin_site.register(Product, ProductAdmin)
 admin_site.register(Review, ReviewAdmin)
 admin_site.register(Color, ColorAdmin)
 admin_site.register(Size, SizeAdmin)
-admin_site.register(Brand, BrandAdmin)
 admin_site.register(Tag, TagAdmin)
 admin_site.register(ProductColorImage, ProductColorImageAdmin)
 admin_site.register(NewsletterSubscriber, NewsletterSubscriberAdmin)
@@ -1680,3 +1762,4 @@ admin_site.register(Address, AddressAdmin)
 admin_site.register(Coupon, CouponAdmin)
 admin_site.register(AdminAlert, AdminAlertAdmin)
 admin_site.register(PromoBanner, PromoBannerAdmin)
+admin_site.register(Slider, SliderAdmin)

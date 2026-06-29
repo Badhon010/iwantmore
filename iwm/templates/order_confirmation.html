@@ -19,11 +19,7 @@
   <div class="confirmation-content">
     <div class="confirmation-message">
       <p>Your order has been placed successfully and is now pending. Our team will contact you shortly via phone or Messenger to confirm payment and delivery details.</p>
-      {% if order.access_pin_hash %}
-      <p>Use your email or phone number together with your order PIN on My Orders if you want to manage or cancel this order later without signing in.</p>
-      {% else %}
-      <p>You did not set an order PIN, so guest self-service cancellation is disabled. Our team will confirm the order with you manually.</p>
-      {% endif %}
+      <p>You can view and manage your order at any time using your order number on the <a href="/my-orders/">My Orders</a> page.</p>
       
       <div class="manual-payment-info">
         <h3>Next Steps:</h3>

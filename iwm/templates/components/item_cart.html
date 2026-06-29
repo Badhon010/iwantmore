@@ -21,7 +21,7 @@
         {% endif %}
 
         <div class="product-image-wrapper">
-            <img src="{{ product.card_image_url }}" alt="{{ product.name }}" class="product-image">
+            <a href="{% url 'product_detail' slug=product.slug %}"><img src="{{ product.card_image_url }}" alt="{{ product.name }}" class="product-image"></a>
         </div>
 
         <div class="quick-actions">
@@ -36,26 +36,9 @@
 
         {% if product.category %}<span><span class="product-category">{{ product.category.name }}{% if product.subcategory %} • {{ product.subcategory.name }}{% endif %}</span></span>{% endif %}
         <h3 class="product-name">
-            <span class="name">{{ product.name }}</span>
+            <a href="{% url 'product_detail' slug=product.slug %}" class="name">{{ product.name }}</a>
         </h3>
         <div class="rating-price">
-            <!-- Display rating stars -->
-            <div class="product-rating">
-                {% for i in product.full_stars %}
-                <span class="star"><i class="fas fa-star"></i></span>
-                {% endfor %}
-
-                {% if product.half %}
-                <span class="star half"><i class="fas fa-star-half-alt"></i></span>
-                {% endif %}
-
-                {% for i in product.empty_stars %}
-                <span class="star"><i class="far fa-star"></i></span>
-                {% endfor %}
-
-                <span class="review-count">({{ product.review_count }} reviews)</span>
-            </div>
-
             <div class="product-price">
                 {% if product.discount_price %}
                 <span class="original-price">৳{{ product.price }}</span>

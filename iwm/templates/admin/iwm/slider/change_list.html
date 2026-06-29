@@ -1,0 +1,166 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+<div id="slider-drag-hint" style="
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #fff0f6, #fce4ec);
+    border: 1.5px solid #f48fb1;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    color: #880e4f;
+    font-weight: 500;
+">
+    <span style="font-size: 20px;">↕️</span>
+    <span>Drag and drop rows to reorder slides. Order is saved automatically.</span>
+    <span id="slider-save-status" style="margin-left: auto; font-size: 13px; color: #555; transition: all 0.3s;"></span>
+</div>
+
+<div id="slider-sortable-wrapper">
+<table id="slider-sortable-table" style="width:100%; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th style="width: 36px; padding: 10px 8px;"></th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Preview</th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Title</th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Subtitle</th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Order</th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Status</th>
+            <th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #f0f0f0;">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="slider-sortable-body">
+        {% for slide in slides %}
+        <tr
+            data-id="{{ slide.pk }}"
+            class="slider-row"
+            style="border-bottom: 1px solid #f5f5f5; transition: background 0.15s;"
+        >
+            <td style="padding: 10px 8px; text-align:center; cursor: grab; color: #bbb; font-size: 18px; user-select: none;">
+                ⠿
+            </td>
+            <td style="padding: 10px 12px;">
+                {% if slide.image %}
+                <img src="{{ slide.image.url }}" style="height: 50px; width: 90px; object-fit: cover; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);" />
+                {% else %}
+                <span style="color:#ccc;">No image</span>
+                {% endif %}
+            </td>
+            <td style="padding: 10px 12px; font-weight: 500;">{{ slide.title|default:"-" }}</td>
+            <td style="padding: 10px 12px; color: #777; font-size: 13px;">{{ slide.subtitle|default:"-"|truncatechars:40 }}</td>
+            <td style="padding: 10px 12px;">
+                <span class="order-badge" style="
+                    background: #f3f4f6; color: #374151;
+                    padding: 3px 10px; border-radius: 20px;
+                    font-size: 12px; font-weight: 600;
+                ">{{ slide.order }}</span>
+            </td>
+            <td style="padding: 10px 12px;">
+                {% if slide.is_active %}
+                <span style="background:#d4edda; color:#155724; padding:4px 10px; border-radius:20px; font-weight:bold; font-size: 12px;">ACTIVE</span>
+                {% else %}
+                <span style="background:#f8d7da; color:#721c24; padding:4px 10px; border-radius:20px; font-weight:bold; font-size: 12px;">INACTIVE</span>
+                {% endif %}
+            </td>
+            <td style="padding: 10px 12px;">
+                <a href="{% url 'admin:iwm_slider_change' slide.pk %}" style="
+                    color: #ec4899; font-size: 13px; font-weight: 500;
+                    text-decoration: none; padding: 4px 12px;
+                    border: 1px solid #f9a8d4; border-radius: 6px;
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='#fce7f3'" onmouseout="this.style.background='transparent'">
+                    Edit
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" style="padding: 40px; text-align: center; color: #aaa;">
+                No slides yet. <a href="{% url 'admin:iwm_slider_add' %}">Add your first slide</a>.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+(function() {
+    const tbody = document.getElementById('slider-sortable-body');
+    const statusEl = document.getElementById('slider-save-status');
+    if (!tbody) return;
+
+    let saveTimeout = null;
+
+    const sortable = Sortable.create(tbody, {
+        animation: 180,
+        handle: 'td:first-child',
+        ghostClass: 'slider-ghost',
+        chosenClass: 'slider-chosen',
+        dragClass: 'slider-drag',
+        onEnd: function() {
+            clearTimeout(saveTimeout);
+            statusEl.textContent = 'Saving…';
+            statusEl.style.color = '#f59e0b';
+
+            const rows = tbody.querySelectorAll('tr[data-id]');
+            const order = Array.from(rows).map((row, i) => ({
+                id: parseInt(row.dataset.id),
+                order: i + 1
+            }));
+
+            rows.forEach((row, i) => {
+                const badge = row.querySelector('.order-badge');
+                if (badge) badge.textContent = i + 1;
+            });
+
+            saveTimeout = setTimeout(() => {
+                fetch('{% url "admin:slider-reorder" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ order: order })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        statusEl.textContent = '✓ Saved';
+                        statusEl.style.color = '#16a34a';
+                        setTimeout(() => { statusEl.textContent = ''; }, 2500);
+                    } else {
+                        statusEl.textContent = '✗ Error saving';
+                        statusEl.style.color = '#dc2626';
+                    }
+                })
+                .catch(() => {
+                    statusEl.textContent = '✗ Network error';
+                    statusEl.style.color = '#dc2626';
+                });
+            }, 300);
+        }
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+        .slider-ghost { opacity: 0.4; background: #fce7f3 !important; }
+        .slider-chosen { background: #fff0f6 !important; box-shadow: 0 4px 16px rgba(236,72,153,0.15); }
+        .slider-drag { background: #fff0f6 !important; }
+        .slider-row:hover { background: #fafafa; }
+        #slider-sortable-table td:first-child { cursor: grab; }
+        #slider-sortable-table td:first-child:active { cursor: grabbing; }
+    `;
+    document.head.appendChild(style);
+})();
+</script>
+{% endblock %}
+
+{% block pagination %}{% endblock %}

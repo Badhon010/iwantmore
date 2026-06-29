@@ -13,6 +13,28 @@ import json
 import random
 import string
 
+
+def _unique_slug_for(instance, value):
+    base_slug = slugify(value) or 'item'
+    slug = base_slug
+    counter = 2
+    queryset = type(instance).objects.all()
+    if instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+    while queryset.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
+
+
+def _delete_replaced_file(instance, field_name, previous_name):
+    field = getattr(instance, field_name, None)
+    new_name = getattr(field, 'name', '')
+    if previous_name and previous_name != new_name:
+        storage = field.storage
+        if storage.exists(previous_name):
+            storage.delete(previous_name)
+
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     def __str__(self):
@@ -24,8 +46,17 @@ class Category(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = _unique_slug_for(self, self.name)
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_image = self.__dict__.get('image')
+        if _raw_image and hasattr(_raw_image, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_image, max_width=800, max_height=800)
+            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'image', previous_image)
     
     def __str__(self):
         return self.name
@@ -40,7 +71,7 @@ class SubCategory(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = _unique_slug_for(self, self.name)
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -68,17 +99,11 @@ class Size(models.Model):
         return self.name
 
 
-class Brand(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    image = models.ImageField(upload_to='brands/', blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
 class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(help_text="Short plain-text description shown near the product title.")
+    long_description = models.TextField(blank=True, help_text="Rich HTML product details shown lower on the product page.")
     price = models.PositiveIntegerField()
     buying_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(null=True, blank=True)
@@ -98,17 +123,25 @@ class Product(models.Model):
         help_text="Legacy fallback only. Use product images below for new products.",
     )
     size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True, blank=True)
-    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     # SEO fields
     meta_title = models.CharField(max_length=255, blank=True, null=True, help_text="SEO Meta Title")
     meta_description = models.TextField(blank=True, null=True, help_text="SEO Meta Description")
 
     def save(self, *args, **kwargs):
         if self.subcategory and self.subcategory.category:
-            self.category = self.subcategory.category  # SubCategory থেকে Category স্বয়ংক্রিয়ভাবে সেট করো
+            self.category = self.subcategory.category
         if not self.slug:
-            self.slug = slugify(self.name)  
+            self.slug = _unique_slug_for(self, self.name)
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_image = self.__dict__.get('image')
+        if _raw_image and hasattr(_raw_image, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_image, max_width=1200, max_height=1200)
+            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'image', previous_image)
 
     def __str__(self):
         return self.name  
@@ -134,8 +167,7 @@ class Product(models.Model):
         return self.stock < 10  # আপনি শর্ত কাস্টমাইজ করতে পারেন
 
     def get_absolute_url(self):
-        """ পণ্যের বিস্তারিত পেজের URL তৈরি করে """
-        return f"/product/{self.slug}/"
+        return reverse('product_detail', kwargs={'slug': self.slug})
 
     def get_prefetched_color_images(self):
         prefetched = getattr(self, '_prefetched_objects_cache', {})
@@ -266,8 +298,17 @@ class ProductColorImage(models.Model):
         return f"{self.product.name} - {label}"
 
     def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_image = self.__dict__.get('image')
+        if _raw_image and hasattr(_raw_image, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_image, max_width=1000, max_height=1000)
+            self.__dict__['image'] = opt_img
+        result = super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'image', previous_image)
+        return result
 
 
 class Review(models.Model):
@@ -294,6 +335,18 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)  # New Field
     bio = models.TextField(blank=True)  # New Field
+
+    def save(self, *args, **kwargs):
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_profilepicture = self.__dict__.get('profile_picture')
+        if _raw_profilepicture and hasattr(_raw_profilepicture, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_profilepicture, max_width=400, max_height=400)
+            self.__dict__['profile_picture'] = opt_img
+        super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'profile_picture', previous_image)
 
     def __str__(self):
         return self.user.username
@@ -432,10 +485,8 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     idempotency_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
-    access_pin_hash = models.CharField(max_length=255, blank=True, default='')
-
     full_name = models.CharField(max_length=255)
-    email = models.EmailField(max_length=254)
+    email = models.EmailField(max_length=254, blank=True, default='')
     phone = models.CharField(max_length=20)
 
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='shipping_orders')
@@ -474,18 +525,6 @@ class Order(models.Model):
     notes = models.TextField(blank=True)
     tracking_number = models.CharField(max_length=100, blank=True, null=True)
     estimated_delivery = models.DateField(blank=True, null=True)
-
-    def set_access_pin(self, raw_pin):
-        normalized_pin = (raw_pin or '').strip()
-        if not normalized_pin:
-            self.access_pin_hash = ''
-            return
-        self.access_pin_hash = make_password(normalized_pin)
-
-    def check_access_pin(self, raw_pin):
-        if not self.access_pin_hash or not raw_pin:
-            return False
-        return check_password(raw_pin, self.access_pin_hash)
 
     @property
     def payment_status(self):
@@ -620,6 +659,8 @@ class Order(models.Model):
             discount_amount = cls._to_money(coupon.discount_amount)
         else:
             discount_amount = cls._to_money(subtotal * Decimal(coupon.discount_percent) / Decimal('100'))
+            if coupon.max_discount_amount and coupon.max_discount_amount > 0:
+                discount_amount = min(discount_amount, cls._to_money(coupon.max_discount_amount))
 
         return min(discount_amount, subtotal)
 
@@ -694,7 +735,6 @@ class Order(models.Model):
         delivery_transaction_id=None,
         notes='',
         coupon_id=None,
-        access_pin='',
     ):
         normalized_idempotency_key = cls._normalize_optional_text(idempotency_key)
         if not normalized_idempotency_key:
@@ -712,7 +752,6 @@ class Order(models.Model):
 
         required_values = [
             ((personal_info.get('full_name') or '').strip(), 'full_name'),
-            ((personal_info.get('email') or '').strip(), 'email'),
             (phone, 'phone'),
             (shipping_full_name, 'shipping_full_name'),
             ((shipping_address_data.get('address_line1') or '').strip(), 'shipping_address_line1'),
@@ -761,6 +800,9 @@ class Order(models.Model):
                 is_valid, coupon_message = coupon.validate_for_subtotal(subtotal) if coupon else (False, 'Invalid coupon code.')
                 if not is_valid:
                     raise ValidationError({'coupon': coupon_message or 'This coupon is no longer available.'})
+                phone_valid, phone_message = coupon.validate_phone_usage_limit(phone)
+                if not phone_valid:
+                    raise ValidationError({'coupon': phone_message})
 
             delivery_charge_paid = bool(
                 normalized_delivery_payment_method
@@ -816,7 +858,6 @@ class Order(models.Model):
                 delivery_transaction_id=normalized_delivery_transaction_id if normalized_payment_method == 'cash_on_delivery' else None,
                 notes=(notes or '').strip(),
             )
-            order.set_access_pin(access_pin)
             order.save()
 
             for item in resolved_items:
@@ -1258,11 +1299,20 @@ class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
     discount_amount = models.PositiveIntegerField(null=True, blank=True, help_text="Fixed discount amount")
     discount_percent = models.PositiveIntegerField(null=True, blank=True, help_text="Percentage discount")
+    max_discount_amount = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Maximum discount cap for percentage coupons (e.g. 20% OFF up to Tk 50)"
+    )
     minimum_order_value = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
     usage_limit = models.PositiveIntegerField(default=0, help_text="0 means unlimited usage")
+    max_uses_per_phone = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Maximum successful uses per normalized phone number. Blank means unlimited.",
+    )
     used_count = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -1316,6 +1366,41 @@ class Coupon(models.Model):
             minimum_order_value = subtotal.__class__(str(self.minimum_order_value))
             if minimum_order_value and subtotal < minimum_order_value:
                 return False, f'Minimum order amount for this coupon is Tk {minimum_order_value:.2f}.'
+        return True, ''
+
+    @staticmethod
+    def normalize_phone(phone_number):
+        digits = ''.join(ch for ch in (phone_number or '') if ch.isdigit())
+        if digits.startswith('880') and len(digits) >= 13:
+            digits = digits[-10:]
+            return f"0{digits}"
+        if len(digits) >= 11:
+            return digits[-11:]
+        return digits
+
+    def validate_phone_usage_limit(self, phone_number):
+        if not self.max_uses_per_phone:
+            return True, ''
+
+        normalized_phone = self.normalize_phone(phone_number)
+        if not normalized_phone:
+            return False, 'A phone number is required to use this coupon.'
+
+        used_for_phone = 0
+        previous_orders = Order.objects.filter(
+            coupon=self,
+            coupon_usage_released_at__isnull=True,
+        ).exclude(
+            order_status__in=Order.TERMINAL_STATUSES,
+        ).only('phone')
+
+        for order in previous_orders:
+            if self.normalize_phone(order.phone) == normalized_phone:
+                used_for_phone += 1
+
+        if used_for_phone >= self.max_uses_per_phone:
+            return False, 'This coupon has reached the usage limit for this phone number.'
+
         return True, ''
 
     def consume_locked(self):
@@ -1372,6 +1457,36 @@ class AdminAlert(models.Model):
         ]
 
 
+class Slider(models.Model):
+    image = models.ImageField(upload_to='slider_images/')
+    title = models.CharField(max_length=200, blank=True)
+    subtitle = models.CharField(max_length=200, blank=True)
+    button_text = models.CharField(max_length=100, blank=True)
+    button_url = models.CharField(max_length=255, blank=True)
+    order = models.PositiveIntegerField(default=0, help_text="Lower number displayed first")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = "Homepage Slider"
+        verbose_name_plural = "Homepage Sliders"
+
+    def save(self, *args, **kwargs):
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_image = self.__dict__.get('image')
+        if _raw_image and hasattr(_raw_image, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_image, max_width=1920, max_height=800)
+            self.__dict__['image'] = opt_img
+        super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'image', previous_image)
+
+    def __str__(self):
+        return self.title or f"Slide #{self.pk or 'New'}"
+
+
 class PromoBanner(models.Model):
     title_1 = models.CharField(max_length=100)
     title_2 = models.CharField(max_length=100)
@@ -1392,7 +1507,16 @@ class PromoBanner(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()   # runs clean()
+        previous_image = None
+        if self.pk:
+            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+        _raw_image = self.__dict__.get('image')
+        if _raw_image and hasattr(_raw_image, 'content_type'):
+            from .image_utils import optimize_uploaded_image
+            opt_img = optimize_uploaded_image(_raw_image, max_width=1200, max_height=600)
+            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
+        _delete_replaced_file(self, 'image', previous_image)
 
     def __str__(self):
         return f"{self.title_1} ({'Active' if self.is_active else 'Inactive'})"

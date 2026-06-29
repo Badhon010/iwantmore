@@ -13,6 +13,7 @@
   <div class="checkout-content">
     <div class="checkout-form-container">
       <form class="checkout-form" id="checkout-form">
+        <div id="checkout-error-msg" style="display:none;background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;padding:12px 16px;border-radius:6px;margin-bottom:16px;font-weight:600;"></div>
         <div class="form-sections">
           <!-- Personal Information Section -->
           <div class="form-section">
@@ -25,20 +26,14 @@
             
             <div class="form-row">
               <div class="form-group">
-                <label for="email">Email <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required>
+                <label for="email">Email <span style="color:#888;font-size:13px;">(optional)</span></label>
+                <input type="email" id="email" name="email" placeholder="you@example.com">
               </div>
               
               <div class="form-group">
                 <label for="phone">Phone <span class="required">*</span></label>
                 <input type="tel" id="phone" name="phone" required>
               </div>
-            </div>
-
-            <div class="form-group">
-              <label for="order-access-pin">Order Access PIN</label>
-              <input type="password" id="order-access-pin" name="order_access_pin" inputmode="numeric" maxlength="8">
-              <small>Optional. Set a 4 to 8 digit PIN if you want guest order lookup and self-service cancellation later.</small>
             </div>
           </div>
           
@@ -99,81 +94,6 @@
                 <input type="checkbox" id="save-shipping-address" name="save_shipping_address">
                 <span class="checkbox-checkmark"></span>
               </label>
-            </div>
-          </div>
-          
-          <!-- Billing Address Section -->
-          <div class="form-section">
-            <h3 class="section-title">Billing Address</h3>
-            
-            <div class="checkbox-group">
-              <label class="checkbox-container">
-                Same as shipping address
-                <input type="checkbox" id="same-billing-address" name="same_billing_address" checked>
-                <span class="checkbox-checkmark"></span>
-              </label>
-            </div>
-            
-            <div id="billing-address-section" style="display: none;">
-              {% if user.is_authenticated %}
-              <div class="form-group">
-                <label for="billing-address-select" class="select-label">Saved Addresses</label>
-                <select id="billing-address-select" class="address-select">
-                  <option value="">-- Select a saved address --</option>
-                  {% for address in billing_addresses %}
-                  {% if address.address_type == 'billing' %}
-                  <option value="{{ address.id }}" data-address="{{ address.as_json }}">
-                    {{ address.full_name }}, {{ address.address_line1 }}, {{ address.state|default:address.city }}
-                  </option>
-                  {% endif %}
-                  {% endfor %}
-                </select>
-              </div>
-              {% endif %}
-              
-              <div class="form-group">
-                <label for="billing-full-name">Full Name <span class="required">*</span></label>
-                <input type="text" id="billing-full-name" name="billing_full_name">
-              </div>
-              
-              <div class="form-group">
-                <label for="billing-address-line1">Full Address <span class="required">*</span></label>
-                <input type="text" id="billing-address-line1" name="billing_address_line1" placeholder="House, road, area">
-              </div>
-              
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="billing-district">District <span class="required">*</span></label>
-                  <select id="billing-district" name="billing_district">
-                    <option value="">Select your district</option>
-                    {% for district in bangladesh_districts %}
-                    <option value="{{ district }}"{% if district == 'Dhaka' %} selected{% endif %}>{{ district }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                
-                <div class="form-group">
-                  <label for="billing-country">Country <span class="required">*</span></label>
-                  <input type="text" id="billing-country" name="billing_country" value="Bangladesh" readonly>
-                </div>
-              </div>
-
-              <input type="hidden" id="billing-city" name="billing_city" value="Dhaka">
-              <input type="hidden" id="billing-postal-code" name="billing_postal_code" value="1000">
-              <input type="hidden" id="billing-state" name="billing_state" value="Dhaka">
-              
-              <div class="form-group">
-                <label for="billing-location-description">Describe Your Location <span class="required">*</span></label>
-                <textarea id="billing-location-description" name="billing_location_description" placeholder="Please provide detailed instructions to find your location"></textarea>
-              </div>
-              
-              <div class="checkbox-group">
-                <label class="checkbox-container">
-                  Save this address for future use
-                  <input type="checkbox" id="save-billing-address" name="save_billing_address">
-                  <span class="checkbox-checkmark"></span>
-                </label>
-              </div>
             </div>
           </div>
           
@@ -303,7 +223,7 @@
         <p><strong>Important:</strong> After placing order, our team will contact you via phone or Messenger to confirm payment and delivery.</p>
         <p>For Cash on Delivery, delivery charge must be paid to our delivery person.</p>
         <p>For bKash/Nagad, you do not need to enter sender number or transaction ID at checkout. Our team will verify payment details with you after the order is placed.</p>
-        <p>If you set an order PIN, keep it safe. You can use it later on My Orders with your email or phone number.</p>
+        <p>Keep your order number safe. You can use it on My Orders to view and manage your order anytime.</p>
       </div>
       
       <div class="back-to-cart">
@@ -327,7 +247,7 @@
         <p><strong>Name:</strong> <span id="preview-name"></span></p>
         <p><strong>Email:</strong> <span id="preview-email"></span></p>
         <p><strong>Phone:</strong> <span id="preview-phone"></span></p>
-        <p><strong>Order Access:</strong> Email or phone number plus your PIN if you set one</p>
+        <p><strong>Order Access:</strong> Use your order number on My Orders to view your order anytime</p>
       </div>
       
       <div class="modal-section">

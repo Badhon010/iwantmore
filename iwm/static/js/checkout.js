@@ -9,7 +9,6 @@ let currentCheckoutTotals = {
 document.addEventListener('DOMContentLoaded', function() {
     initializeCheckout();
     setupAddressSelect();
-    setupBillingAddressToggle();
     setupPaymentMethods();
     setupCouponForm();
     setupModalActions();
@@ -18,6 +17,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (placeOrderButton) {
         placeOrderButton.addEventListener('click', function(e) {
             e.preventDefault();
+            if (!getCartItemsPayload().length) {
+                const errorMsg = document.getElementById('checkout-error-msg');
+                if (errorMsg) {
+                    errorMsg.textContent = 'Your cart is empty. Please add items before placing an order.';
+                    errorMsg.style.display = 'block';
+                    errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    alert('Your cart is empty. Please add items before placing an order.');
+                }
+                return;
+            }
             if (validateCheckoutForm()) {
                 showOrderPreview();
             }
@@ -30,6 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeCheckout() {
     renderSummaryItems([]);
 
+    // Pre-enable the button immediately if localStorage already has items,
+    // so a slow or failed server response never leaves the button stuck disabled.
+    const preCartPayload = getCartItemsPayload();
+    const placeOrderButtonInit = document.getElementById('place-order-btn');
+    if (placeOrderButtonInit && preCartPayload.length > 0) {
+        placeOrderButtonInit.disabled = false;
+    }
+
     const shippingDistrictField = document.getElementById('shipping-district');
     if (shippingDistrictField) {
         syncDistrictFields('shipping', shippingDistrictField.value);
@@ -39,13 +57,6 @@ function initializeCheckout() {
         });
     }
 
-    const billingDistrictField = document.getElementById('billing-district');
-    if (billingDistrictField) {
-        syncDistrictFields('billing', billingDistrictField.value);
-        billingDistrictField.addEventListener('change', function() {
-            syncDistrictFields('billing', this.value);
-        });
-    }
 }
 
 function syncDistrictFields(type, districtValue) {
@@ -68,7 +79,15 @@ function syncDistrictFields(type, districtValue) {
 }
 
 function getCartItemsPayload() {
-    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let cartItems = [];
+    try {
+        cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        if (!Array.isArray(cartItems)) cartItems = [];
+    } catch (e) {
+        console.warn('Cart data in localStorage is corrupted, resetting.', e);
+        localStorage.removeItem('cartItems');
+        cartItems = [];
+    }
     return cartItems
         .map(item => ({
             id: Number(item.id),
@@ -142,7 +161,6 @@ function renderSummaryItems(items) {
 
 function setupAddressSelect() {
     const shippingAddressSelect = document.getElementById('shipping-address-select');
-    const billingAddressSelect = document.getElementById('billing-address-select');
 
     if (shippingAddressSelect) {
         shippingAddressSelect.addEventListener('change', function() {
@@ -155,15 +173,6 @@ function setupAddressSelect() {
         });
     }
 
-    if (billingAddressSelect) {
-        billingAddressSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption.value !== '') {
-                const addressData = JSON.parse(selectedOption.dataset.address || '{}');
-                fillAddressFields('billing', addressData);
-            }
-        });
-    }
 }
 
 function fillAddressFields(type, addressData) {
@@ -182,19 +191,6 @@ function fillAddressFields(type, addressData) {
     syncDistrictFields(type, district);
     document.getElementById(`${prefix}postal-code`).value = addressData.postal_code || '';
     document.getElementById(`${prefix}country`).value = addressData.country || '';
-}
-
-function setupBillingAddressToggle() {
-    const sameBillingCheckbox = document.getElementById('same-billing-address');
-    const billingAddressSection = document.getElementById('billing-address-section');
-
-    if (sameBillingCheckbox && billingAddressSection) {
-        sameBillingCheckbox.addEventListener('change', function() {
-            billingAddressSection.style.display = this.checked ? 'none' : 'block';
-        });
-
-        billingAddressSection.style.display = sameBillingCheckbox.checked ? 'none' : 'block';
-    }
 }
 
 function setupPaymentMethods() {
@@ -333,11 +329,24 @@ function refreshOrderSummary(options = {}) {
     .then(data => {
         if (data && data.status === 'success') {
             applyCheckoutSummary(data);
+        } else {
+            // Server returned an error (e.g. product deleted/unavailable).
+            // Re-enable the button so the user can still attempt to place the order;
+            // the backend will do a final validation at submit time.
+            const placeOrderBtn = document.getElementById('place-order-btn');
+            if (placeOrderBtn && getCartItemsPayload().length > 0) {
+                placeOrderBtn.disabled = false;
+            }
         }
         return data;
     })
     .catch(error => {
         console.error('Error fetching checkout totals:', error);
+        // Network / server error — re-enable button so the user is not stuck.
+        const placeOrderBtn = document.getElementById('place-order-btn');
+        if (placeOrderBtn && getCartItemsPayload().length > 0) {
+            placeOrderBtn.disabled = false;
+        }
         return null;
     });
 }
@@ -348,14 +357,13 @@ function validateCheckoutForm() {
     const fullName = document.getElementById('full-name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
-    const accessPin = document.getElementById('order-access-pin').value.trim();
 
     if (fullName === '') {
         isValid = false;
         document.getElementById('full-name').classList.add('error');
     }
 
-    if (email === '' || !isValidEmail(email)) {
+    if (email !== '' && !isValidEmail(email)) {
         isValid = false;
         document.getElementById('email').classList.add('error');
     }
@@ -363,11 +371,6 @@ function validateCheckoutForm() {
     if (phone === '') {
         isValid = false;
         document.getElementById('phone').classList.add('error');
-    }
-
-    if (accessPin !== '' && !/^\d{4,8}$/.test(accessPin)) {
-        isValid = false;
-        document.getElementById('order-access-pin').classList.add('error');
     }
 
     const shippingAddressLine1 = document.getElementById('shipping-address-line1').value.trim();
@@ -395,123 +398,119 @@ function validateCheckoutForm() {
         document.getElementById('shipping-country').classList.add('error');
     }
 
-    const sameBillingAddress = document.getElementById('same-billing-address').checked;
-    if (!sameBillingAddress) {
-        const billingFullName = document.getElementById('billing-full-name').value.trim();
-        const billingAddressLine1 = document.getElementById('billing-address-line1').value.trim();
-        const billingDistrict = document.getElementById('billing-district').value.trim();
-        const billingCountry = document.getElementById('billing-country').value.trim();
-        const billingLocationDescription = document.getElementById('billing-location-description').value.trim();
-
-        if (billingFullName === '') {
-            isValid = false;
-            document.getElementById('billing-full-name').classList.add('error');
+    if (!isValid) {
+        const errorMsg = document.getElementById('checkout-error-msg');
+        if (errorMsg) {
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = 'Please fill in all required fields highlighted below.';
         }
-
-        if (billingAddressLine1 === '') {
-            isValid = false;
-            document.getElementById('billing-address-line1').classList.add('error');
+        const firstError = document.querySelector('.error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
-        if (billingDistrict === '') {
-            isValid = false;
-            document.getElementById('billing-district').classList.add('error');
-        }
-
-        if (billingLocationDescription === '') {
-            isValid = false;
-            document.getElementById('billing-location-description').classList.add('error');
-        }
-
-        if (billingCountry === '') {
-            isValid = false;
-            document.getElementById('billing-country').classList.add('error');
-        }
+    } else {
+        const errorMsg = document.getElementById('checkout-error-msg');
+        if (errorMsg) errorMsg.style.display = 'none';
     }
 
     return isValid;
 }
 
 function showOrderPreview() {
-    const fullName = document.getElementById('full-name').value;
-    const email = document.getElementById('email').value;
-    const phone = document.getElementById('phone').value;
+    try {
+        const fullName = document.getElementById('full-name').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
 
-    document.getElementById('preview-name').textContent = fullName;
-    document.getElementById('preview-email').textContent = email;
-    document.getElementById('preview-phone').textContent = phone;
+        document.getElementById('preview-name').textContent = fullName;
+        document.getElementById('preview-email').textContent = email;
+        document.getElementById('preview-phone').textContent = phone;
 
-    const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
-    const shippingDistrict = document.getElementById('shipping-district').value;
-    const shippingLocationDescription = document.getElementById('shipping-location-description').value;
-    const shippingCountry = document.getElementById('shipping-country').value;
+        const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
+        const shippingDistrict = document.getElementById('shipping-district').value;
+        const shippingLocationDescription = document.getElementById('shipping-location-description').value;
+        const shippingCountry = document.getElementById('shipping-country').value;
 
-    const container = document.getElementById('preview-shipping-address');
-    container.innerHTML = '';
-    
-    container.appendChild(document.createTextNode(fullName));
-    container.appendChild(document.createElement('br'));
-    container.appendChild(document.createTextNode(shippingAddressLine1));
-    
-    if (shippingDistrict) {
+        const container = document.getElementById('preview-shipping-address');
+        container.innerHTML = '';
+        
+        container.appendChild(document.createTextNode(fullName));
         container.appendChild(document.createElement('br'));
-        container.appendChild(document.createTextNode(`District: ${shippingDistrict}`));
-    }
-    if (shippingLocationDescription) {
+        container.appendChild(document.createTextNode(shippingAddressLine1));
+        
+        if (shippingDistrict) {
+            container.appendChild(document.createElement('br'));
+            container.appendChild(document.createTextNode(`District: ${shippingDistrict}`));
+        }
+        if (shippingLocationDescription) {
+            container.appendChild(document.createElement('br'));
+            container.appendChild(document.createTextNode(shippingLocationDescription));
+        }
         container.appendChild(document.createElement('br'));
-        container.appendChild(document.createTextNode(shippingLocationDescription));
+        container.appendChild(document.createTextNode(shippingCountry));
+
+        const paymentMethodRadio = document.querySelector('.payment-method input[type="radio"]:checked');
+        const paymentContainer = document.getElementById('preview-payment-method');
+        paymentContainer.innerHTML = '';
+        if (paymentMethodRadio) {
+            const labelEl = paymentMethodRadio.closest('.payment-method') &&
+                            paymentMethodRadio.closest('.payment-method').querySelector('.payment-label');
+            const paymentMethodLabel = labelEl ? labelEl.textContent.trim() : paymentMethodRadio.value;
+            paymentContainer.appendChild(document.createTextNode(paymentMethodLabel));
+            paymentContainer.appendChild(document.createElement('br'));
+        }
+        paymentContainer.appendChild(document.createTextNode('Our team will call you to confirm payment and delivery details.'));
+
+        const orderItemsContainer = document.getElementById('preview-order-items');
+        orderItemsContainer.innerHTML = '';
+        currentCheckoutItems.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'detail-row';
+            
+            const label = document.createElement('div');
+            label.className = 'detail-label';
+            label.textContent = `${item.name}${item.color ? ` (${item.color})` : ''} x ${item.quantity}`;
+            
+            const val = document.createElement('div');
+            val.className = 'detail-value';
+            val.textContent = formatCurrency(item.line_total);
+            
+            row.appendChild(label);
+            row.appendChild(val);
+            orderItemsContainer.appendChild(row);
+        });
+
+        const subtotal = Number(document.getElementById('order-subtotal').value || 0);
+        const shipping = Number(document.getElementById('order-shipping').value || 0);
+        const discount = Number(document.getElementById('order-discount').value || 0);
+        const total = Number(document.getElementById('order-total').value || 0);
+
+        document.getElementById('preview-subtotal').textContent = formatCurrency(subtotal);
+        document.getElementById('preview-shipping').textContent = formatCurrency(shipping);
+
+        const previewDiscountRow = document.getElementById('preview-discount-row');
+        if (discount > 0) {
+            previewDiscountRow.style.display = 'flex';
+            document.getElementById('preview-discount').textContent = `-${formatCurrency(discount)}`;
+        } else {
+            previewDiscountRow.style.display = 'none';
+        }
+
+        document.getElementById('preview-total').textContent = formatCurrency(total);
+
+        const modal = document.getElementById('order-preview-modal');
+        modal.style.display = 'block';
+    } catch (err) {
+        console.error('Error showing order preview:', err);
+        const errorMsg = document.getElementById('checkout-error-msg');
+        if (errorMsg) {
+            errorMsg.textContent = 'Something went wrong showing the order preview. Please refresh and try again.';
+            errorMsg.style.display = 'block';
+            errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alert('Something went wrong. Please refresh the page and try again.');
+        }
     }
-    container.appendChild(document.createElement('br'));
-    container.appendChild(document.createTextNode(shippingCountry));
-
-    const paymentMethodRadio = document.querySelector('.payment-method input[type="radio"]:checked');
-    const paymentMethodLabel = paymentMethodRadio.closest('.payment-method').querySelector('.payment-label').textContent.trim();
-    
-    const paymentContainer = document.getElementById('preview-payment-method');
-    paymentContainer.innerHTML = '';
-    paymentContainer.appendChild(document.createTextNode(paymentMethodLabel));
-    paymentContainer.appendChild(document.createElement('br'));
-    paymentContainer.appendChild(document.createTextNode('Our team will call you to confirm payment and delivery details.'));
-
-    const orderItemsContainer = document.getElementById('preview-order-items');
-    orderItemsContainer.innerHTML = '';
-    currentCheckoutItems.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'detail-row';
-        
-        const label = document.createElement('div');
-        label.className = 'detail-label';
-        label.textContent = `${item.name}${item.color ? ` (${item.color})` : ''} x ${item.quantity}`;
-        
-        const val = document.createElement('div');
-        val.className = 'detail-value';
-        val.textContent = formatCurrency(item.line_total);
-        
-        row.appendChild(label);
-        row.appendChild(val);
-        orderItemsContainer.appendChild(row);
-    });
-
-    const subtotal = Number(document.getElementById('order-subtotal').value || 0);
-    const shipping = Number(document.getElementById('order-shipping').value || 0);
-    const discount = Number(document.getElementById('order-discount').value || 0);
-    const total = Number(document.getElementById('order-total').value || 0);
-
-    document.getElementById('preview-subtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('preview-shipping').textContent = formatCurrency(shipping);
-
-    const previewDiscountRow = document.getElementById('preview-discount-row');
-    if (discount > 0) {
-        previewDiscountRow.style.display = 'flex';
-        document.getElementById('preview-discount').textContent = `-${formatCurrency(discount)}`;
-    } else {
-        previewDiscountRow.style.display = 'none';
-    }
-
-    document.getElementById('preview-total').textContent = formatCurrency(total);
-
-    const modal = document.getElementById('order-preview-modal');
-    modal.style.display = 'block';
 }
 
 function setupModalActions() {
@@ -551,7 +550,6 @@ function submitOrder() {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value
     };
-    const accessPin = document.getElementById('order-access-pin').value.trim();
 
     const shippingAddress = {
         full_name: personalInfo.full_name,
@@ -563,22 +561,7 @@ function submitOrder() {
         country: document.getElementById('shipping-country')?.value || 'Bangladesh'
     };
 
-    const sameBillingAddress = document.getElementById('same-billing-address').checked;
-    let billingAddress = {};
-
-    if (sameBillingAddress) {
-        billingAddress = shippingAddress;
-    } else {
-        billingAddress = {
-            full_name: document.getElementById('billing-full-name')?.value || personalInfo.full_name,
-            address_line1: document.getElementById('billing-address-line1').value,
-            address_line2: document.getElementById('billing-location-description')?.value || '',
-            city: document.getElementById('billing-district')?.value || 'Dhaka',
-            postal_code: document.getElementById('billing-postal-code')?.value || '1000',
-            state: document.getElementById('billing-district')?.value || 'Dhaka',
-            country: document.getElementById('billing-country')?.value || 'Bangladesh'
-        };
-    }
+    const billingAddress = shippingAddress;
 
     const paymentMethod = document.querySelector('.payment-method input[type="radio"]:checked').value;
     const paymentDetails = {};
@@ -588,13 +571,12 @@ function submitOrder() {
         personal_info: personalInfo,
         shipping_address: shippingAddress,
         billing_address: billingAddress,
-        same_billing_address: sameBillingAddress,
+        same_billing_address: true,
         payment_method: paymentMethod,
         payment_details: paymentDetails,
         items: getCartItemsPayload(),
         additional_notes: additionalNotes,
-        idempotency_key: getCheckoutIdempotencyKey(),
-        access_pin: accessPin
+        idempotency_key: getCheckoutIdempotencyKey()
     };
 
     document.getElementById('confirm-order-btn').disabled = true;
@@ -667,3 +649,14 @@ function isValidEmail(email) {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(email);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input, select, textarea').forEach(function(el) {
+        el.addEventListener('input', function() {
+            this.classList.remove('error');
+        });
+        el.addEventListener('change', function() {
+            this.classList.remove('error');
+        });
+    });
+});
