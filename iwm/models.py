@@ -9,6 +9,7 @@ from django.utils.text import slugify
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.urls import reverse
+from .image_utils import WebPImageField
 import json
 import random
 import string
@@ -42,25 +43,20 @@ class Tag(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
-    image = models.ImageField(upload_to='category_images/', blank=True, null=True)
-    
+    image = WebPImageField(upload_to='category_images/', blank=True, null=True, webp_max_width=800, webp_max_height=800)
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = _unique_slug_for(self, self.name)
         previous_image = None
         if self.pk:
             previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_image = self.__dict__.get('image')
-        if _raw_image and hasattr(_raw_image, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_image, max_width=800, max_height=800)
-            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
         _delete_replaced_file(self, 'image', previous_image)
-    
+
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name_plural = "Categories"
 
@@ -107,7 +103,7 @@ class Product(models.Model):
     price = models.PositiveIntegerField()
     buying_price = models.PositiveIntegerField()
     discount_price = models.PositiveIntegerField(null=True, blank=True)
-    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
+    image = WebPImageField(upload_to='product_images/', blank=True, null=True, webp_max_width=1200, webp_max_height=1200)
     stock = models.PositiveIntegerField(default=0)  
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField('Tag', related_name="products", blank=True)  
@@ -135,11 +131,6 @@ class Product(models.Model):
         previous_image = None
         if self.pk:
             previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_image = self.__dict__.get('image')
-        if _raw_image and hasattr(_raw_image, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_image, max_width=1200, max_height=1200)
-            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
         _delete_replaced_file(self, 'image', previous_image)
 
@@ -282,7 +273,7 @@ class ProductColorImage(models.Model):
         blank=True,
         related_name='product_images',
     )
-    image = models.ImageField(upload_to='product_images/')
+    image = WebPImageField(upload_to='product_images/', webp_max_width=1000, webp_max_height=1000)
 
     class Meta:
         ordering = ['color__name', 'id']
@@ -301,11 +292,6 @@ class ProductColorImage(models.Model):
         previous_image = None
         if self.pk:
             previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_image = self.__dict__.get('image')
-        if _raw_image and hasattr(_raw_image, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_image, max_width=1000, max_height=1000)
-            self.__dict__['image'] = opt_img
         result = super().save(*args, **kwargs)
         _delete_replaced_file(self, 'image', previous_image)
         return result
@@ -332,21 +318,16 @@ class Review(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    profile_picture = WebPImageField(upload_to='profile_pics/', blank=True, null=True, webp_max_width=400, webp_max_height=400)
     location = models.CharField(max_length=100, blank=True)  # New Field
     bio = models.TextField(blank=True)  # New Field
 
     def save(self, *args, **kwargs):
-        previous_image = None
+        previous_picture = None
         if self.pk:
-            previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_profilepicture = self.__dict__.get('profile_picture')
-        if _raw_profilepicture and hasattr(_raw_profilepicture, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_profilepicture, max_width=400, max_height=400)
-            self.__dict__['profile_picture'] = opt_img
+            previous_picture = type(self).objects.filter(pk=self.pk).values_list('profile_picture', flat=True).first()
         super().save(*args, **kwargs)
-        _delete_replaced_file(self, 'profile_picture', previous_image)
+        _delete_replaced_file(self, 'profile_picture', previous_picture)
 
     def __str__(self):
         return self.user.username
@@ -1458,7 +1439,7 @@ class AdminAlert(models.Model):
 
 
 class Slider(models.Model):
-    image = models.ImageField(upload_to='slider_images/')
+    image = WebPImageField(upload_to='slider_images/', webp_max_width=1920, webp_max_height=800)
     title = models.CharField(max_length=200, blank=True)
     subtitle = models.CharField(max_length=200, blank=True)
     button_text = models.CharField(max_length=100, blank=True)
@@ -1475,11 +1456,6 @@ class Slider(models.Model):
         previous_image = None
         if self.pk:
             previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_image = self.__dict__.get('image')
-        if _raw_image and hasattr(_raw_image, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_image, max_width=1920, max_height=800)
-            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
         _delete_replaced_file(self, 'image', previous_image)
 
@@ -1491,7 +1467,7 @@ class PromoBanner(models.Model):
     title_1 = models.CharField(max_length=100)
     title_2 = models.CharField(max_length=100)
     description = models.TextField(max_length=300)
-    image = models.ImageField(upload_to='promo_banners/')
+    image = WebPImageField(upload_to='promo_banners/', webp_max_width=1200, webp_max_height=600)
     is_active = models.BooleanField(default=False)
 
     def clean(self):
@@ -1506,15 +1482,10 @@ class PromoBanner(models.Model):
                 )
 
     def save(self, *args, **kwargs):
-        self.full_clean()   # runs clean()
+        self.full_clean()  # runs clean()
         previous_image = None
         if self.pk:
             previous_image = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
-        _raw_image = self.__dict__.get('image')
-        if _raw_image and hasattr(_raw_image, 'content_type'):
-            from .image_utils import optimize_uploaded_image
-            opt_img = optimize_uploaded_image(_raw_image, max_width=1200, max_height=600)
-            self.__dict__['image'] = opt_img
         super().save(*args, **kwargs)
         _delete_replaced_file(self, 'image', previous_image)
 
