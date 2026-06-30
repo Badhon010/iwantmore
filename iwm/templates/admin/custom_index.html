@@ -4,6 +4,20 @@
 {% block title %}Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block content %}
+<style>
+    /* AC2: Make KPI cards clickable — strip link defaults, add hover lift */
+    a.iwm-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    a.iwm-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
+        color: inherit;
+    }
+</style>
 
 <div class="iwm-dashboard">
 
@@ -20,7 +34,8 @@
 
     <!-- Row 1: Today's key metrics -->
     <div class="iwm-grid iwm-grid-4">
-        <div class="iwm-card">
+        {# AC2: Revenue card → Analytics dashboard #}
+        <a href="{% url 'admin:analytics' %}" class="iwm-card">
             <div class="iwm-stat">
                 <!-- AQ3: Changed icon color from #e11d48 to #ff6f91, background from #fff1f2 to #fff0f4 -->
                 <div class="iwm-stat-icon" style="background: #fff0f4; color: #ff6f91;">
@@ -39,8 +54,9 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="iwm-card">
+        </a>
+        {# AC2: Profit card → Analytics dashboard #}
+        <a href="{% url 'admin:analytics' %}" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #f0fdf4; color: #16a34a;">
                     <span class="material-symbols-outlined">savings</span>
@@ -58,8 +74,9 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="iwm-card">
+        </a>
+        {# AC2: Today's Orders card → Orders changelist #}
+        <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #eef2ff; color: #4338ca;">
                     <span class="material-symbols-outlined">shopping_cart</span>
@@ -77,8 +94,9 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="iwm-card">
+        </a>
+        {# AC2: Total Products card → Products changelist #}
+        <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #eff6ff; color: #2563eb;">
                     <span class="material-symbols-outlined">inventory_2</span>
@@ -88,7 +106,7 @@
                     <div class="iwm-stat-value">{{ total_products }}</div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     {# AH1: Pending-orders banner — only shown when orders await payment. #}
@@ -103,7 +121,8 @@
     <!-- AQ10: Inventory stats row (separated from subscribers) -->
     <div style="margin-bottom: 0.4rem;" class="iwm-section-label">Inventory</div>
     <div class="iwm-grid iwm-grid-4" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
-        <div class="iwm-card">
+        {# AC2: Out of Stock → Products filtered to stock=0 #}
+        <a href="{% url 'admin:iwm_product_changelist' %}?stock__exact=0" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #fef2f2; color: #dc2626;">
                     <span class="material-symbols-outlined">error</span>
@@ -113,8 +132,9 @@
                     <div class="iwm-stat-value">{{ out_of_stock }}</div>
                 </div>
             </div>
-        </div>
-        <div class="iwm-card">
+        </a>
+        {# AC2: Low Stock → Products changelist (sidebar badge already highlights low stock) #}
+        <a href="{% url 'admin:iwm_product_changelist' %}?stock__gt=0&stock__lt=10" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #fffbeb; color: #d97706;">
                     <span class="material-symbols-outlined">warning</span>
@@ -124,13 +144,14 @@
                     <div class="iwm-stat-value">{{ low_stock }}</div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- AQ10: Subscribers row (separate section) -->
     <div style="margin-bottom: 0.4rem;" class="iwm-section-label">Newsletter Subscribers</div>
     <div class="iwm-grid iwm-grid-4" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1.5rem;">
-        <div class="iwm-card">
+        {# AC2: Active Subscribers → Newsletter list filtered to active #}
+        <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}?is_active__exact=1" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #f8fafc; color: #0f766e;">
                     <span class="material-symbols-outlined">group</span>
@@ -140,8 +161,9 @@
                     <div class="iwm-stat-value">{{ active_subscribers }}</div>
                 </div>
             </div>
-        </div>
-        <div class="iwm-card">
+        </a>
+        {# AC2: Total Subscribers → Newsletter changelist #}
+        <a href="{% url 'admin:iwm_newslettersubscriber_changelist' %}" class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #faf5ff; color: #7c3aed;">
                     <span class="material-symbols-outlined">mail</span>
@@ -151,7 +173,7 @@
                     <div class="iwm-stat-value">{{ total_subscribers }}</div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="iwm-card" style="margin-bottom: 1.5rem;">

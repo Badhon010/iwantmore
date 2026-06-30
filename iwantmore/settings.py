@@ -7,6 +7,7 @@ from pathlib import Path
 from decouple import config
 import pymysql
 import dj_database_url
+from import_export.formats.base_formats import XLSX, CSV, JSON
 
 
 pymysql.install_as_MySQLdb()
@@ -36,18 +37,24 @@ DEBUG = config("DEBUG", cast=bool, default=not PRODUCTION)
 
 SITE_ID = config("SITE_ID", cast=int, default=1)
 GOOGLE_TAG_MANAGER_ID = config("GOOGLE_TAG_MANAGER_ID", default="")
-ALLOWED_HOSTS = sanitize_setting_values(csv_setting("ALLOWED_HOSTS", default="127.0.0.1,localhost"))
+ALLOWED_HOSTS = sanitize_setting_values(
+    csv_setting("ALLOWED_HOSTS", default="127.0.0.1,localhost")
+)
 if not PRODUCTION:
     ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = sanitize_setting_values(csv_setting("CSRF_TRUSTED_ORIGINS"))
 
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=True)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER or "no-reply@example.com")
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER or "no-reply@example.com"
+)
 ADMIN_EMAIL = config("ADMIN_EMAIL", default=DEFAULT_FROM_EMAIL)
 ADMINS = [("Store Admin", ADMIN_EMAIL)] if ADMIN_EMAIL else []
 
@@ -133,7 +140,9 @@ else:
 
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -153,7 +162,9 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if PRODUCTION else "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        if PRODUCTION
+        else "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 WHITENOISE_MANIFEST_STRICT = False
@@ -170,11 +181,17 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", cast=bool, default=PRODUCTION)
-SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", cast=int, default=31536000 if PRODUCTION else 0)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = config("SECURE_HSTS_INCLUDE_SUBDOMAINS", cast=bool, default=PRODUCTION)
+SECURE_HSTS_SECONDS = config(
+    "SECURE_HSTS_SECONDS", cast=int, default=31536000 if PRODUCTION else 0
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS", cast=bool, default=PRODUCTION
+)
 SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", cast=bool, default=PRODUCTION)
 USE_X_FORWARDED_HOST = config("USE_X_FORWARDED_HOST", cast=bool, default=PRODUCTION)
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if USE_X_FORWARDED_HOST else None
+SECURE_PROXY_SSL_HEADER = (
+    ("HTTP_X_FORWARDED_PROTO", "https") if USE_X_FORWARDED_HOST else None
+)
 
 CACHES = {
     "default": {
@@ -292,10 +309,29 @@ CKEDITOR_5_CONFIGS = {
         },
         "heading": {
             "options": [
-                {"model": "paragraph", "title": "Paragraph", "class": "ck-heading_paragraph"},
-                {"model": "heading1", "view": "h1", "title": "Heading 1", "class": "ck-heading_heading1"},
-                {"model": "heading2", "view": "h2", "title": "Heading 2", "class": "ck-heading_heading2"},
-                {"model": "heading3", "view": "h3", "title": "Heading 3", "class": "ck-heading_heading3"},
+                {
+                    "model": "paragraph",
+                    "title": "Paragraph",
+                    "class": "ck-heading_paragraph",
+                },
+                {
+                    "model": "heading1",
+                    "view": "h1",
+                    "title": "Heading 1",
+                    "class": "ck-heading_heading1",
+                },
+                {
+                    "model": "heading2",
+                    "view": "h2",
+                    "title": "Heading 2",
+                    "class": "ck-heading_heading2",
+                },
+                {
+                    "model": "heading3",
+                    "view": "h3",
+                    "title": "Heading 3",
+                    "class": "ck-heading_heading3",
+                },
             ]
         },
     }
@@ -313,11 +349,12 @@ AUDITLOG_INCLUDE_TRACKING_MODELS = (
 )
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
-IMPORT_EXPORT_FORMATS = ["xlsx", "csv", "json"]
+IMPORT_EXPORT_FORMATS = [XLSX, CSV, JSON]
 
 
 def environment_callback(request):
     from django.conf import settings as _s
+
     if _s.DEBUG:
         return ["Development", "danger"]
     return ["Production", "success"]
@@ -357,7 +394,7 @@ UNFOLD = {
     },
     "SIDEBAR": {
         "show_search": True,
-        "show_all_applications": False,
+        "show_all_applications": True,
         "navigation": [
             {
                 "title": "Dashboard",
@@ -372,11 +409,6 @@ UNFOLD = {
                         "title": "Analytics",
                         "icon": "bar_chart",
                         "link": "/admin/analytics/",
-                    },
-                    {
-                        "title": "Revenue & Profit",
-                        "icon": "trending_up",
-                        "link": "/admin/revenue-chart/",
                     },
                     {
                         "title": "Alerts",

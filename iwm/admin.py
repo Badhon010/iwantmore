@@ -339,6 +339,7 @@ class IWMAdminSite(UnfoldAdminSite):
         custom_urls = [
             path('revenue-chart/', self.admin_view(self.revenue_chart_view), name='revenue-chart'),
             path('analytics/', self.admin_view(self.analytics_view), name='analytics'),
+            path('analytics/export-csv/', self.admin_view(self.analytics_export_csv), name='analytics-export-csv'),
             path('alerts/', self.admin_view(self.alerts_view), name='alerts'),
             path('clear-cache/', self.admin_view(self.clear_cache_view), name='clear-cache'),
         ]
@@ -411,48 +412,26 @@ class IWMAdminSite(UnfoldAdminSite):
         messages.success(request, "Application cache has been cleared successfully.")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin/'))
 
-    def revenue_chart_view(self, request):
-        """Generate interactive revenue and profit trend chart"""
+    def analytics_export_csv(self, request):
+        """Export the currently filtered revenue/profit data as a CSV download."""
         range_data = _resolve_date_range(request, default_days=30)
         chart_data = _build_financial_chart_data(
             range_data['start_date'],
             range_data['end_date'],
         )
+        filename = f"analytics_{range_data['start_date']}_{range_data['end_date']}.csv"
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow(['Date', 'Revenue (Tk)', 'Profit (Tk)'])
+        for i, label in enumerate(chart_data['labels']):
+            writer.writerow([label, chart_data['revenue'][i], chart_data['profit'][i]])
+        return response
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=chart_data['labels'],
-            y=chart_data['revenue'],
-            mode='lines+markers',
-            name='Revenue',
-            line=dict(color='#ff6f91', width=3),
-            marker=dict(size=8, color='#ff6f91')
-        ))
-        fig.add_trace(go.Scatter(
-            x=chart_data['labels'],
-            y=chart_data['profit'],
-            mode='lines+markers',
-            name='Profit',
-            line=dict(color='#22c55e', width=3),
-            marker=dict(size=7, color='#22c55e')
-        ))
-
-        fig.update_layout(
-            title=f"Revenue & Profit Trend ({range_data['start_date']} to {range_data['end_date']})",
-            xaxis_title="Date",
-            yaxis_title="Amount (Tk)",
-            template="plotly_dark",
-            hovermode='x unified',
-            height=500
-        )
-
-        chart_html = plot(fig, output_type='div', include_plotlyjs='cdn')
-
-        context = {**self.each_context(request),
-            'chart': chart_html,
-            'title': 'Revenue & Profit Trend Chart'
-        }
-        return TemplateResponse(request, 'admin/revenue_chart.html', context)
+    def revenue_chart_view(self, request):
+        """AC1: Redirect to the Analytics Dashboard to avoid duplicating the same
+        revenue/profit information that is already shown there with Chart.js."""
+        return HttpResponseRedirect(reverse('admin:analytics'))
 
     def analytics_view(self, request):
         """Comprehensive analytics dashboard"""

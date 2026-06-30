@@ -14,11 +14,17 @@
 {% block content %}
 
 <div class="analytics-wrap">
-    <div class="a-toolbar">
+    <div class="a-toolbar" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
         <div>
             <h1 style="font-size: 1.55rem; font-weight: 700; color: #111827; margin: 0;">Analytics Dashboard</h1>
-            <p>See revenue, profit, and performance trends in one place with a custom date range.</p>
+            <p style="margin:0.2rem 0 0;color:#6b7280;font-size:0.875rem;">See revenue, profit, and performance trends in one place with a custom date range.</p>
         </div>
+        <a href="{% url 'admin:analytics-export-csv' %}?start_date={{ selected_start_date }}&end_date={{ selected_end_date }}"
+           style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;background:linear-gradient(135deg,#ff758c,#ff7eb3);color:#fff;border-radius:6px;font-size:0.85rem;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(255,111,145,.3);transition:opacity .2s;"
+           onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            <span class="material-symbols-outlined" style="font-size:1rem;">download</span>
+            Export CSV
+        </a>
     </div>
 
     <div class="a-card mb-6">
