@@ -10,58 +10,88 @@
   <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
   <link rel="stylesheet" href="{% static 'css/fa/css/all.min.css' %}"/>
   <link rel="icon" href="{% static 'imgs/logo.jpg' %}" type="image/x-icon">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.6.0/validator.min.js"></script> <!-- Email validation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.6.0/validator.min.js"></script>
 </head>
 <body>
   <main>
-    <div id="lmain" class="forms">
-      <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More <a href="{% url 'home' %}" class="closel">&times;</a></h1>
-      {% if error %}
-      <div class="error-message">
-        {{ error }}
+    <!-- Brand Panel (C1 fix) -->
+    <div class="auth-brand-panel" aria-hidden="true">
+      <div class="brand-panel-inner">
+        <a href="{% url 'home' %}" class="brand-logo-link">
+          <img src="{% static 'imgs/iwm.png' %}" alt="I Want More logo">
+          <span>I Want More</span>
+        </a>
+        <p class="brand-tagline">Your favourite fashion destination</p>
+        <div class="brand-features">
+          <div class="brand-feature">
+            <i class="fas fa-shipping-fast"></i>
+            <span>Fast Delivery</span>
+          </div>
+          <div class="brand-feature">
+            <i class="fas fa-shield-alt"></i>
+            <span>Secure Shopping</span>
+          </div>
+          <div class="brand-feature">
+            <i class="fas fa-undo-alt"></i>
+            <span>Easy Returns</span>
+          </div>
+        </div>
+        <div class="dec-circle dec-1"></div>
+        <div class="dec-circle dec-2"></div>
+        <div class="dec-circle dec-3"></div>
       </div>
-      {% endif %}
-      <form method="POST" id="loginForm" action="{% url 'login' %}">
-        {% csrf_token %}
-        <div class="inputs">
-          <!-- Email Field -->
-          <div class="full-input">
-            <label for="login-email"><i class="fa-solid fa-envelope"></i></label>
-            <div class="ph">Email</div>
-            <input type="email" id="login-email" name="email" required />
-            <div id="login-emailError" class="error"></div>
-          </div>
+    </div>
 
-          <!-- Password Field -->
-          <div class="full-input pass">
-            <label for="login-password"><i class="fa-solid fa-lock"></i></label>
-            <div class="ph">Password</div>
-            <input type="password" id="login-password" name="password" autocomplete="new-password" required />
-            <button type="button" id="login-eye-button">
-              <i class="fa-solid fa-eye open" id="login-open"></i>
-              <i class="fa-solid fa-eye-slash close" id="login-close" style="display: none;"></i>
-            </button>
-            <div id="login-passwordError" class="error"></div>
-          </div>
+    <!-- Form Panel -->
+    <div class="auth-form-panel">
+      <div id="lmain" class="forms">
+        <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More <a href="{% url 'home' %}" class="closel">&times;</a></h1>
+        {% if error %}
+        <div class="error-message">
+          {{ error }}
         </div>
-        <div class="ufp"><a href="{% url 'password_reset' %}" class="fp">Forgot password?</a></div>
-        <button type="submit">Login</button>
+        {% endif %}
+        <form method="POST" id="loginForm" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="inputs">
+            <!-- Email Field -->
+            <div class="full-input">
+              <label for="login-email"><i class="fa-solid fa-envelope"></i></label>
+              <div class="ph">Email</div>
+              <input type="email" id="login-email" name="email" autocomplete="email" required />
+              <div id="login-emailError" class="error"></div>
+            </div>
 
-        <div class="links">
-          <p>Don't have an account?</p>
-          <a href="{% url "signup" %}">Sign up</a>
-        </div>
-        <div class="line"><hr>or<hr></div>
-        <div class="more-option">
-          <!-- Use django-allauth endpoints to initiate social login -->
-          <a class="social-btn google" href="/accounts/google/login/?process=login">
-            Sign in with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign in with Google" />
-          </a>
-          <a class="social-btn facebook" href="/accounts/facebook/login/?process=login">
-            Sign in with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign in with Facebook" />
-          </a>
-        </div>
-      </form>
+            <!-- Password Field -->
+            <div class="full-input pass">
+              <label for="login-password"><i class="fa-solid fa-lock"></i></label>
+              <div class="ph">Password</div>
+              <input type="password" id="login-password" name="password" autocomplete="current-password" required />
+              <button type="button" id="login-eye-button">
+                <i class="fa-solid fa-eye open" id="login-open"></i>
+                <i class="fa-solid fa-eye-slash close" id="login-close" style="display: none;"></i>
+              </button>
+              <div id="login-passwordError" class="error"></div>
+            </div>
+          </div>
+          <div class="ufp"><a href="{% url 'password_reset' %}" class="fp">Forgot password?</a></div>
+          <button type="submit">Login</button>
+
+          <div class="links">
+            <p>Don't have an account?</p>
+            <a href="{% url "signup" %}">Sign up</a>
+          </div>
+          <div class="line"><hr>or<hr></div>
+          <div class="more-option">
+            <a class="social-btn google" href="/accounts/google/login/?process=login">
+              Sign in with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign in with Google" />
+            </a>
+            <a class="social-btn facebook" href="/accounts/facebook/login/?process=login">
+              Sign in with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign in with Facebook" />
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
   </main>
 

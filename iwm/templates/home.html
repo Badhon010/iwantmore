@@ -17,7 +17,7 @@
 {% block content %}
 <div class="hero">
     <div class="welcome">
-        <h1>Welcome to IWantMore</h1>
+        <p class="welcome-text">Welcome to IWantMore</p>
     </div>
     <h1>Discover Your Style</h1>
     <hr>
@@ -80,7 +80,7 @@
                 </div>
             {% endif %}
             <h3>{{ category.name }}</h3>
-            <a href="{% url 'shop' %}" class="btn-explore">Explore</a>
+            <a href="{% url 'category_products' category_slug=category.slug %}" class="btn-explore">Explore</a>
         </div>
         {% empty %}
         <p>No categories available at the moment.</p>

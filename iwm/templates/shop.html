@@ -24,6 +24,34 @@ today!{% endblock dis %}
     </div>
   </div>
 
+  <!-- H3: Breadcrumb navigation -->
+  <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+      {% if current_subcategory %}
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item"><a href="{% url 'category_products' category_slug=current_category.slug %}">{{ current_category.name }}</a></li>
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item current" aria-current="page">{{ current_subcategory.name }}</li>
+      {% elif current_category %}
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item current" aria-current="page">{{ current_category.name }}</li>
+      {% elif query %}
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item current" aria-current="page">Results for &ldquo;{{ query }}&rdquo;</li>
+      {% else %}
+        <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+        <li class="breadcrumb-item current" aria-current="page">Shop</li>
+      {% endif %}
+    </ol>
+  </nav>
+
   <div class="shop-content-wrapper">
     <!-- Sidebar Filters Panel -->
     <div class="filters-container">
@@ -235,10 +263,19 @@ today!{% endblock dis %}
         {% include "components/item_cart.html" with product=product %}
         {% empty %}
         <div class="no-products">
-          <i class="fas fa-shopping-bag"></i>
+          <div class="no-products-icon-wrap">
+            <i class="fas fa-search"></i>
+          </div>
           <h3>No products found</h3>
-          <p>Try adjusting your filters or search criteria</p>
-          <a href="{% url 'shop' %}" class="reset-filters">Clear all filters</a>
+          <p>Try adjusting your filters or search criteria, or browse our full collection.</p>
+          <div class="no-products-actions">
+            <a href="{% url 'shop' %}" class="reset-filters">
+              <i class="fas fa-times-circle"></i> Clear all filters
+            </a>
+            <a href="{% url 'shop' %}" class="browse-all-btn">
+              <i class="fas fa-store"></i> Browse All Products
+            </a>
+          </div>
         </div>
         {% endfor %}
       </div>

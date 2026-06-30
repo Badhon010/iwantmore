@@ -6,9 +6,16 @@
     position: fixed;
     right: 90px;
     bottom: 20px;
-    z-index: 9999;
+    z-index: 999;
     font-family: inherit;
     color: var(--text-color, #495057);
+  }
+
+  /* Lift above mobile sticky nav bar */
+  @media screen and (max-width: 810px) {
+    .chat-widget {
+      bottom: 84px;
+    }
   }
 
   .chat-toggle {

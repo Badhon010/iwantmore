@@ -13,9 +13,14 @@
   <div class="wishlist-content">
     <div class="wishlist-items">
       <div class="empty-wishlist-message" id="emptyWishlistMessage">
-        <i class="fas fa-heart empty-wishlist-icon"></i>
-        <p>Your wishlist is empty</p>
-        <a href="{% url 'shop' %}" class="btn continue-shopping-btn">Shop Now</a>
+        <div class="empty-state-icon-wrap">
+          <i class="fas fa-heart"></i>
+        </div>
+        <h2 class="empty-state-heading">Your wishlist is empty</h2>
+        <p class="empty-state-text">Save the items you love and come back to them anytime.</p>
+        <a href="{% url 'shop' %}" class="btn wishlist-shop-btn">
+          <i class="fas fa-store"></i>&nbsp; Browse Products
+        </a>
       </div>
       
       <div class="wishlist-grid" id="wishlistGrid">

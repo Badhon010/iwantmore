@@ -34,11 +34,12 @@
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   {% endif %}
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
   <header>
     <div id="i-h">
       <div class="title">
         <img src="{% static 'imgs/iwm.png' %}" alt="I Want More Logo">
-        <h1>I Want More</h1>
+        <span class="site-name">I Want More</span>
       </div>
       <nav class="nav1">
         <ul>
@@ -127,17 +128,37 @@
       <div id="suggestions" class="suggestions-dropdown"></div>
     </div>
   </header>
-  <main>
+  <main id="main-content">
     <!-- Add message display section -->
     {% if messages %}
-    <div class="messages-container">
+    <div class="messages-container" id="messages-container">
       {% for message in messages %}
       <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+        <span>{{ message }}</span>
+        <button type="button" class="btn-close" aria-label="Dismiss message">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       {% endfor %}
     </div>
+    <script>
+    (function () {
+      var container = document.getElementById('messages-container');
+      if (!container) return;
+      function dismissAlert(el) {
+        el.classList.add('dismissing');
+        setTimeout(function () { el.remove(); }, 420);
+      }
+      container.querySelectorAll('.btn-close').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          dismissAlert(btn.closest('.alert'));
+        });
+      });
+      container.querySelectorAll('.alert').forEach(function (el, i) {
+        setTimeout(function () { dismissAlert(el); }, 5000 + i * 400);
+      });
+    })();
+    </script>
     {% endif %}
     
     {% block content %}{% endblock %}
@@ -201,7 +222,7 @@
         </div>
       </div>
     </div>
-    <p>&copy; 2025 I Want More. All rights reserved.</p>
+    <p>&copy; {% now "Y" %} I Want More. All rights reserved.</p>
   </footer>
   <a href="https://m.me/iwantmore.bd?_rdc=1&_rdr#" aria-label="Messenger" class="messenger-icon"
             target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-facebook-messenger"></i></a>

@@ -34,12 +34,12 @@
         <form method="POST" id="contactForm">
             {% csrf_token %}
             <div class="form-group">
-                <input type="text" id="name" name="name" class="form-control" placeholder=" " required>
+                <input type="text" id="name" name="name" class="form-control" autocomplete="name" placeholder=" " required>
                 <label for="name">Your Name</label>
             </div>
             
             <div class="form-group">
-                <input type="email" id="email" name="email" class="form-control" placeholder=" " required>
+                <input type="email" id="email" name="email" class="form-control" autocomplete="email" placeholder=" " required>
                 <label for="email">Your Email</label>
             </div>
             

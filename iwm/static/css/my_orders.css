@@ -108,10 +108,17 @@
 }
 
 .details-btn {
-    background: #007BFF;
+    background: linear-gradient(90deg, #ff6f91 0%, #ff9eb7 100%);
     color: white;
     cursor: pointer;
     border: none;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.details-btn:hover {
+    background: linear-gradient(90deg, #ff4e6a 0%, #ff7fa0 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(255, 111, 145, 0.35);
 }
 
 .track-btn {

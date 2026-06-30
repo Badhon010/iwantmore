@@ -10,6 +10,28 @@
     <script src="{% static 'js/item_cart.js' %}" defer></script>
 {% endblock head %}
 {% block content %}
+<!-- H3: Breadcrumb navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <ol class="breadcrumb-list">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+    <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+    <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+    {% if product.category %}
+    <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'category_products' category_slug=product.category.slug %}">{{ product.category.name }}</a>
+    </li>
+    {% if product.subcategory %}
+    <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'subcategory_products' category_slug=product.category.slug subcategory_slug=product.subcategory.slug %}">{{ product.subcategory.name }}</a>
+    </li>
+    {% endif %}
+    {% endif %}
+    <li class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></li>
+    <li class="breadcrumb-item current" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
 <section class="product-detail">
     <div class="product-container">
         <!-- Product Image Section -->

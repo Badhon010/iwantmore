@@ -5,7 +5,7 @@ body{background:#f9f9f9;color:#2d2d2d;overflow-x:hidden;background-image:radial-
 .hero{position:relative;margin:2vw;padding:3vw;text-align:center;color:#2d2d2d;border-radius:20px;overflow:hidden;transform:translateY(-10px);background:linear-gradient(135deg,#fffafe 0%,#fff5f8 100%);box-shadow:0 20px 50px rgba(0,0,0,.08);animation:fadeIn 1s ease-out}
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--btn-bg) 0%,#ff9eb7 100%)}
 .hero::after{content:'';position:absolute;top:10%;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(rgba(255,111,145,.1) 0%,rgba(255,111,145,0) 70%);z-index:0}
-.welcome h1{font-size:1.4rem!important;margin-top:20px;font-weight:600;background:linear-gradient(90deg,var(--btn-bg) 0%,#ff9eb7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding:8px 20px;border-radius:30px;border:1px solid rgba(255,111,145,.1);box-shadow:0 8px 20px rgba(255,111,145,.15);position:relative;z-index:2}
+.welcome .welcome-text{font-size:1.4rem!important;margin-top:20px;font-weight:600;background:linear-gradient(90deg,var(--btn-bg) 0%,#ff9eb7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding:8px 20px;border-radius:30px;border:1px solid rgba(255,111,145,.1);box-shadow:0 8px 20px rgba(255,111,145,.15);position:relative;z-index:2}
 .hero h1{font-size:3.5rem;font-weight:700;letter-spacing:2px;position:relative;z-index:2}
 .hero hr{width:60%;height:4px;margin:20px auto;background:linear-gradient(90deg,transparent 0%,var(--btn-bg) 50%,transparent 100%);border:0;position:relative;z-index:2}
 
@@ -296,5 +296,5 @@ body{background:#f9f9f9;color:#2d2d2d;overflow-x:hidden;background-image:radial-
   .product-list{gap:15px}
 }
 @media (max-width:480px){
-  .welcome h1{font-size:1.2rem!important;padding:6px 15px}
+  .welcome .welcome-text{font-size:1.2rem!important;padding:6px 15px}
 }

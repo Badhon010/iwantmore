@@ -13,9 +13,14 @@
   <div class="cart-content">
     <div class="cart-items">
       <div class="empty-cart-message" id="emptyCartMessage">
-        <i class="fas fa-shopping-cart empty-cart-icon"></i>
-        <p>Your cart is empty</p>
-        <a href="{% url 'shop' %}" class="btn continue-shopping-btn">Continue Shopping</a>
+        <div class="empty-state-icon-wrap">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+        <h2 class="empty-state-heading">Your cart is empty</h2>
+        <p class="empty-state-text">Looks like you haven't added anything yet.<br>Discover products you'll love!</p>
+        <a href="{% url 'shop' %}" class="btn continue-shopping-btn">
+          <i class="fas fa-store"></i>&nbsp; Start Shopping
+        </a>
       </div>
       
       <table class="cart-table" id="cartTable">

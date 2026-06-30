@@ -19,101 +19,112 @@
     --dropdown-border: #dddddd;
 }
 /* Alert message styles */
+/* H7: Messages — full-width, coloured left border, prominent */
 .messages-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto 20px;
-    padding: 0 15px;
+    padding: 0 24px;
 }
 
 .alert {
     position: relative;
-    padding: 12px 20px;
-    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-left-width: 5px;
+    border-radius: 8px;
     animation: fadeIn 0.3s ease-in-out;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .alert-success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
+    color: #14532d;
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    border-left-color: #16a34a;
 }
 
 .alert-info {
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
+    color: #075985;
+    background-color: #f0f9ff;
+    border-color: #bae6fd;
+    border-left-color: #0284c7;
 }
 
 .alert-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeeba;
+    color: #854d0e;
+    background-color: #fffbeb;
+    border-color: #fde68a;
+    border-left-color: #d97706;
 }
 
 .alert-danger, .alert-error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+    color: #7f1d1d;
+    background-color: #fff1f2;
+    border-color: #fecdd3;
+    border-left-color: #e11d48;
 }
 
 .alert-dismissible {
-    padding-right: 40px;
+    padding-right: 14px;
 }
 
 .btn-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 12px 15px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     color: inherit;
-    background: transparent;
+    background: rgba(0,0,0,0.07);
     border: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-    opacity: 0.5;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    opacity: 0.65;
     cursor: pointer;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, background 0.15s ease;
+    line-height: 1;
 }
 
 .btn-close:hover {
     opacity: 1;
+    background: rgba(0,0,0,0.14);
 }
 
 .fade {
-    transition: opacity 0.15s linear;
+    transition: opacity 0.3s linear;
 }
 
 .fade.show {
     opacity: 1;
 }
 
+.alert.dismissing {
+    animation: fadeOut 0.4s ease-out forwards;
+}
+
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); max-height: 100px; }
+    to   { opacity: 0; transform: translateY(-8px); max-height: 0; padding: 0; margin: 0; }
 }
 
 @media (max-width: 576px) {
-    .messages-container {
-        padding: 0 10px;
-    }
-    
-    .alert {
-        padding: 10px 15px;
-    }
-    
-    .btn-close {
-        padding: 10px 12px;
-    }
+    .messages-container { padding: 0 12px; }
+    .alert { padding: 12px 14px; font-size: 0.9rem; }
 }
 
 /* Base styles */
@@ -160,11 +171,44 @@ main {
     background-size: 90px;
 }
 
-.title h1 {
+.title span.site-name {
     font-size: 20px;
     font-weight: 500;
     color: var(--text-color);
     margin: 0;
+}
+
+/* ── Skip-to-content link (Q6) ─────────────────────── */
+.skip-to-content {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--btn-bg);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 0 0 6px 6px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    z-index: 9999;
+    transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+    top: 0;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ── Global accessible focus rings (Q9) ────────────── */
+*:focus-visible {
+    outline: 2px solid var(--btn-bg);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+/* Remove default outline only when focus-visible is supported */
+*:focus:not(:focus-visible) {
+    outline: none;
 }
 
 header .nav1 ul {
@@ -1468,4 +1512,12 @@ header .nav1 a:hover,
     box-shadow:0 5px 15px rgba(0,0,0,.2);
     cursor:pointer;
     transition:.3s ease-in-out;
+    z-index: 10;
+}
+
+/* Lift floating buttons above the mobile sticky nav bar */
+@media screen and (max-width: 810px) {
+    .messenger-icon {
+        bottom: 84px;
+    }
 }

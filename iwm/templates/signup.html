@@ -15,78 +15,106 @@
 </head>
 <body>
   <main>
-    <div id="smain" class="forms">
-      <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More<a href="{% url 'home' %}" class="closel">&times;</a></h1>
-{% if error %}
-<div class="error-message">
-  {{ error }}
-</div>
-{% endif %}
-      <form method="POST" id="signupForm" action="{% url 'signup' %}">
-        {% csrf_token %}
-        <!-- Username Field -->
-        <div class="inputs">
-          <div class="full-input">
-            <label for="signup-username"><i class="fa-solid fa-user"></i></label>
-            <div class="ph">Username</div>
-            <input type="text" id="signup-username" name="username" required />
-            <div id="user-error" class="error"></div>
+    <!-- Brand Panel (C1 fix) -->
+    <div class="auth-brand-panel" aria-hidden="true">
+      <div class="brand-panel-inner">
+        <a href="{% url 'home' %}" class="brand-logo-link">
+          <img src="{% static 'imgs/iwm.png' %}" alt="I Want More logo">
+          <span>I Want More</span>
+        </a>
+        <p class="brand-tagline">Join thousands of happy shoppers</p>
+        <div class="brand-features">
+          <div class="brand-feature">
+            <i class="fas fa-tag"></i>
+            <span>Exclusive Deals</span>
           </div>
-
-          <!-- Email Field -->
-
-          <div class="full-input">
-            <label for="signup-email"><i class="fa-solid fa-envelope"></i></label>
-            <div class="ph">Email</div>
-            <input type="email" id="signup-email" name="email" required />
-            <div id="signup-emailError" class="error"></div>
+          <div class="brand-feature">
+            <i class="fas fa-heart"></i>
+            <span>Wishlist & Saves</span>
           </div>
-
-          <!-- Password Field -->
-          <div class="full-input pass">
-            <label for="signup-password"><i class="fa-solid fa-lock"></i></label>
-            <div class="ph">Password</div>
-            <input type="password" id="signup-password" name="password" autocomplete="new-password" required />
-            <button type="button" id="signup-eye-button">
-              <i class="fa-solid fa-eye open" id="signup-open"></i>
-              <i class="fa-solid fa-eye-slash close" id="signup-close" style="display: none;"></i>
-            </button>
-            <div id="signup-passwordError" class="error"></div>
-          </div>
-
-
-          <!-- Confirm Password Field -->
-          <div class="full-input pass">
-            <label for="signup-confirm-password"><i class="fa-solid fa-key"></i></label>
-            <div class="ph">Confirm Password</div>
-            <input type="password" id="signup-confirm-password" name="confirm_password" required />
-            <button type="button" id="signup-eye-buttonc" class="eb">
-              <i class="fa-solid fa-eye open" id="signupc-open"></i>
-              <i class="fa-solid fa-eye-slash close" id="signupc-close" style="display: none;"></i>
-            </button>
-            <div id="signup-confirm-password-error" class="error">Passwords do not match.</div>
+          <div class="brand-feature">
+            <i class="fas fa-truck"></i>
+            <span>Order Tracking</span>
           </div>
         </div>
+        <div class="dec-circle dec-1"></div>
+        <div class="dec-circle dec-2"></div>
+        <div class="dec-circle dec-3"></div>
+      </div>
+    </div>
 
-        <button type="submit">Sign Up</button>
-        <div class="links">
-          <p>Already have an account?</p>
-          <a href="{% url "login" %}">Login</a>
+    <!-- Form Panel -->
+    <div class="auth-form-panel">
+      <div id="smain" class="forms">
+        <h1><img src="{% static 'imgs/iwm.png' %}" alt="logo"> I Want More<a href="{% url 'home' %}" class="closel">&times;</a></h1>
+        {% if error %}
+        <div class="error-message">
+          {{ error }}
         </div>
-        <div class="line"><hr>or<hr></div>
-        <div class="more-option">
-          <!-- Use django-allauth endpoints to initiate social signup -->
-          <a class="social-btn google" href="/accounts/google/login/?process=signup">
-            Sign up with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign up with Google" />
-          </a>
-          <a class="social-btn facebook" href="/accounts/facebook/login/?process=signup">
-            Sign up with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign up with Facebook" />
-          </a>
-        </div>
-      </form>
+        {% endif %}
+        <form method="POST" id="signupForm" action="{% url 'signup' %}">
+          {% csrf_token %}
+          <!-- Username Field -->
+          <div class="inputs">
+            <div class="full-input">
+              <label for="signup-username"><i class="fa-solid fa-user"></i></label>
+              <div class="ph">Username</div>
+              <input type="text" id="signup-username" name="username" autocomplete="username" required />
+              <div id="user-error" class="error"></div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="full-input">
+              <label for="signup-email"><i class="fa-solid fa-envelope"></i></label>
+              <div class="ph">Email</div>
+              <input type="email" id="signup-email" name="email" autocomplete="email" required />
+              <div id="signup-emailError" class="error"></div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="full-input pass">
+              <label for="signup-password"><i class="fa-solid fa-lock"></i></label>
+              <div class="ph">Password</div>
+              <input type="password" id="signup-password" name="password" autocomplete="new-password" required />
+              <button type="button" id="signup-eye-button">
+                <i class="fa-solid fa-eye open" id="signup-open"></i>
+                <i class="fa-solid fa-eye-slash close" id="signup-close" style="display: none;"></i>
+              </button>
+              <div id="signup-passwordError" class="error"></div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="full-input pass">
+              <label for="signup-confirm-password"><i class="fa-solid fa-key"></i></label>
+              <div class="ph">Confirm Password</div>
+              <input type="password" id="signup-confirm-password" name="confirm_password" autocomplete="new-password" required />
+              <button type="button" id="signup-eye-buttonc" class="eb">
+                <i class="fa-solid fa-eye open" id="signupc-open"></i>
+                <i class="fa-solid fa-eye-slash close" id="signupc-close" style="display: none;"></i>
+              </button>
+              <div id="signup-confirm-password-error" class="error">Passwords do not match.</div>
+            </div>
+          </div>
+
+          <button type="submit">Sign Up</button>
+          <div class="links">
+            <p>Already have an account?</p>
+            <a href="{% url "login" %}">Login</a>
+          </div>
+          <div class="line"><hr>or<hr></div>
+          <div class="more-option">
+            <a class="social-btn google" href="/accounts/google/login/?process=signup">
+              Sign up with Google <img src="{% static 'imgs/google.svg' %}" alt="Sign up with Google" />
+            </a>
+            <a class="social-btn facebook" href="/accounts/facebook/login/?process=signup">
+              Sign up with Facebook <img src="{% static 'imgs/facebook-color.svg' %}" alt="Sign up with Facebook" />
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
   </main>
   <script src="{% static 'js/auth.js' %}"></script>
-{% if alert_message %}<script>showAlertAndRedirect('{{ alert_message }}', '/');</script>{% endif %}
+  {% if alert_message %}<script>showAlertAndRedirect('{{ alert_message }}', '/');</script>{% endif %}
 </body>
 </html>
