@@ -68,20 +68,22 @@
 </div>
 
 <div class="categories">
-    <h2>Shop By Categories</h2>
-    <div class="cont">
+    <div class="cat-header">
+        <h2>Shop By Categories</h2>
+        <a href="{% url 'shop' %}" class="cat-view-all">View All</a>
+    </div>
+    <div class="cat-scroll-row">
         {% for category in categories %}
-        <div class="category-item">
-            {% if category.image %}
-                <img src="{{ category.image.url }}" alt="{{ category.name }}">
-            {% else %}
-                <div class="category-placeholder">
-                    <i class="fas fa-image"></i>
-                </div>
-            {% endif %}
-            <h3>{{ category.name }}</h3>
-            <a href="{% url 'category_products' category_slug=category.slug %}" class="btn-explore">Explore</a>
-        </div>
+        <a href="{% url 'category_products' category_slug=category.slug %}" class="cat-circle-item">
+            <div class="cat-circle-img">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                {% else %}
+                    <div class="cat-circle-placeholder"><i class="fas fa-image"></i></div>
+                {% endif %}
+            </div>
+            <span class="cat-circle-name">{{ category.name }}</span>
+        </a>
         {% empty %}
         <p>No categories available at the moment.</p>
         {% endfor %}
