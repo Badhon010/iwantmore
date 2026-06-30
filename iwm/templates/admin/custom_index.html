@@ -4,236 +4,39 @@
 {% block title %}Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block content %}
-<style>
-    .iwm-dashboard { font-family: inherit; }
-    .iwm-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
-    .iwm-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .iwm-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (max-width: 1100px) { .iwm-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) {
-        .iwm-grid-4,
-        .iwm-grid-2 { grid-template-columns: 1fr; }
-    }
-    .iwm-card {
-        background: var(--color-white, #fff);
-        border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 0.85rem;
-        padding: 1.25rem;
-        transition: box-shadow 0.2s;
-    }
-    .dark .iwm-card {
-        background: var(--color-gray-900, #111827);
-        border-color: var(--border-color, #374151);
-    }
-    .iwm-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
-    .iwm-stat { display: flex; align-items: center; gap: 1rem; }
-    .iwm-stat-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 0.8rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-    .iwm-stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.15rem; }
-    .dark .iwm-stat-label { color: #9ca3af; }
-    .iwm-stat-value { font-size: 1.35rem; font-weight: 700; color: #111827; }
-    .dark .iwm-stat-value { color: #f3f4f6; }
-    .iwm-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .dark .iwm-section-title { color: #e5e7eb; }
-    .iwm-overview-shell {
-        background: linear-gradient(180deg, rgba(14, 165, 233, 0.08), rgba(255, 255, 255, 0));
-        border: 1px solid #e5e7eb;
-        border-radius: 0.85rem;
-        padding: 1rem;
-    }
-    .dark .iwm-overview-shell {
-        background: linear-gradient(180deg, rgba(14, 165, 233, 0.12), rgba(15, 23, 42, 0));
-        border-color: #334155;
-    }
-    .iwm-filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: end;
-        margin-bottom: 1rem;
-    }
-    .iwm-field { min-width: 165px; flex: 1 1 165px; }
-    .iwm-field label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 0.35rem;
-    }
-    .dark .iwm-field label { color: #d1d5db; }
-    .iwm-field input {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.65rem;
-        padding: 0.68rem 0.82rem;
-        background: #fff;
-        color: #111827;
-    }
-    .dark .iwm-field input {
-        background: #0f172a;
-        border-color: #475569;
-        color: #f8fafc;
-    }
-    .iwm-filter-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.55rem;
-    }
-    .iwm-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.65rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        justify-content: center;
-    }
-    .iwm-btn-primary {
-        color: #fff;
-        background: linear-gradient(135deg, #ff6f91, #ff4e6a);
-    }
-    .iwm-btn-secondary {
-        color: #111827;
-        background: #e5e7eb;
-    }
-    .dark .iwm-btn-secondary {
-        color: #f8fafc;
-        background: #334155;
-    }
-    .iwm-preset-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    .iwm-preset {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.45rem 0.82rem;
-        border-radius: 9999px;
-        background: #f3f4f6;
-        color: #374151;
-        text-decoration: none;
-        font-size: 0.78rem;
-        font-weight: 700;
-    }
-    .dark .iwm-preset {
-        background: #1f2937;
-        color: #d1d5db;
-    }
-    .iwm-preset.is-active {
-        background: #111827;
-        color: #fff;
-    }
-    .dark .iwm-preset.is-active {
-        background: #f8fafc;
-        color: #111827;
-    }
-    .iwm-overview-stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    @media (max-width: 760px) {
-        .iwm-overview-stats { grid-template-columns: 1fr; }
-    }
-    .iwm-mini-stat {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(226, 232, 240, 0.95);
-        border-radius: 0.8rem;
-        padding: 0.9rem;
-    }
-    .dark .iwm-mini-stat {
-        background: rgba(15, 23, 42, 0.75);
-        border-color: rgba(51, 65, 85, 1);
-    }
-    .iwm-mini-stat span {
-        display: block;
-        font-size: 0.76rem;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-    }
-    .dark .iwm-mini-stat span { color: #94a3b8; }
-    .iwm-mini-stat strong {
-        font-size: 1.05rem;
-        color: #111827;
-    }
-    .dark .iwm-mini-stat strong { color: #f8fafc; }
-    .iwm-chart-wrap {
-        position: relative;
-        min-height: 310px;
-    }
-    .iwm-alert-item {
-        padding: 0.75rem 1rem;
-        border-left: 3px solid #e5e7eb;
-        border-radius: 0 0.5rem 0.5rem 0;
-        background: #f9fafb;
-        margin-bottom: 0.5rem;
-        transition: background 0.15s;
-    }
-    .dark .iwm-alert-item { background: #1f2937; }
-    .iwm-alert-item:hover { background: #f3f4f6; }
-    .dark .iwm-alert-item:hover { background: #374151; }
-    .iwm-alert-critical { border-left-color: #ef4444; }
-    .iwm-alert-warning { border-left-color: #f59e0b; }
-    .iwm-alert-info { border-left-color: #3b82f6; }
-    .iwm-alert-title { font-size: 0.85rem; font-weight: 600; color: #1f2937; }
-    .dark .iwm-alert-title { color: #f3f4f6; }
-    .iwm-alert-msg { font-size: 0.78rem; color: #6b7280; margin-top: 0.15rem; }
-    .dark .iwm-alert-msg { color: #9ca3af; }
-    .iwm-alert-meta { font-size: 0.7rem; color: #9ca3af; margin-top: 0.25rem; }
-    .iwm-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.15rem 0.5rem;
-        border-radius: 9999px;
-        font-size: 0.7rem;
-        font-weight: 700;
-    }
-    .iwm-apps {
-        background: var(--color-white, #fff);
-        border: 1px solid var(--border-color, #e5e7eb);
-        border-radius: 0.85rem;
-        padding: 1rem;
-    }
-    .dark .iwm-apps {
-        background: var(--color-gray-900, #111827);
-        border-color: var(--border-color, #374151);
-    }
-</style>
 
 <div class="iwm-dashboard">
+
+    <!-- AQ6: Greeting row with username and date -->
+    <div class="iwm-greeting">
+        {% now "H" as current_hour %}
+        <h2 class="iwm-greeting-title">
+            {% if current_hour < "12" %}Good morning{% elif current_hour < "18" %}Good afternoon{% else %}Good evening{% endif %},
+            {{ request.user.get_short_name|default:request.user.username }} ·
+            <span style="color: #ff6f91;">{% now "l, F j, Y" %}</span>
+        </h2>
+        <p class="iwm-greeting-sub">Here's what's happening with your store today.</p>
+    </div>
+
+    <!-- Row 1: Today's key metrics -->
     <div class="iwm-grid iwm-grid-4">
         <div class="iwm-card">
             <div class="iwm-stat">
-                <div class="iwm-stat-icon" style="background: #fff1f2; color: #e11d48;">
+                <!-- AQ3: Changed icon color from #e11d48 to #ff6f91, background from #fff1f2 to #fff0f4 -->
+                <div class="iwm-stat-icon" style="background: #fff0f4; color: #ff6f91;">
                     <span class="material-symbols-outlined">payments</span>
                 </div>
                 <div>
                     <div class="iwm-stat-label">Today's Revenue</div>
                     <div class="iwm-stat-value">Tk {{ today_revenue|floatformat:0 }}</div>
+                    {# AH1: trend vs yesterday #}
+                    {% if today_revenue > yesterday_revenue %}
+                    <span class="iwm-trend iwm-trend-up">▲ vs yesterday</span>
+                    {% elif today_revenue < yesterday_revenue %}
+                    <span class="iwm-trend iwm-trend-down">▼ vs yesterday</span>
+                    {% else %}
+                    <span class="iwm-trend">— same as yesterday</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -245,6 +48,14 @@
                 <div>
                     <div class="iwm-stat-label">Today's Profit</div>
                     <div class="iwm-stat-value">Tk {{ today_profit|floatformat:0 }}</div>
+                    {# AH1: trend vs yesterday #}
+                    {% if today_profit > yesterday_profit %}
+                    <span class="iwm-trend iwm-trend-up">▲ vs yesterday</span>
+                    {% elif today_profit < yesterday_profit %}
+                    <span class="iwm-trend iwm-trend-down">▼ vs yesterday</span>
+                    {% else %}
+                    <span class="iwm-trend">— same as yesterday</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -256,6 +67,14 @@
                 <div>
                     <div class="iwm-stat-label">Today's Orders</div>
                     <div class="iwm-stat-value">{{ today_orders }}</div>
+                    {# AH1: trend vs yesterday #}
+                    {% if today_orders > yesterday_orders %}
+                    <span class="iwm-trend iwm-trend-up">▲ vs yesterday</span>
+                    {% elif today_orders < yesterday_orders %}
+                    <span class="iwm-trend iwm-trend-down">▼ vs yesterday</span>
+                    {% else %}
+                    <span class="iwm-trend">— same as yesterday</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -272,7 +91,18 @@
         </div>
     </div>
 
-    <div class="iwm-grid iwm-grid-4">
+    {# AH1: Pending-orders banner — only shown when orders await payment. #}
+    {% if total_pending %}
+    <div class="iwm-pending-banner">
+        <span class="material-symbols-outlined">schedule</span>
+        <strong>{{ total_pending }} order{{ total_pending|pluralize }}</strong> awaiting payment —
+        <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-pending-link">Review now →</a>
+    </div>
+    {% endif %}
+
+    <!-- AQ10: Inventory stats row (separated from subscribers) -->
+    <div style="margin-bottom: 0.4rem;" class="iwm-section-label">Inventory</div>
+    <div class="iwm-grid iwm-grid-4" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #fef2f2; color: #dc2626;">
@@ -295,6 +125,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- AQ10: Subscribers row (separate section) -->
+    <div style="margin-bottom: 0.4rem;" class="iwm-section-label">Newsletter Subscribers</div>
+    <div class="iwm-grid iwm-grid-4" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1.5rem;">
         <div class="iwm-card">
             <div class="iwm-stat">
                 <div class="iwm-stat-icon" style="background: #f8fafc; color: #0f766e;">
@@ -349,38 +184,62 @@
                 <a href="?range=30" class="iwm-preset {% if overview_range == '30' %}is-active{% endif %}">30 Days</a>
                 <a href="?range=90" class="iwm-preset {% if overview_range == '90' %}is-active{% endif %}">90 Days</a>
             </div>
+            <!-- AQ8: Renamed labels + range caption -->
             <div class="iwm-overview-stats">
                 <div class="iwm-mini-stat">
-                    <span>Range Revenue</span>
+                    <span>Revenue</span>
                     <strong>Tk {{ overview_revenue|floatformat:0 }}</strong>
+                    <span class="iwm-mini-caption">
+                        {% if overview_range == 'today' %}Today
+                        {% elif overview_range %}Last {{ overview_range }} days
+                        {% else %}Selected range{% endif %}
+                    </span>
                 </div>
                 <div class="iwm-mini-stat">
-                    <span>Range Profit</span>
+                    <span>Profit</span>
                     <strong>Tk {{ overview_profit|floatformat:0 }}</strong>
+                    <span class="iwm-mini-caption">
+                        {% if overview_range == 'today' %}Today
+                        {% elif overview_range %}Last {{ overview_range }} days
+                        {% else %}Selected range{% endif %}
+                    </span>
                 </div>
                 <div class="iwm-mini-stat">
-                    <span>Orders In Range</span>
+                    <span>Orders</span>
                     <strong>{{ overview_orders }}</strong>
+                    <span class="iwm-mini-caption">
+                        {% if overview_range == 'today' %}Today
+                        {% elif overview_range %}Last {{ overview_range }} days
+                        {% else %}Selected range{% endif %}
+                    </span>
                 </div>
             </div>
+            <!-- AH4: Empty state shown via JS when overviewData.labels is empty -->
             <div class="iwm-chart-wrap">
                 <canvas id="overviewChart"></canvas>
+                <div class="iwm-chart-empty" id="overviewChartEmpty">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                    No data for this period
+                </div>
             </div>
         </div>
     </div>
 
     <div class="iwm-grid iwm-grid-2">
-        {% if recent_alerts %}
+        <!-- AH2: Left column always rendered; shows empty state when no alerts -->
         <div class="iwm-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <div class="iwm-section-title" style="margin-bottom: 0;">
                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">notifications_active</span>
                     Recent Alerts
                 </div>
+                {% if unread_alerts %}
                 <a href="{% url 'admin:alerts' %}" class="iwm-badge" style="background: #fef2f2; color: #ef4444; text-decoration: none;">
                     {{ unread_alerts }} unread
                 </a>
+                {% endif %}
             </div>
+            {% if recent_alerts %}
             {% for alert in recent_alerts %}
             <div class="iwm-alert-item {% if alert.severity == 'critical' %}iwm-alert-critical{% elif alert.severity == 'warning' %}iwm-alert-warning{% else %}iwm-alert-info{% endif %}">
                 <div class="iwm-alert-title">{{ alert.title }}</div>
@@ -388,28 +247,34 @@
                 <div class="iwm-alert-meta">{{ alert.created_at|date:"M d, Y H:i" }}</div>
             </div>
             {% endfor %}
+            {% else %}
+            <div class="iwm-alert-empty">
+                <span class="material-symbols-outlined">check_circle</span>
+                All clear — no recent alerts
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         <div class="iwm-card">
             <div class="iwm-section-title">
                 <span class="material-symbols-outlined" style="font-size: 1.2rem;">bolt</span>
                 Quick Actions
             </div>
+            <!-- AQ4: All buttons unified to brand pink gradient -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #ff758c, #ff7eb3); color: #fff;">
+                <a href="{% url 'admin:iwm_product_changelist' %}" class="iwm-btn iwm-btn-primary">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">shopping_bag</span>
                     Products
                 </a>
-                <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;">
+                <a href="{% url 'admin:iwm_order_changelist' %}" class="iwm-btn iwm-btn-primary">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">receipt_long</span>
                     Orders
                 </a>
-                <a href="{% url 'admin:analytics' %}" class="iwm-btn" style="background: linear-gradient(135deg, #38a169, #48bb78); color: #fff;">
+                <a href="{% url 'admin:analytics' %}" class="iwm-btn iwm-btn-primary">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">analytics</span>
                     Analytics
                 </a>
-                <a href="{% url 'admin:alerts' %}" class="iwm-btn" style="background: linear-gradient(135deg, #eab308, #f59e0b); color: #1f2937;">
+                <a href="{% url 'admin:alerts' %}" class="iwm-btn iwm-btn-primary">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">notifications</span>
                     Alerts ({{ unread_alerts }})
                 </a>
@@ -434,57 +299,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const overviewData = JSON.parse(overviewElement.textContent);
-    new Chart(overviewCanvas, {
-        type: 'line',
-        data: {
-            labels: overviewData.labels,
-            datasets: [
-                {
-                    label: 'Revenue',
-                    data: overviewData.revenue,
-                    borderColor: '#e11d48',
-                    backgroundColor: 'rgba(225, 29, 72, 0.12)',
-                    borderWidth: 3,
-                    tension: 0.28,
-                    fill: true,
-                    pointRadius: 3
-                },
-                {
-                    label: 'Profit',
-                    data: overviewData.profit,
-                    borderColor: '#16a34a',
-                    backgroundColor: 'rgba(22, 163, 74, 0.12)',
-                    borderWidth: 3,
-                    tension: 0.28,
-                    fill: true,
-                    pointRadius: 3
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return 'Tk ' + Math.round(value);
-                        }
+    /* AH4: Show empty state when no data points exist */
+    if (overviewData.labels.length === 0) {
+        overviewCanvas.style.display = 'none';
+        document.getElementById('overviewChartEmpty').style.display = 'flex';
+    } else {
+        new Chart(overviewCanvas, {
+            type: 'line',
+            data: {
+                labels: overviewData.labels,
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: overviewData.revenue,
+                        borderColor: '#ff6f91',
+                        backgroundColor: 'rgba(255, 111, 145, 0.12)',
+                        borderWidth: 3,
+                        tension: 0.28,
+                        fill: true,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Profit',
+                        data: overviewData.profit,
+                        borderColor: '#16a34a',
+                        backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                        borderWidth: 3,
+                        tension: 0.28,
+                        fill: true,
+                        pointRadius: 3
                     }
-                }
+                ]
             },
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: function(value) { return 'Tk ' + Math.round(value); } }
+                    }
+                },
+                plugins: { legend: { position: 'bottom' } }
             }
-        }
-    });
+        });
+    }
 });
 </script>
 {% endblock %}

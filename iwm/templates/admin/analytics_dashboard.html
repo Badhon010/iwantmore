@@ -12,284 +12,6 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    .analytics-wrap { font-family: inherit; }
-    .a-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
-    .a-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .a-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .a-grid-2 { grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr); }
-    @media (max-width: 1200px) {
-        .a-grid-4, .a-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .a-grid-2 { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 640px) {
-        .a-grid-4, .a-grid-3 { grid-template-columns: 1fr; }
-    }
-    .a-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.85rem;
-        padding: 1.25rem;
-        transition: box-shadow 0.2s;
-    }
-    .dark .a-card {
-        background: #111827;
-        border-color: #374151;
-    }
-    .a-card:hover { box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
-    .a-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
-    }
-    .a-toolbar p { margin: 0.35rem 0 0; color: #6b7280; font-size: 0.9rem; }
-    .a-filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: end;
-        margin-top: 1rem;
-    }
-    .a-field { min-width: 170px; flex: 1 1 170px; }
-    .a-field label {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 0.35rem;
-    }
-    .dark .a-field label { color: #d1d5db; }
-    .a-field input {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.65rem;
-        padding: 0.7rem 0.85rem;
-        background: #fff;
-        color: #111827;
-    }
-    .dark .a-field input {
-        background: #0f172a;
-        border-color: #475569;
-        color: #f8fafc;
-    }
-    .a-filter-actions {
-        display: flex;
-        gap: 0.6rem;
-        flex-wrap: wrap;
-    }
-    .a-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.72rem 1rem;
-        border-radius: 0.65rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-    }
-    .a-btn-primary {
-        color: #fff;
-        background: linear-gradient(135deg, #ff6f91, #ff4e6a);
-    }
-    .a-btn-secondary {
-        color: #111827;
-        background: #e5e7eb;
-    }
-    .dark .a-btn-secondary {
-        color: #f8fafc;
-        background: #334155;
-    }
-    .a-presets {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-    .a-preset {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.45rem 0.8rem;
-        border-radius: 9999px;
-        background: #f3f4f6;
-        color: #374151;
-        text-decoration: none;
-        font-size: 0.78rem;
-        font-weight: 700;
-    }
-    .dark .a-preset {
-        background: #1f2937;
-        color: #d1d5db;
-    }
-    .a-preset.is-active {
-        background: #111827;
-        color: #fff;
-    }
-    .dark .a-preset.is-active {
-        background: #f8fafc;
-        color: #111827;
-    }
-    .a-stat {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    .a-stat-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 0.85rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-    .a-stat-label {
-        font-size: 0.8rem;
-        color: #6b7280;
-        margin-bottom: 0.15rem;
-    }
-    .dark .a-stat-label { color: #9ca3af; }
-    .a-stat-value {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: #111827;
-    }
-    .dark .a-stat-value { color: #f3f4f6; }
-    .a-section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .dark .a-section-title { color: #e5e7eb; }
-    .a-chart-shell {
-        background: linear-gradient(180deg, rgba(15, 118, 110, 0.06), rgba(255, 255, 255, 0));
-        border: 1px solid #e5e7eb;
-        border-radius: 0.85rem;
-        padding: 1rem;
-    }
-    .dark .a-chart-shell {
-        background: linear-gradient(180deg, rgba(20, 184, 166, 0.12), rgba(15, 23, 42, 0));
-        border-color: #334155;
-    }
-    .a-chart-summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    @media (max-width: 640px) {
-        .a-chart-summary { grid-template-columns: 1fr; }
-    }
-    .a-summary-box {
-        background: rgba(255, 255, 255, 0.78);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 0.8rem;
-        padding: 0.85rem;
-    }
-    .dark .a-summary-box {
-        background: rgba(15, 23, 42, 0.75);
-        border-color: rgba(51, 65, 85, 0.95);
-    }
-    .a-summary-box span {
-        display: block;
-        font-size: 0.75rem;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-    }
-    .dark .a-summary-box span { color: #94a3b8; }
-    .a-summary-box strong {
-        font-size: 1.05rem;
-        color: #111827;
-    }
-    .dark .a-summary-box strong { color: #f8fafc; }
-    .a-canvas-wrap {
-        position: relative;
-        min-height: 320px;
-    }
-    .a-meta-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.75rem;
-    }
-    @media (max-width: 900px) {
-        .a-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 640px) {
-        .a-meta-grid { grid-template-columns: 1fr; }
-    }
-    .a-meta-card {
-        text-align: center;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 0.75rem;
-    }
-    .dark .a-meta-card { background: #1f2937; }
-    .a-meta-label {
-        font-size: 0.75rem;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-    }
-    .dark .a-meta-label { color: #9ca3af; }
-    .a-meta-value {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #111827;
-    }
-    .dark .a-meta-value { color: #f3f4f6; }
-    .a-progress-wrap { margin-bottom: 1rem; }
-    .a-progress-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.35rem;
-        font-size: 0.8rem;
-        color: #6b7280;
-    }
-    .dark .a-progress-header { color: #9ca3af; }
-    .a-progress-bar {
-        height: 0.55rem;
-        background: #f3f4f6;
-        border-radius: 9999px;
-        overflow: hidden;
-    }
-    .dark .a-progress-bar { background: #374151; }
-    .a-progress-fill {
-        height: 100%;
-        border-radius: 9999px;
-        transition: width 0.4s;
-    }
-    .a-product-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.7rem 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    .dark .a-product-item { border-bottom-color: #374151; }
-    .a-product-item:last-child { border-bottom: none; }
-    .a-product-name { font-size: 0.86rem; color: #374151; }
-    .dark .a-product-name { color: #d1d5db; }
-    .a-product-qty {
-        background: #ecfeff;
-        color: #0f766e;
-        padding: 0.18rem 0.65rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-    .dark .a-product-qty {
-        background: #134e4a;
-        color: #99f6e4;
-    }
-</style>
 
 <div class="analytics-wrap">
     <div class="a-toolbar">
@@ -333,7 +55,8 @@
     <div class="a-grid a-grid-4">
         <div class="a-card">
             <div class="a-stat">
-                <div class="a-stat-icon" style="background: #fff1f2; color: #e11d48;">
+                <!-- AQ3: changed from #e11d48 to brand pink #ff6f91 -->
+                <div class="a-stat-icon" style="background: #fff0f4; color: #ff6f91;">
                     <span class="material-symbols-outlined">payments</span>
                 </div>
                 <div>
@@ -431,22 +154,28 @@
                 Revenue & Profit Trend
             </div>
             <div class="a-chart-shell">
+                <!-- AQ8: Renamed labels to plain "Revenue", "Profit", "Orders" -->
                 <div class="a-chart-summary">
                     <div class="a-summary-box">
-                        <span>Range Revenue</span>
+                        <span>Revenue</span>
                         <strong>Tk {{ selected_revenue|floatformat:0 }}</strong>
                     </div>
                     <div class="a-summary-box">
-                        <span>Range Profit</span>
+                        <span>Profit</span>
                         <strong>Tk {{ selected_profit|floatformat:0 }}</strong>
                     </div>
                     <div class="a-summary-box">
-                        <span>Orders In Range</span>
+                        <span>Orders</span>
                         <strong>{{ selected_orders }}</strong>
                     </div>
                 </div>
+                <!-- AH4: Empty state shown via JS when financialData.labels is empty -->
                 <div class="a-canvas-wrap">
                     <canvas id="financialChart"></canvas>
+                    <div class="a-canvas-empty" id="financialChartEmpty">
+                        <span class="material-symbols-outlined">bar_chart</span>
+                        No data for this period
+                    </div>
                 </div>
             </div>
         </div>
@@ -571,57 +300,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const financialCanvas = document.getElementById('financialChart');
     if (financialCanvas) {
-        new Chart(financialCanvas, {
-            type: 'line',
-            data: {
-                labels: financialData.labels,
-                datasets: [
-                    {
-                        label: 'Revenue',
-                        data: financialData.revenue,
-                        borderColor: '#f43f5e',
-                        backgroundColor: 'rgba(244, 63, 94, 0.12)',
-                        borderWidth: 3,
-                        tension: 0.28,
-                        fill: true,
-                        pointRadius: 3
-                    },
-                    {
-                        label: 'Profit',
-                        data: financialData.profit,
-                        borderColor: '#16a34a',
-                        backgroundColor: 'rgba(22, 163, 74, 0.12)',
-                        borderWidth: 3,
-                        tension: 0.28,
-                        fill: true,
-                        pointRadius: 3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'Tk ' + Math.round(value);
-                            }
+        /* AH4: Show empty state when no data points exist */
+        if (financialData.labels.length === 0) {
+            financialCanvas.style.display = 'none';
+            document.getElementById('financialChartEmpty').style.display = 'flex';
+        } else {
+            new Chart(financialCanvas, {
+                type: 'line',
+                data: {
+                    labels: financialData.labels,
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: financialData.revenue,
+                            borderColor: '#ff6f91',
+                            backgroundColor: 'rgba(255, 111, 145, 0.12)',
+                            borderWidth: 3,
+                            tension: 0.28,
+                            fill: true,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Profit',
+                            data: financialData.profit,
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                            borderWidth: 3,
+                            tension: 0.28,
+                            fill: true,
+                            pointRadius: 3
                         }
-                    }
+                    ]
                 },
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: function(value) { return 'Tk ' + Math.round(value); } }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom' } }
                 }
-            }
-        });
+            });
+        }
     }
 
     const paymentCanvas = document.getElementById('paymentChart');

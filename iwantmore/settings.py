@@ -331,6 +331,15 @@ UNFOLD = {
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "ENVIRONMENT": "iwantmore.settings.environment_callback",
+    "STYLES": [
+        lambda request: "/static/css/admin_custom.css",
+    ],
+    "SCRIPTS": [
+        lambda request: "/static/js/admin_custom.js",
+    ],
+    "LOGIN": {
+        "image": lambda request: "/static/imgs/iwm.png",
+    },
     "COLORS": {
         "primary": {
             "50": "255 242 245",
@@ -496,11 +505,7 @@ UNFOLD = {
                 "separator": True,
                 "collapsible": True,
                 "items": [
-                    {
-                        "title": "Admin Alerts",
-                        "icon": "warning_amber",
-                        "link": "/admin/iwm/adminalert/",
-                    },
+                    # AQ5: Removed "Admin Alerts" duplicate — kept only "Alerts" under Dashboard
                     {
                         "title": "Groups",
                         "icon": "shield",
@@ -510,6 +515,7 @@ UNFOLD = {
                         "title": "Clear Cache",
                         "icon": "delete_sweep",
                         "link": "/admin/clear-cache/",
+                        "badge": lambda request: "⚠️",
                     },
                 ],
             },

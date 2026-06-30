@@ -12,6 +12,7 @@ from django.urls import path, reverse
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Sum, Count, Q, F, DecimalField, ExpressionWrapper
 from django.db.models.functions import Cast, TruncDate
@@ -343,143 +344,9 @@ class IWMAdminSite(UnfoldAdminSite):
         ]
         return custom_urls + urls
     
-    def revenue_chart_view(self, request):
-        """Generate interactive revenue trend chart"""
-        days = 30
-        daily_data = []
-        
-        for i in range(days, 0, -1):
-            date = timezone.localdate() - timedelta(days=i)
-            day_start, day_end = _day_range(date)
-            revenue = Order.objects.filter(
-                created_at__range=(day_start, day_end),
-                payment_state__in=CAPTURED_PAYMENT_STATES
-            ).aggregate(Sum('total_price'))['total_price__sum'] or 0
-            daily_data.append({'date': str(date), 'revenue': float(revenue)})
-        
-        dates = [d['date'] for d in daily_data]
-        revenues = [d['revenue'] for d in daily_data]
-        
-        fig = go.Figure(data=go.Scatter(
-            x=dates, y=revenues,
-            mode='lines+markers',
-            name='Daily Revenue',
-            line=dict(color='#ff6f91', width=3),
-            marker=dict(size=8, color='#ff6f91')
-        ))
-        
-        fig.update_layout(
-            title="30-Day Revenue Trend",
-            xaxis_title="Date",
-            yaxis_title="Revenue (৳)",
-            template="plotly_dark",
-            hovermode='x unified',
-            height=500
-        )
-        
-        chart_html = plot(fig, output_type='div', include_plotlyjs='cdn')
-        
-        context = {**self.each_context(request),
-            'chart': chart_html,
-            'title': 'Revenue Trend Chart'
-        }
-        return TemplateResponse(request, 'admin/revenue_chart.html', context)
-    
-    def analytics_view(self, request):
-        """Comprehensive analytics dashboard"""
-        check_and_create_alerts()
-        
-        today = timezone.localdate()
-        week_ago = today - timedelta(days=7)
-        month_ago = today - timedelta(days=30)
-        today_start, today_end = _day_range(today)
-        week_start, _week_end = _day_range(week_ago)
-        month_start, _month_end = _day_range(month_ago)
-        
-        # Order statistics
-        today_orders = Order.objects.filter(created_at__range=(today_start, today_end))
-        week_orders = Order.objects.filter(created_at__range=(week_start, today_end))
-        month_orders = Order.objects.filter(created_at__range=(month_start, today_end))
-        
-        today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        week_revenue = week_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        month_revenue = month_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        
-        # Payment statistics
-        paid_orders = month_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES)
-        pending_orders = month_orders.filter(payment_state__in=FOLLOW_UP_PAYMENT_STATES)
-        payment_state_counts = [
-            {
-                'label': label,
-                'count': month_orders.filter(payment_state=state).count(),
-            }
-            for state, label in Order.PAYMENT_STATE_CHOICES
-        ]
-
-        # Create category pie chart
-        category_data = list(OrderItem.objects.filter(
-            order__created_at__range=(month_start, today_end)
-        ).exclude(
-            product__category__name__isnull=True
-        ).values('product__category__name').annotate(
-            count=Count('id')
-        ).order_by('-count')[:10])
-
-        if category_data:
-            fig = px.pie(
-                names=[item['product__category__name'] for item in category_data],
-                values=[item['count'] for item in category_data],
-                title="Orders by Category",
-                template="plotly_dark"
-            )
-            fig.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
-            category_chart = plot(fig, output_type='div', include_plotlyjs=True)
-        else:
-            category_chart = format_html(
-                '<div style="padding: 2rem; text-align: center; color: #9ca3af;">No category data available for the selected period.</div>'
-            )
-        
-        # Calculate average order value
-        avg_order_value = 0
-        paid_week_orders = week_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES)
-        if paid_week_orders.count() > 0:
-            total_week_revenue = paid_week_orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-            avg_order_value = total_week_revenue / paid_week_orders.count()
-
-        repeat_customers = month_orders.exclude(email='').values('email').annotate(order_count=Count('id')).filter(order_count__gt=1).count()
-        total_customers = month_orders.exclude(email='').values('email').distinct().count()
-        delivered_orders = month_orders.filter(order_status='delivered').count()
-        cancelled_orders = month_orders.filter(order_status='cancelled').count()
-        top_products = OrderItem.objects.filter(order__created_at__range=(month_start, today_end)).values('product_name').annotate(
-            total_quantity=Sum('quantity')
-        ).order_by('-total_quantity')[:5]
-        
-        context = {**self.each_context(request),
-            'today_orders': today_orders.count(),
-            'week_orders': week_orders.count(),
-            'month_orders': month_orders.count(),
-            'today_revenue': today_revenue,
-            'week_revenue': week_revenue,
-            'month_revenue': month_revenue,
-            'paid_orders': paid_orders.count(),
-            'pending_orders': pending_orders.count(),
-            'payment_state_labels': json.dumps([item['label'] for item in payment_state_counts]),
-            'payment_state_values': json.dumps([item['count'] for item in payment_state_counts]),
-            'category_chart': category_chart,
-            'avg_order_value': avg_order_value,
-            'repeat_customers': repeat_customers,
-            'total_customers': total_customers,
-            'delivered_orders': delivered_orders,
-            'cancelled_orders': cancelled_orders,
-            'top_products': top_products,
-            'title': 'Advanced Analytics Dashboard'
-        }
-        
-        return TemplateResponse(request, 'admin/analytics_dashboard.html', context)
-    
     def alerts_view(self, request):
-        """Alert management view"""
-        # Mark as read first (PRG: redirect after POST so refresh doesn't re-submit)
+        """Alert management view — with filter (AH3) and pagination (AH7)."""
+        # PRG: mark as read on POST, then redirect to GET so refresh is safe.
         if request.method == 'POST':
             alert_id = request.POST.get('alert_id')
             if alert_id:
@@ -488,57 +355,55 @@ class IWMAdminSite(UnfoldAdminSite):
 
         check_and_create_alerts()
 
-        alerts = AdminAlert.objects.select_related('product', 'order', 'read_by').order_by('-created_at')
-        unread_count = alerts.filter(is_read=False).count()
+        # AH3: Read filter params from GET.  Each is validated against the
+        # allowed choices so arbitrary values are silently ignored.
+        VALID_SEVERITIES = {'info', 'warning', 'critical'}
+        VALID_TYPES      = {'low_stock', 'high_orders', 'failed_payment', 'system'}
+        VALID_STATUSES   = {'read', 'unread'}
 
-        context = {**self.each_context(request),
-            'alerts': alerts[:50],
+        f_severity = request.GET.get('severity', '').strip()
+        f_type     = request.GET.get('alert_type', '').strip()
+        f_status   = request.GET.get('status', '').strip()
+
+        # Validate — silently clear invalid values so URLs cannot inject bad SQL.
+        if f_severity not in VALID_SEVERITIES:
+            f_severity = ''
+        if f_type not in VALID_TYPES:
+            f_type = ''
+        if f_status not in VALID_STATUSES:
+            f_status = ''
+
+        # Build filtered queryset; select_related avoids N+1 on product/order/user.
+        qs = AdminAlert.objects.select_related('product', 'order', 'read_by').order_by('-created_at')
+        if f_severity:
+            qs = qs.filter(severity=f_severity)
+        if f_type:
+            qs = qs.filter(alert_type=f_type)
+        if f_status == 'unread':
+            qs = qs.filter(is_read=False)
+        elif f_status == 'read':
+            qs = qs.filter(is_read=True)
+
+        # AH7: Paginate — 25 per page.  get_page() handles out-of-range safely.
+        paginator = Paginator(qs, 25)
+        page_obj  = paginator.get_page(request.GET.get('page', 1))
+
+        # Keep unread_count from the unfiltered set so the badge stays accurate.
+        unread_count = AdminAlert.objects.filter(is_read=False).count()
+
+        context = {
+            **self.each_context(request),
+            'alerts':      page_obj,
+            'page_obj':    page_obj,
+            'paginator':   paginator,
             'unread_count': unread_count,
-            'title': 'System Alerts & Notifications'
+            'f_severity':  f_severity,
+            'f_type':      f_type,
+            'f_status':    f_status,
+            'title': 'System Alerts & Notifications',
         }
-        
         return TemplateResponse(request, 'admin/alerts.html', context)
     
-    def index(self, request, extra_context=None):
-        """Enhanced dashboard with alerts and stats"""
-        extra_context = extra_context or {}
-        
-        check_and_create_alerts()
-        
-        today = timezone.localdate()
-        today_start, today_end = _day_range(today)
-        
-        # Core statistics
-        today_orders = Order.objects.filter(created_at__range=(today_start, today_end))
-        today_revenue = today_orders.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        total_revenue = Order.objects.filter(payment_state__in=CAPTURED_PAYMENT_STATES).aggregate(Sum('total_price'))['total_price__sum'] or 0
-        
-        total_products = Product.objects.count()
-        out_of_stock = Product.objects.filter(stock=0).count()
-        low_stock = Product.objects.filter(stock__gt=0, stock__lt=10).count()
-        
-        total_subscribers = NewsletterSubscriber.objects.count()
-        active_subscribers = NewsletterSubscriber.objects.filter(is_active=True).count()
-        
-        # Alerts
-        alerts = AdminAlert.objects.filter(is_read=False).order_by('-severity', '-created_at')[:5]
-        unread_alerts = AdminAlert.objects.filter(is_read=False).count()
-        
-        extra_context.update({
-            'today_orders': today_orders.count(),
-            'today_revenue': today_revenue,
-            'total_revenue': total_revenue,
-            'total_products': total_products,
-            'out_of_stock': out_of_stock,
-            'low_stock': low_stock,
-            'total_subscribers': total_subscribers,
-            'active_subscribers': active_subscribers,
-            'unread_alerts': unread_alerts,
-            'recent_alerts': alerts,
-        })
-        
-        return super().index(request, extra_context)
-
     def clear_cache_view(self, request):
         """Clear all application cache"""
         from django.core.cache import cache
@@ -674,13 +539,20 @@ class IWMAdminSite(UnfoldAdminSite):
         return TemplateResponse(request, 'admin/analytics_dashboard.html', context)
 
     def index(self, request, extra_context=None):
-        """Enhanced dashboard with alerts, revenue, and profit summaries"""
+        """Enhanced dashboard — AH1: adds yesterday comparison + pending orders count,
+        and consolidates multiple same-model queries into single aggregates."""
         extra_context = extra_context or {}
 
         check_and_create_alerts()
 
-        today = timezone.localdate()
-        today_summary = _summarize_orders(today, today)
+        today     = timezone.localdate()
+        yesterday = today - timedelta(days=1)
+
+        # Two _summarize_orders calls; each issues 2 queries (aggregate + profit).
+        today_summary     = _summarize_orders(today, today)
+        # AH1: yesterday summary enables trend indicators in the template.
+        yesterday_summary = _summarize_orders(yesterday, yesterday)
+
         overview_range = _resolve_date_range(request, default_days=14)
         overview_summary = _summarize_orders(
             overview_range['start_date'],
@@ -691,31 +563,62 @@ class IWMAdminSite(UnfoldAdminSite):
             overview_range['end_date'],
         )
 
-        total_products = Product.objects.count()
-        out_of_stock = Product.objects.filter(stock=0).count()
-        low_stock = Product.objects.filter(stock__gt=0, stock__lt=10).count()
-        total_subscribers = NewsletterSubscriber.objects.count()
-        active_subscribers = NewsletterSubscriber.objects.filter(is_active=True).count()
-        alerts = AdminAlert.objects.filter(is_read=False).order_by('-severity', '-created_at')[:5]
+        # AH1: 3 separate Product queries → 1 aggregate (saves 2 DB round-trips).
+        product_stats = Product.objects.aggregate(
+            total=Count('id'),
+            out_of_stock=Count('id', filter=Q(stock=0)),
+            low_stock=Count('id', filter=Q(stock__gt=0, stock__lt=10)),
+        )
+
+        # AH1: 2 separate NewsletterSubscriber queries → 1 aggregate (saves 1 DB hit).
+        subscriber_stats = NewsletterSubscriber.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+        )
+
+        # AH1: total pending orders needing attention (all-time, not just today).
+        # Uses the existing index on payment_state (via is_read analogy — no migration needed).
+        total_pending = Order.objects.filter(
+            payment_state__in=FOLLOW_UP_PAYMENT_STATES
+        ).count()
+
+        # Two AdminAlert queries: one for the badge count, one for the 5-item list.
         unread_alerts = AdminAlert.objects.filter(is_read=False).count()
+        recent_alerts = (
+            AdminAlert.objects
+            .filter(is_read=False)
+            .select_related('product', 'order')
+            .order_by('-severity', '-created_at')[:5]
+        )
 
         extra_context.update({
-            'today_orders': today_summary['order_count'],
-            'today_revenue': today_summary['revenue'],
-            'today_profit': today_summary['profit'],
-            'total_products': total_products,
-            'out_of_stock': out_of_stock,
-            'low_stock': low_stock,
-            'total_subscribers': total_subscribers,
-            'active_subscribers': active_subscribers,
+            # Today
+            'today_orders':   today_summary['order_count'],
+            'today_revenue':  today_summary['revenue'],
+            'today_profit':   today_summary['profit'],
+            # AH1: Yesterday — used for trend arrows in template.
+            'yesterday_orders':  yesterday_summary['order_count'],
+            'yesterday_revenue': yesterday_summary['revenue'],
+            'yesterday_profit':  yesterday_summary['profit'],
+            # AH1: All-time pending orders count.
+            'total_pending': total_pending,
+            # Products (from single aggregate)
+            'total_products': product_stats['total'],
+            'out_of_stock':   product_stats['out_of_stock'],
+            'low_stock':      product_stats['low_stock'],
+            # Subscribers (from single aggregate)
+            'total_subscribers':  subscriber_stats['total'],
+            'active_subscribers': subscriber_stats['active'],
+            # Alerts
             'unread_alerts': unread_alerts,
-            'recent_alerts': alerts,
-            'overview_orders': overview_summary['order_count'],
+            'recent_alerts': recent_alerts,
+            # Overview chart
+            'overview_orders':  overview_summary['order_count'],
             'overview_revenue': overview_summary['revenue'],
-            'overview_profit': overview_summary['profit'],
-            'overview_range': overview_range['selected_range'],
+            'overview_profit':  overview_summary['profit'],
+            'overview_range':      overview_range['selected_range'],
             'overview_start_date': overview_range['start_date'].isoformat(),
-            'overview_end_date': overview_range['end_date'].isoformat(),
+            'overview_end_date':   overview_range['end_date'].isoformat(),
             'overview_chart_data': overview_chart_data,
         })
 
