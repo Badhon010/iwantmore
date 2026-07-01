@@ -648,25 +648,24 @@ def autocomplete_suggestions(request):
         if len(suggestions) < 6:
             for category in category_matches[:2]:  # Limit to 2 categories
                 suggestions.append({
-                    "name": f"Category: {category.name}",
+                    "name": category.name,
                     "url": reverse('category_products', kwargs={'category_slug': category.slug}),
                     "type": "category",
                     "match_type": "category"
                 })
-                
+
         # Add tag suggestions if space
         if len(suggestions) < 6:
-            tag_query = Q(name__icontains=query)
             tags = Product.tags.through.objects.filter(
                 tag__name__icontains=query
             ).values('tag__name').distinct()[:2]
-            
+
             for tag_entry in tags:
                 tag_name = tag_entry['tag__name']
-                if any(s.get('name') == f"Tag: {tag_name}" for s in suggestions):
+                if any(s.get('name') == tag_name and s.get('type') == 'tag' for s in suggestions):
                     continue
                 suggestions.append({
-                    "name": f"Tag: {tag_name}",
+                    "name": tag_name,
                     "url": f"{reverse('search')}?q={tag_name}",
                     "type": "tag",
                     "match_type": "tag"
@@ -1547,9 +1546,7 @@ def my_orders(request):
 def order_count(request):
     if not request.user.is_authenticated:
         return JsonResponse({'count': 0})
-
-    active_statuses = ['pending', 'processing', 'shipped']
-    count = request.user.orders.filter(order_status__in=active_statuses).count()
+    count = request.user.orders.count()
     return JsonResponse({'count': count})
 
 # Gemini API integration for AI features

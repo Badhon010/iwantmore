@@ -9,7 +9,7 @@
 {% block content %}
 <div class="wishlist-container">
   <h1 class="wishlist-title">Your Wishlist</h1>
-  
+
   <div class="wishlist-content">
     <div class="wishlist-items">
       <div class="empty-wishlist-message" id="emptyWishlistMessage">
@@ -22,157 +22,100 @@
           <i class="fas fa-store"></i>&nbsp; Browse Products
         </a>
       </div>
-      
-      <div class="wishlist-grid" id="wishlistGrid">
-        <!-- Wishlist items will be added here dynamically with JavaScript -->
-      </div>
+
+      <div class="wishlist-grid" id="wishlistGrid"></div>
     </div>
   </div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Wishlist functionality
+document.addEventListener('DOMContentLoaded', function () {
+  displayWishlist();
+
+  function displayWishlist() {
+    const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+    const wishlistGrid = document.getElementById('wishlistGrid');
+    const emptyMsg     = document.getElementById('emptyWishlistMessage');
+
+    wishlistGrid.innerHTML = '';
+
+    if (wishlistItems.length === 0) {
+      wishlistGrid.style.display = 'none';
+      emptyMsg.style.display = 'flex';
+      return;
+    }
+
+    wishlistGrid.style.display = 'grid';
+    emptyMsg.style.display = 'none';
+
+    wishlistItems.forEach(function (item, index) {
+      const el = document.createElement('div');
+      el.className = 'wishlist-item';
+      el.innerHTML =
+        '<div class="item-image"><img src="' + item.image + '" alt="' + item.name + '"></div>' +
+        '<div class="item-details">' +
+          '<h3 class="item-name">' + item.name + '</h3>' +
+          '<p class="item-price">৳' + item.price + '</p>' +
+          '<div class="item-actions">' +
+            '<button class="add-to-cart-btn" data-index="' + index + '">Add to Cart</button>' +
+            '<button class="remove-btn" data-index="' + index + '"><i class="fas fa-trash"></i></button>' +
+          '</div>' +
+        '</div>';
+      wishlistGrid.appendChild(el);
+    });
+
+    wishlistGrid.querySelectorAll('.add-to-cart-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { moveToCart(parseInt(this.dataset.index)); });
+    });
+    wishlistGrid.querySelectorAll('.remove-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { removeItem(parseInt(this.dataset.index)); });
+    });
+  }
+
+  function moveToCart(index) {
+    const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+    const item = wishlistItems[index];
+    if (!item) return;
+
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const existing  = cartItems.findIndex(function (c) { return c.id == item.id; });
+    if (existing !== -1) {
+      cartItems[existing].quantity += 1;
+    } else {
+      cartItems.push({ id: item.id, name: item.name, price: item.price, image: item.image, quantity: 1 });
+    }
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+    if (typeof updateCartCount === 'function') updateCartCount();
+    showNotification('Added to cart');
+  }
+
+  function removeItem(index) {
+    const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+    if (!confirm('Remove this item from your wishlist?')) return;
+    wishlistItems.splice(index, 1);
+    localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
+    if (typeof updateWishlistCount === 'function') updateWishlistCount();
     displayWishlist();
-    
-    // Function to display wishlist items from localStorage
-    function displayWishlist() {
-      const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-      const wishlistGrid = document.getElementById('wishlistGrid');
-      const emptyWishlistMessage = document.getElementById('emptyWishlistMessage');
-      
-      // Clear previous items
-      wishlistGrid.innerHTML = '';
-      
-      if (wishlistItems.length === 0) {
-        // Show empty wishlist message and hide grid
-        wishlistGrid.style.display = 'none';
-        emptyWishlistMessage.style.display = 'flex';
-        return;
-      }
-      
-      // Show grid and hide empty wishlist message
-      wishlistGrid.style.display = 'grid';
-      emptyWishlistMessage.style.display = 'none';
-      
-      // Add each item to the wishlist
-      wishlistItems.forEach((item, index) => {
-        const wishlistItem = document.createElement('div');
-        wishlistItem.className = 'wishlist-item';
-        
-        wishlistItem.innerHTML = `
-          <div class="item-image">
-            <img src="${item.image}" alt="${item.name}">
-          </div>
-          <div class="item-details">
-            <h3 class="item-name">${item.name}</h3>
-            <p class="item-price">৳${item.price}</p>
-            <div class="item-actions">
-              <button class="add-to-cart-btn" data-index="${index}">Add to Cart</button>
-              <button class="remove-btn" data-index="${index}"><i class="fas fa-trash"></i></button>
-            </div>
-          </div>
-        `;
-        
-        wishlistGrid.appendChild(wishlistItem);
-      });
-      
-      // Add event listeners for buttons
-      addEventListeners();
+  }
+
+  function showNotification(message) {
+    var container = document.querySelector('.notification-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'notification-container';
+      document.body.appendChild(container);
     }
-    
-    function addEventListeners() {
-      // Add to cart buttons
-      document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const index = this.dataset.index;
-          addToCart(index);
-        });
-      });
-      
-      // Remove buttons
-      document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const index = this.dataset.index;
-          removeItem(index);
-        });
-      });
-    }
-    
-    function addToCart(index) {
-      const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-      const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-      
-      if (wishlistItems[index]) {
-        const item = wishlistItems[index];
-        
-        // Check if the item is already in cart
-        const existingItemIndex = cartItems.findIndex(cartItem => cartItem.id == item.id);
-        
-        if (existingItemIndex !== -1) {
-          // Update quantity
-          cartItems[existingItemIndex].quantity += 1;
-        } else {
-          // Add new item
-          cartItems.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            quantity: 1
-          });
-        }
-        
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        showNotification('Added to cart');
-        
-        // Optionally, remove from wishlist
-        // wishlistItems.splice(index, 1);
-        // localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
-        // displayWishlist();
-      }
-    }
-    
-    function removeItem(index) {
-      const wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-      if (confirm('Are you sure you want to remove this item from your wishlist?')) {
-        wishlistItems.splice(index, 1);
-        localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
-        displayWishlist();
-      }
-    }
-    
-    function showNotification(message) {
-      // Create notification element if it doesn't exist
-      if (!document.querySelector('.notification-container')) {
-        const container = document.createElement('div');
-        container.className = 'notification-container';
-        document.body.appendChild(container);
-      }
-      
-      const container = document.querySelector('.notification-container');
-      const notification = document.createElement('div');
-      notification.className = 'notification';
-      notification.innerHTML = `
-        <i class="notification-icon ${message.includes('Added') ? 'fas fa-check-circle' : 'fas fa-info-circle'}"></i>
-        <span class="notification-message">${message}</span>
-      `;
-      
-      container.appendChild(notification);
-      
-      // Show notification with animation
-      setTimeout(() => {
-        notification.classList.add('show');
-      }, 10);
-      
-      // Remove notification after 3 seconds
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          notification.remove();
-        }, 300);
-      }, 3000);
-    }
-  });
+    var n = document.createElement('div');
+    n.className = 'notification';
+    n.innerHTML = '<i class="notification-icon fas fa-check-circle"></i><span class="notification-message">' + message + '</span>';
+    container.appendChild(n);
+    setTimeout(function () { n.classList.add('show'); }, 10);
+    setTimeout(function () {
+      n.classList.remove('show');
+      setTimeout(function () { n.remove(); }, 300);
+    }, 3000);
+  }
+});
 </script>
-{% endblock %} 
+{% endblock %}

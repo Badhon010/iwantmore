@@ -1,179 +1,133 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const wishlistBtn = document.querySelector('.wishlist-btn');
-    const productId = wishlistBtn?.dataset.productId;
+    const productId   = wishlistBtn?.dataset.productId;
     const productName = wishlistBtn?.dataset.productName;
     const productPrice = parseFloat(wishlistBtn?.dataset.productPrice);
-    let productImage = wishlistBtn?.dataset.productImage;
+    let   productImage = wishlistBtn?.dataset.productImage;
 
-    const quantityInput = document.getElementById('quantity');
-    const minusBtn = document.querySelector('.qty-btn.minus');
-    const plusBtn = document.querySelector('.qty-btn.plus');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const orderNowBtn = document.getElementById('orderNowBtn');
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    const mainImage = document.getElementById('mainImage');
+    const quantityInput      = document.getElementById('quantity');
+    const minusBtn           = document.querySelector('.qty-btn.minus');
+    const plusBtn            = document.querySelector('.qty-btn.plus');
+    const addToCartBtn       = document.getElementById('addToCartBtn');
+    const orderNowBtn        = document.getElementById('orderNowBtn');
+    const thumbnails         = document.querySelectorAll('.thumbnail');
+    const mainImage          = document.getElementById('mainImage');
     const colorImageTriggers = document.querySelectorAll('.color-image-trigger');
-    const requiresColor = document.querySelector('.color-choice-list')?.dataset.requiresColor === 'true';
-    let selectedColor = colorImageTriggers.length === 1 ? (colorImageTriggers[0].dataset.colorName || '') : '';
+    const requiresColor      = document.querySelector('.color-choice-list')?.dataset.requiresColor === 'true';
+    let   selectedColor      = colorImageTriggers.length === 1 ? (colorImageTriggers[0].dataset.colorName || '') : '';
 
-    function setActiveImage(imageUrl) {
-        if (!mainImage || !imageUrl) {
-            return;
-        }
-
-        mainImage.src = imageUrl;
-        productImage = imageUrl;
-        thumbnails.forEach((thumb) => {
-            const thumbUrl = thumb.dataset.imageUrl || thumb.querySelector('img')?.src;
-            thumb.classList.toggle('active', thumbUrl === imageUrl);
+    // ── Image gallery ─────────────────────────────────────────────────────────
+    function setActiveImage(url) {
+        if (!mainImage || !url) return;
+        mainImage.src = url;
+        productImage  = url;
+        thumbnails.forEach(t => {
+            const src = t.dataset.imageUrl || t.querySelector('img')?.src;
+            t.classList.toggle('active', src === url);
         });
     }
 
     function setActiveColor(activeTrigger) {
-        colorImageTriggers.forEach((trigger) => {
-            trigger.classList.toggle('active', trigger === activeTrigger);
-        });
+        colorImageTriggers.forEach(t => t.classList.toggle('active', t === activeTrigger));
     }
 
-    thumbnails.forEach((thumb) => {
-        thumb.addEventListener('click', function() {
-            const imgSrc = this.dataset.imageUrl || this.querySelector('img')?.src;
-            setActiveImage(imgSrc);
-        });
-    });
+    thumbnails.forEach(t => t.addEventListener('click', function () {
+        setActiveImage(this.dataset.imageUrl || this.querySelector('img')?.src);
+    }));
 
-    colorImageTriggers.forEach((trigger) => {
-        trigger.addEventListener('click', function() {
-            selectedColor = this.dataset.colorName || '';
-            setActiveImage(this.dataset.imageUrl);
-            setActiveColor(this);
-        });
-    });
+    colorImageTriggers.forEach(trigger => trigger.addEventListener('click', function () {
+        selectedColor = this.dataset.colorName || '';
+        setActiveImage(this.dataset.imageUrl);
+        setActiveColor(this);
+    }));
 
     if (selectedColor) {
-        const initialColorTrigger = Array.from(colorImageTriggers).find((trigger) => trigger.dataset.colorName === selectedColor);
-        if (initialColorTrigger) {
-            initialColorTrigger.classList.add('active');
+        Array.from(colorImageTriggers).find(t => t.dataset.colorName === selectedColor)?.classList.add('active');
+    }
+
+    // ── Toast (uses #toast element on product page) ───────────────────────────
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ── Wishlist ──────────────────────────────────────────────────────────────
+    function syncWishlistButton(isInWishlist) {
+        if (!wishlistBtn) return;
+        wishlistBtn.classList.toggle('active', isInWishlist);
+        const icon = wishlistBtn.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fas', isInWishlist);
+            icon.classList.toggle('far', !isInWishlist);
         }
     }
 
     function checkWishlistStatus() {
         const wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-        const isInWishlist = wishlist.some(item => item.id == productId);
-
-        if (isInWishlist && wishlistBtn) {
-            wishlistBtn.classList.add('active');
-            wishlistBtn.querySelector('i')?.classList.remove('far');
-            wishlistBtn.querySelector('i')?.classList.add('fas');
-        }
+        syncWishlistButton(wishlist.some(item => item.id == productId));
     }
 
-    wishlistBtn?.addEventListener('click', function() {
+    wishlistBtn?.addEventListener('click', function () {
         const wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-        const index = wishlist.findIndex(item => item.id == productId);
-
-        if (index !== -1) {
-            wishlist.splice(index, 1);
-            this.classList.remove('active');
-            this.querySelector('i')?.classList.remove('fas');
-            this.querySelector('i')?.classList.add('far');
+        const idx = wishlist.findIndex(item => item.id == productId);
+        if (idx !== -1) {
+            wishlist.splice(idx, 1);
+            syncWishlistButton(false);
             showToast('Removed from wishlist');
         } else {
-            wishlist.push({
-                id: productId,
-                name: productName,
-                price: productPrice,
-                image: productImage
-            });
-            this.classList.add('active');
-            this.querySelector('i')?.classList.remove('far');
-            this.querySelector('i')?.classList.add('fas');
+            wishlist.push({ id: productId, name: productName, price: productPrice, image: productImage });
+            syncWishlistButton(true);
             showToast('Added to wishlist');
         }
-
         localStorage.setItem('wishlistItems', JSON.stringify(wishlist));
+        if (typeof updateWishlistCount === 'function') updateWishlistCount();
     });
 
-    minusBtn?.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        if (currentValue > 1) {
-            quantityInput.value = currentValue - 1;
-        }
+    // ── Quantity ──────────────────────────────────────────────────────────────
+    minusBtn?.addEventListener('click', function () {
+        const v = parseInt(quantityInput.value);
+        if (v > 1) quantityInput.value = v - 1;
     });
 
-    plusBtn?.addEventListener('click', function() {
-        const currentValue = parseInt(quantityInput.value);
-        const maxValue = parseInt(quantityInput.max);
-        if (currentValue < maxValue) {
-            quantityInput.value = currentValue + 1;
-        }
+    plusBtn?.addEventListener('click', function () {
+        const v = parseInt(quantityInput.value);
+        const max = parseInt(quantityInput.max);
+        if (v < max) quantityInput.value = v + 1;
     });
 
-    function getValidatedCartSelection() {
-        if (requiresColor && !selectedColor) {
-            showToast('Please select a color first');
-            return null;
-        }
-
-        return {
-            color: selectedColor,
-            image: mainImage?.src || productImage
-        };
+    // ── Cart ──────────────────────────────────────────────────────────────────
+    function getValidatedSelection() {
+        if (requiresColor && !selectedColor) { showToast('Please select a color first'); return null; }
+        return { color: selectedColor, image: mainImage?.src || productImage };
     }
 
     function addProductToCart({ redirectToCart = false } = {}) {
-        const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+        const selection = getValidatedSelection();
+        if (!selection) return;
+
+        const cart     = JSON.parse(localStorage.getItem('cartItems')) || [];
         const quantity = parseInt(quantityInput.value);
-        const selection = getValidatedCartSelection();
+        const idx      = cart.findIndex(item => item.id == productId && (item.color || '') === selection.color);
 
-        if (!selection) {
-            return;
-        }
-
-        const index = cart.findIndex(item => item.id == productId && (item.color || '') === selection.color);
-
-        if (index !== -1) {
-            cart[index].quantity += quantity;
+        if (idx !== -1) {
+            cart[idx].quantity += quantity;
             showToast('Updated cart quantity');
         } else {
-            cart.push({
-                id: productId,
-                name: productName,
-                price: productPrice,
-                image: selection.image,
-                color: selection.color,
-                quantity: quantity
-            });
+            cart.push({ id: productId, name: productName, price: productPrice, image: selection.image, color: selection.color, quantity });
             showToast('Added to cart');
         }
 
         localStorage.setItem('cartItems', JSON.stringify(cart));
-        if (redirectToCart) {
-            window.location.href = '/cart/';
-        }
+        if (typeof updateCartCount === 'function') updateCartCount();
+        if (redirectToCart) window.location.href = '/cart/';
     }
 
-    addToCartBtn?.addEventListener('click', function() {
-        addProductToCart();
-    });
+    addToCartBtn?.addEventListener('click', () => addProductToCart());
+    orderNowBtn?.addEventListener('click', () => addProductToCart({ redirectToCart: true }));
 
-    orderNowBtn?.addEventListener('click', function() {
-        addProductToCart({ redirectToCart: true });
-    });
-
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        if (!toast) {
-            return;
-        }
-
-        toast.textContent = message;
-        toast.classList.add('show');
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-
+    // ── Init ──────────────────────────────────────────────────────────────────
     checkWishlistStatus();
 });
