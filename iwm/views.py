@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, ProductColorImage, Review, UserProfile, UserVerification, NewsletterSubscriber, Category, SubCategory, Coupon, Address, Order, OrderItem, Color, Size, PromoBanner, Slider
-from .forms import ReviewForm
 from django.db.models import Q, Avg, Count, Prefetch
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
@@ -20,14 +19,11 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.db import models, IntegrityError
 from django.utils.text import slugify
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from django.core.cache import cache
 import json
 import threading
-import time
-from django.utils import timezone
 import google.generativeai as genai
-import os
 import logging
 import textwrap
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP

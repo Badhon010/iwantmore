@@ -1,77 +1,228 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 - Page Not Found</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>404 - Page Not Found | I Want More</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="{% static 'imgs/logo.jpg' %}" type="image/x-icon">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #ffdde1 0%, #ff6f91 100%);
+      justify-content: center;
+      background: linear-gradient(145deg, #fff0f3 0%, #ffe4ec 40%, #ffc2d4 100%);
       color: #333;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
+      overflow-x: hidden;
+      position: relative;
     }
-    .container {
-      max-width: 600px;
+
+    /* Floating bubbles */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: drift 8s ease-in-out infinite alternate;
     }
-    h1 {
-      font-size: 140px;
-      font-weight: 700;
-      color: #fff;
-      text-shadow: 0px 5px 20px rgba(255, 111, 145, 0.7);
-      animation: float 3s ease-in-out infinite, glow 2s alternate infinite;
+    body::before {
+      width: 400px; height: 400px;
+      background: #ff4e6a;
+      top: -120px; left: -120px;
     }
-    p {
-      font-size: 20px;
-      font-weight: 300;
-      color: #fff;
-      margin-bottom: 30px;
+    body::after {
+      width: 300px; height: 300px;
+      background: #ff6f91;
+      bottom: -80px; right: -80px;
+      animation-delay: 2s;
     }
-    .btn-home {
-      display: inline-block;
-      background-color: #fff;
+
+    .card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 56px 48px 48px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(255, 78, 106, 0.15);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Animated shopping bag SVG */
+    .illustration {
+      margin-bottom: 20px;
+    }
+    .bag-body {
+      animation: float 3.5s ease-in-out infinite;
+    }
+    .question-mark {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .error-code {
+      font-size: 96px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #ff4e6a, #ff8fab);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      letter-spacing: -4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .brand img {
+      height: 32px;
+      width: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .brand span {
+      font-size: 15px;
+      font-weight: 600;
       color: #ff4e6a;
-      border: 2px solid #ff4e6a;
-      padding: 12px 30px;
-      font-size: 18px;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 15px;
+      font-weight: 300;
+      color: #666;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      font-size: 15px;
       font-weight: 600;
       border-radius: 50px;
-      transition: all 0.3s ease-in-out;
       text-decoration: none;
+      transition: all 0.25s ease;
+      font-family: 'Poppins', sans-serif;
     }
-    .btn-home:hover {
-      background-color: #ff4e6a;
+    .btn-primary {
+      background: linear-gradient(135deg, #ff4e6a, #ff6f91);
       color: #fff;
-      transform: translateY(-3px);
-      box-shadow: 0px 8px 15px rgba(255, 111, 145, 0.3);
+      box-shadow: 0 6px 20px rgba(255, 78, 106, 0.35);
     }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(255, 78, 106, 0.45);
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #ff4e6a;
+      border: 2px solid #ffc2d4;
+    }
+    .btn-secondary:hover {
+      border-color: #ff4e6a;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(255, 78, 106, 0.1);
+    }
+
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
+      0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
-    @keyframes glow {
-      0% { text-shadow: 0px 5px 20px rgba(255, 111, 145, 0.7); }
-      100% { text-shadow: 0px 5px 30px rgba(255, 111, 145, 1); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(30px, 20px) scale(1.05); }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 40px 28px 36px; }
+      .error-code { font-size: 72px; }
+      h1 { font-size: 18px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>404</h1>
-    <p>Oops! The page you are looking for does not exist.</p>
-    <a href="{% url 'home' %}" class="btn-home">Back to Home</a>
+  <div class="card">
+
+    <div class="brand">
+      <img src="{% static 'imgs/iwm.png' %}" alt="I Want More">
+      <span>I Want More</span>
+    </div>
+
+    <!-- Animated shopping bag illustration -->
+    <div class="illustration">
+      <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g class="bag-body">
+          <!-- Bag body -->
+          <rect x="18" y="38" width="74" height="58" rx="10" fill="url(#bagGrad)" opacity="0.15"/>
+          <rect x="18" y="38" width="74" height="58" rx="10" stroke="#ff4e6a" stroke-width="3" fill="none"/>
+          <!-- Handle -->
+          <path d="M38 38 C38 22 72 22 72 38" stroke="#ff4e6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- Shine -->
+          <ellipse cx="36" cy="52" rx="5" ry="3" fill="#ff4e6a" opacity="0.2" transform="rotate(-20 36 52)"/>
+        </g>
+        <!-- Question mark -->
+        <g class="question-mark">
+          <text x="55" y="79" text-anchor="middle" font-family="Poppins, sans-serif" font-size="32" font-weight="800" fill="#ff4e6a">?</text>
+        </g>
+        <defs>
+          <linearGradient id="bagGrad" x1="18" y1="38" x2="92" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff4e6a"/>
+            <stop offset="100%" stop-color="#ff8fab"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="error-code">404</div>
+
+    <h1>This page went shopping without us</h1>
+    <p>The page you're looking for doesn't exist, was moved, or may have been removed. Let's get you back to something good.</p>
+
+    <div class="actions">
+      <a href="{% url 'home' %}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </a>
+      <a href="{% url 'shop' %}" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Browse Shop
+      </a>
+    </div>
+
   </div>
 </body>
 </html>
